@@ -26,7 +26,7 @@ class FileHandler extends AbstractMediaHandler
     /**
      * @var string
      */
-    const MEDIA_PATH = '/uploads/media/';
+    public $mediaPath;
 
     /**
      * @var Filesystem
@@ -80,13 +80,21 @@ class FileHandler extends AbstractMediaHandler
     }
 
     /**
-     * Inject the root dir so we know the full path where we need to store the file.
+     * Inject the path used in media udrls.
      *
-     * @param string $kernelRootDir
+     * @param string $mediaPath
      */
-    public function setMediaPath($kernelRootDir)
+    public function setMediaPath($mediaPath)
     {
-        $this->fileSystem = new Filesystem(new Local($kernelRootDir . '/../web' . self::MEDIA_PATH, true));
+        $this->mediaPath = $mediaPath;
+    }
+
+    /**
+     * @param Filesystem $filesystem
+     */
+    public function setFileSystem(FileSystem $filesystem)
+    {
+        $this->fileSystem = $filesystem;
     }
 
     /**
@@ -122,7 +130,7 @@ class FileHandler extends AbstractMediaHandler
     {
         if ($object instanceof File ||
             ($object instanceof Media &&
-                (is_file($object->getContent()) || $object->getLocation() == 'local'))
+             (is_file($object->getContent()) || $object->getLocation() == 'local'))
         ) {
             return true;
         }
@@ -183,7 +191,7 @@ class FileHandler extends AbstractMediaHandler
 
         $contentType = $this->mimeTypeGuesser->guess($media->getContent()->getPathname());
         $media->setContentType($contentType);
-        $media->setUrl(self::MEDIA_PATH . $this->getFilePath($media));
+        $media->setUrl($this->mediaPath . $this->getFilePath($media));
         $media->setLocation('local');
     }
 
