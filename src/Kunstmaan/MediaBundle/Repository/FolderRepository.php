@@ -2,6 +2,7 @@
 
 namespace Kunstmaan\MediaBundle\Repository;
 
+use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\EntityNotFoundException;
 use Doctrine\ORM\Query;
 use Doctrine\ORM\QueryBuilder;
@@ -350,7 +351,10 @@ class FolderRepository extends NestedTreeRepository
         }
     }
 
-
+    /**
+     * @param $slug
+     * @return null|Folder
+     */
     public function findOneBySlug($slug)
     {
         $entity = $this->findOneBy(['slug' => $slug]);
@@ -361,5 +365,45 @@ class FolderRepository extends NestedTreeRepository
         }
 
         return $entity;
+    }
+
+    /**
+     * @param string $phrase
+     * @param Folder|null $folder
+     * @param bool $deep
+     * @return Query
+     */
+    public function search($phrase, Folder $folder, $deep = true)
+    {
+        /** @var QueryBuilder $qb */
+        $qb = $this->createQueryBuilder('f');
+        $qb->where('f.deleted != true');
+
+        $deletedCondition = $qb->expr()->andX()
+            ->add($qb->expr()->neq('m.deleted', true))
+            ->add($qb->expr()->neq('f.deleted', true));
+
+        $searchCondition = $qb->expr()->like('f.name', ':phrase');
+        $qb->setParameter('phrase', '%' . $phrase . '%');
+
+
+        if ($deep) {
+            $folderCondition = $qb->expr()->andX()
+                ->add($qb->expr()->gt('f.lft', ':left'))
+                ->add($qb->expr()->lt('f.rgt', ':right'));
+            $qb->setParameter('left', $folder->getLeft());
+            $qb->setParameter('right', $folder->getRight());
+        } else {
+            $folderCondition = $qb->expr()->eq('f.parent', ':parent');
+            $qb->setParameter('parent', $folder);
+        }
+
+        $conditions = $qb->expr()->andX()
+            ->add($deletedCondition)
+            ->add($searchCondition)
+            ->add($folderCondition);
+        $qb->where($conditions);
+
+        return $qb->getQuery();
     }
 }

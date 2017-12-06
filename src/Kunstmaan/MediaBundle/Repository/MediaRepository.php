@@ -2,8 +2,12 @@
 
 namespace Kunstmaan\MediaBundle\Repository;
 
+use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\EntityNotFoundException;
 use Doctrine\ORM\EntityRepository;
+use Doctrine\ORM\Query;
+use Doctrine\ORM\QueryBuilder;
+use Kunstmaan\MediaBundle\Entity\Folder;
 use Kunstmaan\MediaBundle\Entity\Media;
 
 /**
@@ -64,5 +68,49 @@ class MediaRepository extends EntityRepository
         }
 
         return $picture;
+    }
+
+    /**
+     * @param string $phrase
+     * @param Folder $folder
+     * @param bool $deep
+     * @return Query
+     */
+    public function search($phrase, Folder $folder, $deep)
+    {
+        /** @var QueryBuilder $qb */
+        $qb = $this->createQueryBuilder('m');
+        $qb->join('m.folder', 'f');
+        $qb->where('f.deleted != true');
+
+        $deletedCondition = $qb->expr()->andX()
+            ->add($qb->expr()->neq('m.deleted', true))
+            ->add($qb->expr()->neq('f.deleted', true));
+
+        $searchCondition = $qb->expr()->orX()
+            ->add($qb->expr()->like('m.name', ':phrase'))
+            ->add($qb->expr()->like('m.description', ':phrase'))
+            ->add($qb->expr()->like('m.copyright', ':phrase'));
+        $qb->setParameter('phrase', '%' . $phrase . '%');
+
+        if ($deep) {
+            //Also search the current folder we're in so use gte and lte
+            $folderCondition = $qb->expr()->andX()
+                ->add($qb->expr()->gte('f.lft', ':left'))
+                ->add($qb->expr()->lte('f.rgt', ':right'));
+            $qb->setParameter('left', $folder->getLeft());
+            $qb->setParameter('right', $folder->getRight());
+        } else {
+            $folderCondition = $qb->expr()->eq('m.folder', ':folder');
+            $qb->setParameter('folder', $folder);
+        }
+
+        $conditions = $qb->expr()->andX()
+            ->add($deletedCondition)
+            ->add($searchCondition)
+            ->add($folderCondition);
+        $qb->where($conditions);
+
+        return $qb->getQuery();
     }
 }
