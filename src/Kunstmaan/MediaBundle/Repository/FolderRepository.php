@@ -2,7 +2,6 @@
 
 namespace Kunstmaan\MediaBundle\Repository;
 
-use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\EntityNotFoundException;
 use Doctrine\ORM\Query;
 use Doctrine\ORM\QueryBuilder;
@@ -373,7 +372,7 @@ class FolderRepository extends NestedTreeRepository
      * @param bool $deep
      * @return Query
      */
-    public function search($phrase, Folder $folder, $deep = true)
+    public function search($phrase, Folder $folder, $deep = true, $defaultLocale = 'nl', $searchLocale = 'nl')
     {
         /** @var QueryBuilder $qb */
         $qb = $this->createQueryBuilder('f');
@@ -396,6 +395,19 @@ class FolderRepository extends NestedTreeRepository
         } else {
             $folderCondition = $qb->expr()->eq('f.parent', ':parent');
             $qb->setParameter('parent', $folder);
+        }
+
+        if ($defaultLocale !== $searchLocale)
+        {
+            //Join translations and override the searchCondition to search in the translations instead
+            $qb->join(Translation::class, 't', 'WITH', 't.foreignKey = f.id');
+            $searchCondition = $qb->expr()->andX()
+                ->add($qb->expr()->like('t.content', ':phrase'))
+                ->add($qb->expr()->eq('t.locale', ':currentLocale'))
+                ->add($qb->expr()->eq('t.field', ':field'));
+
+            $qb->setParameter('field', 'name');
+            $qb->setParameter('currentLocale', $searchLocale);
         }
 
         $conditions = $qb->expr()->andX()
