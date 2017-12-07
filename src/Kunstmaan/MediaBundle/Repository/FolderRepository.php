@@ -372,19 +372,37 @@ class FolderRepository extends NestedTreeRepository
      * @param bool $deep
      * @return Query
      */
-    public function search($phrase, Folder $folder, $deep = true, $defaultLocale = 'nl', $searchLocale = 'nl')
+    public function search($phrase, Folder $folder, $deep = true, $defaultLocale, $searchLocale)
     {
         /** @var QueryBuilder $qb */
         $qb = $this->createQueryBuilder('f');
-        $qb->where('f.deleted != true');
 
-        $deletedCondition = $qb->expr()->andX()
-            ->add($qb->expr()->neq('m.deleted', true))
-            ->add($qb->expr()->neq('f.deleted', true));
+        $deletedCondition = $qb->expr()->neq('f.deleted', true);
 
         $searchCondition = $qb->expr()->like('f.name', ':phrase');
-        $qb->setParameter('phrase', '%' . $phrase . '%');
 
+        //When the searchLocale is not the defaultLocale, search the translations as well
+        if ($defaultLocale !== $searchLocale) {
+            $qb->leftJoin(Translation::class, 't', 'WITH', 't.foreignKey = f.id AND t.objectClass = :class AND t.locale = :locale');
+
+            //Only match the default translations where there are no translations
+            $defaultSearchCondition = $qb->expr()->andX()
+                ->add($searchCondition)
+                ->add($qb->expr()->isNull('t.id'));
+
+            //Match the translation (which is only joined on locale and objectClass)
+            $translationSearch = $qb->expr()->andX()
+                ->add($qb->expr()->like('t.content', ':phrase'))
+                ->add($qb->expr()->eq('t.field', ':field'));
+
+            $qb->setParameter('class', $this->getClassName());
+            $qb->setParameter('field', 'name');
+            $qb->setParameter('locale', $searchLocale);
+            $searchCondition = $qb->expr()->orX()
+                ->add($defaultSearchCondition)
+                ->add($translationSearch);
+        }
+        $qb->setParameter('phrase', '%' . $phrase . '%');
 
         if ($deep) {
             $folderCondition = $qb->expr()->andX()
@@ -395,19 +413,6 @@ class FolderRepository extends NestedTreeRepository
         } else {
             $folderCondition = $qb->expr()->eq('f.parent', ':parent');
             $qb->setParameter('parent', $folder);
-        }
-
-        if ($defaultLocale !== $searchLocale)
-        {
-            //Join translations and override the searchCondition to search in the translations instead
-            $qb->join(Translation::class, 't', 'WITH', 't.foreignKey = f.id');
-            $searchCondition = $qb->expr()->andX()
-                ->add($qb->expr()->like('t.content', ':phrase'))
-                ->add($qb->expr()->eq('t.locale', ':currentLocale'))
-                ->add($qb->expr()->eq('t.field', ':field'));
-
-            $qb->setParameter('field', 'name');
-            $qb->setParameter('currentLocale', $searchLocale);
         }
 
         $conditions = $qb->expr()->andX()

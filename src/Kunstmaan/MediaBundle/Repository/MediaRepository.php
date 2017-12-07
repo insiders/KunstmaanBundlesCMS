@@ -2,11 +2,11 @@
 
 namespace Kunstmaan\MediaBundle\Repository;
 
-use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\EntityNotFoundException;
 use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\Query;
 use Doctrine\ORM\QueryBuilder;
+use Gedmo\Translatable\Entity\Translation;
 use Kunstmaan\MediaBundle\Entity\Folder;
 use Kunstmaan\MediaBundle\Entity\Media;
 
@@ -76,21 +76,44 @@ class MediaRepository extends EntityRepository
      * @param bool $deep
      * @return Query
      */
-    public function search($phrase, Folder $folder, $deep)
+    public function search($phrase, Folder $folder, $deep, $defaultLocale, $searchLocale)
     {
+        $searchFields = ['name', 'description', 'copyright'];
+
         /** @var QueryBuilder $qb */
         $qb = $this->createQueryBuilder('m');
         $qb->join('m.folder', 'f');
-        $qb->where('f.deleted != true');
 
         $deletedCondition = $qb->expr()->andX()
             ->add($qb->expr()->neq('m.deleted', true))
             ->add($qb->expr()->neq('f.deleted', true));
 
-        $searchCondition = $qb->expr()->orX()
-            ->add($qb->expr()->like('m.name', ':phrase'))
-            ->add($qb->expr()->like('m.description', ':phrase'))
-            ->add($qb->expr()->like('m.copyright', ':phrase'));
+        $searchCondition = $qb->expr()->orX();
+        foreach ($searchFields as $field) {
+            $searchCondition->add($qb->expr()->like('m.' . $field, ':phrase'));
+        }
+
+        //When the searchLocale is not the defaultLocale, search the translations as well
+        if ($defaultLocale !== $searchLocale) {
+            $qb->leftJoin(Translation::class, 't', 'WITH', 't.foreignKey = f.id AND t.objectClass = :class AND t.locale = :locale');
+
+            //Only match the default translations where there are no translations
+            $defaultSearchCondition = $qb->expr()->andX()
+                ->add($searchCondition)
+                ->add($qb->expr()->isNull('t.id'));
+
+            //Match the translation (which is only joined on locale and objectClass)
+            $translationSearch = $qb->expr()->andX()
+                ->add($qb->expr()->like('t.content', ':phrase'))
+                ->add($qb->expr()->in('t.field', ':fields'));
+
+            $qb->setParameter('class', $this->getClassName());
+            $qb->setParameter('fields', $searchFields);
+            $qb->setParameter('locale', $searchLocale);
+            $searchCondition = $qb->expr()->orX()
+                ->add($defaultSearchCondition)
+                ->add($translationSearch);
+        }
         $qb->setParameter('phrase', '%' . $phrase . '%');
 
         if ($deep) {
@@ -104,6 +127,7 @@ class MediaRepository extends EntityRepository
             $folderCondition = $qb->expr()->eq('m.folder', ':folder');
             $qb->setParameter('folder', $folder);
         }
+
 
         $conditions = $qb->expr()->andX()
             ->add($deletedCondition)
