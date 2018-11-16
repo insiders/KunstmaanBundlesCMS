@@ -20,5 +20,14 @@ services:
         tags:
             - { name: kernel.event_listener, event: kernel.response, method: onKernelResponse }
 
+    kunstmaan_multi_domain.admin_redirect_listener:
+        class: Kunstmaan\MultiDomainBundle\EventListener\AdminRedirectListener
+        arguments:
+            $domainConfiguration: '@kunstmaan_admin.domain_configuration'
+            $adminKey: '%kunstmaan_admin.admin_prefix%'
+        tags:
+            - { name: kernel.event_listener, event: kernel.request, method: onKernelRequest, priority: 200 }
+
+
     kunstmaan_multi_domain.host_override_cleanup:
         class: Kunstmaan\MultiDomainBundle\Helper\HostOverrideCleanupHandler
