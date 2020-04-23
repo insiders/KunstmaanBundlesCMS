@@ -300,6 +300,7 @@ kunstmaanbundles.richEditor = (function (window, undefined) {
             editor = CKEDITOR.instances[elementId];
 
         if (editor) {
+            editor.updateElement();
             editor.destroy(true);
         }
     };
