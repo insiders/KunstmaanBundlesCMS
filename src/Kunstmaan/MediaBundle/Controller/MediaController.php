@@ -413,20 +413,21 @@ class MediaController extends Controller
     /**
      * @param Request $request
      * @param int     $folderId The folder id
-     * @param string  $type     The type
+     * @param string  $fileType The type
      *
-     * @Route("create/modal/{folderId}/{type}", requirements={"folderId" = "\d+", "type" = ".+"}, name="KunstmaanMediaBundle_media_modal_create")
+     * @Route("create/modal/{folderId}/{fileType}", requirements={"folderId" = "\d+", "fileType" = ".+"}, name="KunstmaanMediaBundle_media_modal_create")
      * @Method({"GET", "POST"})
      * @Template()
      *
      * @return array|RedirectResponse
      */
-    public function createModalAction(Request $request, $folderId, $type)
+    public function createModalAction(Request $request, $folderId, $fileType)
     {
         $cKEditorFuncNum = $request->get('CKEditorFuncNum');
         $linkChooser     = $request->get('linkChooser');
 
         $extraParams = [];
+        $extraParams['type'] = $request->get('type');
         if (!empty($cKEditorFuncNum)) {
             $extraParams['CKEditorFuncNum'] = $cKEditorFuncNum;
         }
@@ -437,7 +438,7 @@ class MediaController extends Controller
         return $this->createAndRedirect(
             $request,
             $folderId,
-            $type,
+            $fileType,
             'KunstmaanMediaBundle_chooser_show_folder',
             $extraParams,
             true
