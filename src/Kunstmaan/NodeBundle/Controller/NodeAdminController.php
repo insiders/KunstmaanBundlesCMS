@@ -1007,7 +1007,7 @@ class NodeAdminController extends Controller
             'KunstmaanNodeBundle:NodeVersion'
         )->findBy(
             array('nodeTranslation' => $nodeTranslation),
-            array('updated' => 'ASC')
+            array('updated' => 'DESC')
         );
         $queuedNodeTranslationAction = $this->em->getRepository(
             'KunstmaanNodeBundle:QueuedNodeTranslationAction'
