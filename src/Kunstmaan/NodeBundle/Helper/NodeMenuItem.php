@@ -291,12 +291,4 @@ class NodeMenuItem
     {
         return $this->menu->getActive($this->getSlug());
     }
-
-    /**
-     * @return string
-     */
-    public function getLang()
-    {
-        return $this->menu->getLocale();
-    }
 }
