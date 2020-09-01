@@ -5,9 +5,10 @@ namespace Kunstmaan\FormBundle\Helper;
 use Kunstmaan\FormBundle\Entity\FormSubmission;
 use Swift_Mailer;
 use Swift_Message;
-use Swift_Mime_Message;
-use Symfony\Bundle\TwigBundle\TwigEngine;
 use Symfony\Component\DependencyInjection\ContainerInterface;
+use Symfony\Component\HttpFoundation\RequestStack;
+use Symfony\Component\Templating\EngineInterface;
+use Twig\Environment;
 
 /**
  * The form mailer
@@ -17,22 +18,32 @@ class FormMailer implements FormMailerInterface
     /** @var \Swift_Mailer */
     private $mailer;
 
-    /** @var \Symfony\Bundle\TwigBundle\TwigEngine */
-    private $templating;
+    /** @var EngineInterface|Environment */
+    private $twig;
 
-    /** @var \Symfony\Component\DependencyInjection\ContainerInterface */
-    private $container;
+    /** @var RequestStack */
+    private $requestStack;
 
     /**
-     * @param Swift_Mailer       $mailer     The mailer service
-     * @param TwigEngine         $templating The templating service
-     * @param ContainerInterface $container  The container
+     * @param Swift_Mailer                    $mailer
+     * @param EngineInterface                 $twig
+     * @param ContainerInterface|RequestStack $requestStack
      */
-    public function __construct(Swift_Mailer $mailer, TwigEngine $templating, ContainerInterface $container)
+    public function __construct(Swift_Mailer $mailer, /*Environment*/ $twig, /*RequestStack*/ $requestStack)
     {
-        $this->mailer     = $mailer;
-        $this->templating = $templating;
-        $this->container  = $container;
+        $this->mailer = $mailer;
+        $this->twig = $twig;
+
+        if ($twig instanceof EngineInterface) {
+            @trigger_error('Passing the "@templating" service as the 2nd argument is deprecated since KunstmaanFormBundle 5.4 and will be replaced by the Twig service in KunstmaanFormBundle 6.0. Injected the "@twig" service instead.', E_USER_DEPRECATED);
+        }
+
+        $this->requestStack = $requestStack;
+        if ($requestStack instanceof ContainerInterface) {
+            @trigger_error('Passing the container as the 3th argument is deprecated since KunstmaanFormBundle 5.4 and will be replaced by the "request_stack" service in KunstmaanFormBundle 6.0. Injected the "@request_stack" service instead.', E_USER_DEPRECATED);
+
+            $this->requestStack = $requestStack->get('request_stack');
+        }
     }
 
     /**
@@ -43,21 +54,23 @@ class FormMailer implements FormMailerInterface
      */
     public function sendContactMail(FormSubmission $submission, $from, $to, $subject)
     {
-        $request = $this->container->get('request_stack')->getCurrentRequest();
+        $request = $this->requestStack->getCurrentRequest();
 
         $toArr = explode("\r\n", $to);
-        /* @var $message Swift_Mime_Message */
-        $message = Swift_Message::newInstance()->setSubject($subject)->setFrom($from)->setTo($toArr);
-        $message->setBody(
-            $this->templating->render(
-                'KunstmaanFormBundle:Mailer:mail.html.twig',
-                array(
-                    'submission' => $submission,
-                    'host'       => $request->getScheme() . '://' . $request->getHttpHost()
-                )
-            ),
-            'text/html'
-        );
+
+        $message = (new Swift_Message($subject))
+            ->setFrom($from)
+            ->setTo($toArr)
+            ->setBody(
+                $this->twig->render(
+                    '@KunstmaanForm/Mailer/mail.html.twig',
+                    [
+                        'submission' => $submission,
+                        'host' => $request->getScheme().'://'.$request->getHttpHost(),
+                    ]
+                ),
+                'text/html'
+            );
         $this->mailer->send($message);
     }
 }

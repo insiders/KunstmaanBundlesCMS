@@ -48,10 +48,10 @@ class TranslatorDataCollector extends AbstractDataCollector
 
         $options = [
             'filter_columnname' => [
-                'keyword'
+                'keyword',
             ],
             'filter_uniquefilterid' => [
-                1
+                1,
             ],
             'filter_comparator_1' => 'equals',
             'filter' => 'filter',
@@ -60,18 +60,19 @@ class TranslatorDataCollector extends AbstractDataCollector
         $translations = [];
 
         foreach ($this->translator->getCollectedMessages() as $message) {
-            if ($message['state'] !== DataCollectorTranslator::MESSAGE_EQUALS_FALLBACK) {
+            if ($message['state'] !== DataCollectorTranslator::MESSAGE_EQUALS_FALLBACK && !empty($message['id'])) {
                 $options['filter_value_1'] = $message['id'];
-                $translations[] = [
+                $translations[$message['id']] = [
                     'id' => $message['id'],
-                    'route' => $this->urlGenerator->generate('KunstmaanTranslatorBundle_settings_translations', $options)
+                    'message' => $message['translation'],
+                    'route' => $this->urlGenerator->generate('KunstmaanTranslatorBundle_settings_translations', $options),
                 ];
             }
         }
 
         $data = [
             'route' => $route,
-            'translations' => $translations
+            'translations' => $translations,
         ];
 
         return ['data' => $data];
@@ -86,8 +87,7 @@ class TranslatorDataCollector extends AbstractDataCollector
     {
         if (!$this->showDataCollection($request, $response) || !$this->isEnabled()) {
             $this->data = false;
-        }
-        else {
+        } else {
             $this->data = $this->collectData();
         }
     }
@@ -118,4 +118,8 @@ class TranslatorDataCollector extends AbstractDataCollector
         return true;
     }
 
+    public function reset()
+    {
+        $this->data = [];
+    }
 }

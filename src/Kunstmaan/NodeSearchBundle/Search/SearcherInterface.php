@@ -42,7 +42,6 @@ interface SearcherInterface
 
     /**
      * @return mixed
-     *
      * @return SearcherInterface
      */
     public function getData();
@@ -84,6 +83,8 @@ interface SearcherInterface
     public function getIndexName();
 
     /**
+     * @deprecated upgrade to ruflin/elastica and elasticsearch v7 and don't set an index type
+     *
      * @param string $indexType
      *
      * @return SearcherInterface
@@ -91,6 +92,8 @@ interface SearcherInterface
     public function setIndexType($indexType);
 
     /**
+     * @deprecated upgrade to ruflin/elastica and elasticsearch v7 and don't set an index type
+     *
      * @return string
      */
     public function getIndexType();

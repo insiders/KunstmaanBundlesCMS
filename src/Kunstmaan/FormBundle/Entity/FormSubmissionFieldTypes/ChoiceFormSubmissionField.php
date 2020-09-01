@@ -3,7 +3,6 @@
 namespace Kunstmaan\FormBundle\Entity\FormSubmissionFieldTypes;
 
 use Doctrine\ORM\Mapping as ORM;
-
 use Kunstmaan\FormBundle\Entity\FormSubmissionField;
 use Kunstmaan\FormBundle\Form\ChoiceFormSubmissionType;
 
@@ -15,7 +14,6 @@ use Kunstmaan\FormBundle\Form\ChoiceFormSubmissionType;
  */
 class ChoiceFormSubmissionField extends FormSubmissionField
 {
-
     /**
      * @ORM\Column(name="cfsf_value", type="array", nullable=true)
      */
@@ -79,15 +77,16 @@ class ChoiceFormSubmissionField extends FormSubmissionField
                 foreach ($values as $value) {
                     $result[] = array_key_exists($value, $choices) ? trim($choices[$value]) : $value;
                 }
-                return implode(", ", $result);
-            } else {
-                if (isset($choices[$values])) {
-                    return trim($choices[$values]);
-                }
+
+                return implode(', ', $result);
+            }
+
+            if (isset($choices[$values])) {
+                return trim($choices[$values]);
             }
         }
 
-        return "";
+        return '';
     }
 
     /**
@@ -100,11 +99,13 @@ class ChoiceFormSubmissionField extends FormSubmissionField
         $values = $this->getValue();
         if (is_array($values)) {
             return empty($values) || count($values) <= 0;
-        } elseif (is_string($values)) {
-            return (!isset($values) || trim($values) === '');
-        } else {
-            return is_null($values);
         }
+
+        if (is_string($values)) {
+            return !isset($values) || trim($values) === '';
+        }
+
+        return is_null($values);
     }
 
     /**
@@ -206,7 +207,7 @@ class ChoiceFormSubmissionField extends FormSubmissionField
     /**
      * Set the field as required or not
      *
-     * @param boolean $required
+     * @param bool $required
      *
      * @return ChoiceFormSubmissionField
      */
@@ -220,11 +221,10 @@ class ChoiceFormSubmissionField extends FormSubmissionField
     /**
      * Get the field required status, by default this will be false
      *
-     * @return boolean
+     * @return bool
      */
     public function getRequired()
     {
         return $this->required;
     }
-
 }

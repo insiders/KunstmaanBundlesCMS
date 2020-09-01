@@ -13,22 +13,22 @@ use Symfony\Component\Security\Acl\Permission\AbstractMaskBuilder;
  */
 class MaskBuilder extends AbstractMaskBuilder
 {
-    const MASK_VIEW         = 1;          // 1 << 0
-    const MASK_EDIT         = 4;          // 1 << 2
-    const MASK_DELETE       = 8;          // 1 << 3
-    const MASK_PUBLISH      = 16;         // 1 << 4
-    const MASK_UNPUBLISH    = 32;         // 1 << 5
-    const MASK_IDDQD        = 1073741823; // 1 << 0 | 1 << 1 | ... | 1 << 30
+    const MASK_VIEW = 1;          // 1 << 0
+    const MASK_EDIT = 4;          // 1 << 2
+    const MASK_DELETE = 8;          // 1 << 3
+    const MASK_PUBLISH = 16;         // 1 << 4
+    const MASK_UNPUBLISH = 32;         // 1 << 5
+    const MASK_IDDQD = 1073741823; // 1 << 0 | 1 << 1 | ... | 1 << 30
 
-    const CODE_VIEW         = 'V';
-    const CODE_EDIT         = 'E';
-    const CODE_DELETE       = 'D';
-    const CODE_PUBLISH      = 'P';
-    const CODE_UNPUBLISH    = 'U';
+    const CODE_VIEW = 'V';
+    const CODE_EDIT = 'E';
+    const CODE_DELETE = 'D';
+    const CODE_PUBLISH = 'P';
+    const CODE_UNPUBLISH = 'U';
 
-    const ALL_OFF           = '................................';
-    const OFF               = '.';
-    const ON                = '*';
+    const ALL_OFF = '................................';
+    const OFF = '.';
+    const ON = '*';
 
     /**
      * Returns a human-readable representation of the permission
@@ -38,10 +38,10 @@ class MaskBuilder extends AbstractMaskBuilder
     public function getPattern()
     {
         $pattern = self::ALL_OFF;
-        $length = strlen($pattern);
+        $length = \strlen($pattern);
         $bitmask = str_pad(decbin($this->mask), $length, '0', STR_PAD_LEFT);
 
-        for ($i=$length-1; $i>=0; $i--) {
+        for ($i = $length - 1; $i >= 0; --$i) {
             if ('1' === $bitmask[$i]) {
                 try {
                     $pattern[$i] = self::getCode(1 << ($length - $i - 1));
@@ -66,22 +66,22 @@ class MaskBuilder extends AbstractMaskBuilder
      */
     public static function getCode($mask)
     {
-        if (!is_int($mask)) {
+        if (!\is_int($mask)) {
             throw new InvalidArgumentException('$mask must be an integer.');
         }
 
-        $reflection = new \ReflectionClass(get_called_class());
+        $reflection = new \ReflectionClass(\get_called_class());
         foreach ($reflection->getConstants() as $name => $cMask) {
-            if (0 !== strpos($name, 'MASK_')) {
+            if (0 !== strncmp($name, 'MASK_', 5)) {
                 continue;
             }
 
             if ($mask === $cMask) {
-                if (!defined($cName = 'static::CODE_'.substr($name, 5))) {
+                if (!\defined($cName = 'static::CODE_'.substr($name, 5))) {
                     throw new \RuntimeException('There was no code defined for this mask.');
                 }
 
-                return constant($cName);
+                return \constant($cName);
             }
         }
 
@@ -99,9 +99,9 @@ class MaskBuilder extends AbstractMaskBuilder
      */
     public function has($mask)
     {
-        if (is_string($mask) && defined($name = 'static::MASK_'.strtoupper($mask))) {
-            $mask = constant($name);
-        } elseif (!is_int($mask)) {
+        if (\is_string($mask) && \defined($name = 'static::MASK_'.strtoupper($mask))) {
+            $mask = \constant($name);
+        } elseif (!\is_int($mask)) {
             throw new InvalidArgumentException('$mask must be an integer.');
         }
 
@@ -119,15 +119,15 @@ class MaskBuilder extends AbstractMaskBuilder
      */
     public function resolveMask($code)
     {
-        if (is_string($code)) {
-            if (!defined($name = sprintf('static::MASK_%s', strtoupper($code)))) {
+        if (\is_string($code)) {
+            if (!\defined($name = sprintf('static::MASK_%s', strtoupper($code)))) {
                 throw new \InvalidArgumentException(sprintf('The code "%s" is not supported', $code));
             }
 
-            return constant($name);
+            return \constant($name);
         }
 
-        if (!is_int($code)) {
+        if (!\is_int($code)) {
             throw new \InvalidArgumentException('$code must be an integer.');
         }
 

@@ -5,17 +5,23 @@ namespace Kunstmaan\TranslatorBundle\AdminList;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Query\QueryBuilder;
 use Kunstmaan\AdminListBundle\AdminList\Configurator\AbstractDoctrineDBALAdminListConfigurator;
+use Kunstmaan\AdminListBundle\AdminList\Configurator\ChangeableLimitInterface;
+use Kunstmaan\AdminListBundle\AdminList\Field;
+use Kunstmaan\AdminListBundle\AdminList\FieldAlias;
 use Kunstmaan\AdminListBundle\AdminList\FilterType\DBAL\EnumerationFilterType;
 use Kunstmaan\AdminListBundle\AdminList\FilterType\DBAL\StringFilterType;
+use Kunstmaan\AdminListBundle\Traits\ChangeableLimitTrait;
+use Kunstmaan\TranslatorBundle\Entity\Translation;
 
 /**
  * TranslationAdminListConfigurator
  */
-class TranslationAdminListConfigurator extends AbstractDoctrineDBALAdminListConfigurator
+class TranslationAdminListConfigurator extends AbstractDoctrineDBALAdminListConfigurator implements ChangeableLimitInterface
 {
+    use ChangeableLimitTrait;
 
     /**
-     * @var array $locales
+     * @var array
      */
     protected $locales;
 
@@ -25,8 +31,13 @@ class TranslationAdminListConfigurator extends AbstractDoctrineDBALAdminListConf
     protected $locale;
 
     /**
+     * @var Field[]
+     */
+    private $exportFields = [];
+
+    /**
      * @param Connection $connection
-     * @param array $locales
+     * @param array      $locales
      */
     public function __construct(Connection $connection, array $locales)
     {
@@ -40,11 +51,13 @@ class TranslationAdminListConfigurator extends AbstractDoctrineDBALAdminListConf
      */
     public function buildFilters()
     {
+        $this->addFilter('status', new StringFilterType('status'), 'kuma_translator.adminlist.filter.status');
         $this->addFilter('domain', new StringFilterType('domain'), 'kuma_translator.adminlist.filter.domain');
         $this->addFilter('keyword', new StringFilterType('keyword'), 'kuma_translator.adminlist.filter.keyword');
         $this->addFilter('text', new StringFilterType('text'), 'kuma_translator.adminlist.filter.text');
         $this->addFilter('locale', new EnumerationFilterType('locale'), 'kuma_translator.adminlist.filter.locale', array_combine(
-            $this->locales, $this->locales
+            $this->locales,
+            $this->locales
         ));
     }
 
@@ -55,6 +68,32 @@ class TranslationAdminListConfigurator extends AbstractDoctrineDBALAdminListConf
     {
         $this->addField('domain', 'kuma_translator.adminlist.header.domain', true);
         $this->addField('keyword', 'kuma_translator.adminlist.header.keyword', true);
+        $this->addField('status', 'kuma_translator.adminlist.header.status', true);
+    }
+
+    public function getExportFields()
+    {
+        if (empty($this->exportFields)) {
+            $this->addExportField('domain', 'kuma_translator.adminlist.header.domain');
+            $this->addExportField('keyword', 'kuma_translator.adminlist.header.keyword');
+
+            $this->locales = array_unique($this->locales);
+            // Field building hack...
+            foreach ($this->locales as $locale) {
+                $this->addExportField($locale, strtoupper($locale));
+            }
+
+            $this->addExportField('status', 'kuma_translator.adminlist.header.status');
+        }
+
+        return $this->exportFields;
+    }
+
+    public function addExportField($name, $header, $template = null, FieldAlias $alias = null)
+    {
+        $this->exportFields[] = new Field($name, $header);
+
+        return $this;
     }
 
     /**
@@ -81,6 +120,14 @@ class TranslationAdminListConfigurator extends AbstractDoctrineDBALAdminListConf
      * @return bool
      */
     public function canEditInline($item)
+    {
+        return true;
+    }
+
+    /**
+     * @return bool
+     */
+    public function canExport()
     {
         return true;
     }
@@ -129,15 +176,17 @@ class TranslationAdminListConfigurator extends AbstractDoctrineDBALAdminListConf
      */
     public function getQueryBuilder()
     {
-        if (is_null($this->queryBuilder)) {
+        if (\is_null($this->queryBuilder)) {
             $this->queryBuilder = new QueryBuilder($this->connection);
             $this->queryBuilder
-                ->select('DISTINCT b.translation_id AS id, b.keyword, b.domain')
-                ->from('kuma_translation', 'b');
+                ->select('DISTINCT b.translation_id AS id, b.keyword, b.domain, b.status')
+                ->from('kuma_translation', 'b')
+                ->andWhere('b.status != :statusstring')
+                ->setParameter('statusstring', Translation::STATUS_DISABLED);
 
             // Apply filters
             $filters = $this->getFilterBuilder()->getCurrentFilters();
-            $locales = array();
+            $locales = [];
 
             $textValue = $textComparator = null;
             foreach ($filters as $filter) {
@@ -152,7 +201,7 @@ class TranslationAdminListConfigurator extends AbstractDoctrineDBALAdminListConf
                     }
                 } elseif ($filter->getType() instanceof StringFilterType && $filter->getColumnName() == 'text') {
                     // Override default text filter handling ...
-                    $data =  $filter->getData();
+                    $data = $filter->getData();
                     $textValue = $data['value'];
                     $textComparator = $data['comparator'];
                 } else {
@@ -166,59 +215,83 @@ class TranslationAdminListConfigurator extends AbstractDoctrineDBALAdminListConf
             if (!empty($locales)) {
                 $this->locales = $locales;
             }
+            $this->locales = array_unique($this->locales);
 
             // Field building hack...
             foreach ($this->locales as $locale) {
-                $this->addField($locale, strtoupper($locale), false, 'KunstmaanTranslatorBundle:Translator:inline_edit.html.twig');
+                $this->addField($locale, strtoupper($locale), false, '@KunstmaanTranslator/Translator/inline_edit.html.twig');
             }
 
             // Field filter hack...
             $this->addFilter('locale', new EnumerationFilterType('locale'), 'kuma_translator.adminlist.filter.locale', array_combine(
-                $this->locales, $this->locales
+                $this->locales,
+                $this->locales
             ));
 
             // Add join for every locale
             foreach ($this->locales as $locale) {
-                $this->queryBuilder->addSelect('t_' . $locale . '.`text` AS ' . $locale);
-                $this->queryBuilder->addSelect('t_' . $locale . '.id AS ' . $locale . '_id');
-                $this->queryBuilder->leftJoin('b', 'kuma_translation', 't_' . $locale,
-                  'b.keyword = t_' . $locale . '.keyword and b.domain = t_' . $locale . '.domain and t_' . $locale . '.locale=:locale_' . $locale);
-                $this->queryBuilder->setParameter('locale_' . $locale, $locale);
+                $this->queryBuilder->addSelect('t_'.$locale.'.`text` AS '.$locale);
+                $this->queryBuilder->addSelect('t_'.$locale.'.id AS '.$locale.'_id');
+                $this->queryBuilder->leftJoin(
+                    'b',
+                    'kuma_translation',
+                    't_'.$locale,
+                    'b.keyword = t_'.$locale.'.keyword and b.domain = t_'.$locale.'.domain and t_'.$locale.'.locale=:locale_'.$locale
+                );
+                $this->queryBuilder->setParameter('locale_'.$locale, $locale);
             }
 
             // Apply text filter
-            if (!is_null($textValue) && !is_null($textComparator)) {
+            if (!\is_null($textValue) && !\is_null($textComparator)) {
                 $orX = $this->queryBuilder->expr()->orX();
 
                 foreach ($this->locales as $key => $locale) {
-                    $uniqueId = 'txt_' . $key;
+                    $uniqueId = 'txt_'.$key;
+                    $expr = null;
                     switch ($textComparator) {
                         case 'equals':
-                            $expr = $this->queryBuilder->expr()->eq('t_' . $locale . '.`text`', ':var_' . $uniqueId);
-                            $this->queryBuilder->setParameter('var_' . $uniqueId, $textValue);
+                            $expr = $this->queryBuilder->expr()->eq('t_'.$locale.'.`text`', ':var_'.$uniqueId);
+                            $this->queryBuilder->setParameter('var_'.$uniqueId, $textValue);
+
                             break;
                         case 'notequals':
-                            $expr = $this->queryBuilder->expr()->neq('t_' . $locale . '.`text`', ':var_' . $uniqueId);
-                            $this->queryBuilder->setParameter('var_' . $uniqueId, $textValue);
+                            $expr = $this->queryBuilder->expr()->neq('t_'.$locale.'.`text`', ':var_'.$uniqueId);
+                            $this->queryBuilder->setParameter('var_'.$uniqueId, $textValue);
+
                             break;
                         case 'contains':
-                            $expr = $this->queryBuilder->expr()->like('t_' . $locale . '.`text`', ':var_' . $uniqueId);
-                            $this->queryBuilder->setParameter('var_' . $uniqueId, '%' . $textValue . '%');
+                            $expr = $this->queryBuilder->expr()->like('t_'.$locale.'.`text`', ':var_'.$uniqueId);
+                            $this->queryBuilder->setParameter('var_'.$uniqueId, '%'.$textValue.'%');
+
                             break;
                         case 'doesnotcontain':
-                            $expr = 't_' . $locale . '.`text`' . ' NOT LIKE :var_' . $uniqueId;
-                            $this->queryBuilder->setParameter('var_' . $uniqueId, '%' . $textValue . '%');
+                            $expr = 't_'.$locale.'.`text`'.' NOT LIKE :var_'.$uniqueId;
+                            $this->queryBuilder->setParameter('var_'.$uniqueId, '%'.$textValue.'%');
+
                             break;
                         case 'startswith':
-                            $expr = $this->queryBuilder->expr()->like('t_' . $locale . '.`text`', ':var_' . $uniqueId);
-                            $this->queryBuilder->setParameter('var_' . $uniqueId, $textValue . '%');
+                            $expr = $this->queryBuilder->expr()->like('t_'.$locale.'.`text`', ':var_'.$uniqueId);
+                            $this->queryBuilder->setParameter('var_'.$uniqueId, $textValue.'%');
+
                             break;
                         case 'endswith':
-                            $expr = $this->queryBuilder->expr()->like('t_' . $locale . '.`text`', ':var_' . $uniqueId);
-                            $this->queryBuilder->setParameter('var_' . $uniqueId, '%' . $textValue);
+                            $expr = $this->queryBuilder->expr()->like('t_'.$locale.'.`text`', ':var_'.$uniqueId);
+                            $this->queryBuilder->setParameter('var_'.$uniqueId, '%'.$textValue);
+
+                            break;
+                        case 'empty':
+                            $expr = $this->queryBuilder->expr()->orX(
+                                $this->queryBuilder->expr()->isNull('t_'.$locale.'.`text`'),
+                                $this->queryBuilder->expr()->eq('t_'.$locale.'.`text`', '\'-\''),
+                                $this->queryBuilder->expr()->eq('t_'.$locale.'.`text`', '\'\'')
+                            );
+
                             break;
                     }
-                    $orX->add($expr);
+
+                    if (null !== $expr) {
+                        $orX->add($expr);
+                    }
                 }
 
                 $this->queryBuilder->andWhere($orX);

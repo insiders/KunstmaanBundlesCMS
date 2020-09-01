@@ -11,7 +11,6 @@ use Symfony\Component\Validator\Context\ExecutionContextInterface;
 
 /**
  * Class BaseMenuItem
- * @package Kunstmaan\MenuBundle\Entity
  *
  * @ORM\MappedSuperclass()
  */
@@ -34,6 +33,7 @@ abstract class BaseMenuItem extends AbstractEntity
      * @ORM\ManyToOne(targetEntity="Kunstmaan\MenuBundle\Entity\Menu", inversedBy="items")
      * @ORM\JoinColumn(name="menu_id", referencedColumnName="id")
      * @Assert\NotNull()
+     * @Gedmo\TreeRoot(identifierMethod="getMenu")
      */
     protected $menu;
 
@@ -68,14 +68,14 @@ abstract class BaseMenuItem extends AbstractEntity
     protected $url;
 
     /**
-     * @var boolean
+     * @var bool
      *
      * @ORM\Column(name="new_window", type="boolean", nullable=true)
      */
     protected $newWindow;
 
     /**
-     * @var integer
+     * @var int
      *
      * @Gedmo\TreeLeft
      * @ORM\Column(name="lft", type="integer")
@@ -83,7 +83,7 @@ abstract class BaseMenuItem extends AbstractEntity
     protected $lft;
 
     /**
-     * @var integer
+     * @var int
      *
      * @Gedmo\TreeLevel
      * @ORM\Column(name="lvl", type="integer")
@@ -91,7 +91,7 @@ abstract class BaseMenuItem extends AbstractEntity
     protected $lvl;
 
     /**
-     * @var integer
+     * @var int
      *
      * @Gedmo\TreeRight
      * @ORM\Column(name="rgt", type="integer")
@@ -199,7 +199,7 @@ abstract class BaseMenuItem extends AbstractEntity
     }
 
     /**
-     * @return boolean
+     * @return bool
      */
     public function isNewWindow()
     {
@@ -207,7 +207,7 @@ abstract class BaseMenuItem extends AbstractEntity
     }
 
     /**
-     * @param boolean $newWindow
+     * @param bool $newWindow
      *
      * @return MenuItem
      */
@@ -284,14 +284,14 @@ abstract class BaseMenuItem extends AbstractEntity
     public function getDisplayTitle()
     {
         if ($this->getType() == self::TYPE_PAGE_LINK) {
-            if (!is_null($this->getTitle())) {
+            if (!\is_null($this->getTitle())) {
                 return $this->getTitle();
-            } else {
-                return $this->getNodeTranslation()->getTitle();
             }
-        } else {
-            return $this->getTitle();
+
+            return $this->getNodeTranslation()->getTitle();
         }
+
+        return $this->getTitle();
     }
 
     /**
@@ -301,9 +301,9 @@ abstract class BaseMenuItem extends AbstractEntity
     {
         if ($this->getType() == self::TYPE_PAGE_LINK) {
             return $this->getNodeTranslation()->getUrl();
-        } else {
-            return $this->getUrl();
         }
+
+        return $this->getUrl();
     }
 
     /**
@@ -313,7 +313,9 @@ abstract class BaseMenuItem extends AbstractEntity
     {
         if ($this->getType() == self::TYPE_URL_LINK) {
             return true;
-        } elseif ($this->getNodeTranslation()->isOnline() && !$this->getNodeTranslation()->getNode()->isDeleted()) {
+        }
+
+        if ($this->getNodeTranslation()->isOnline() && !$this->getNodeTranslation()->getNode()->isDeleted()) {
             return true;
         }
 
@@ -332,12 +334,12 @@ abstract class BaseMenuItem extends AbstractEntity
               ->atPath('nodeTranslation')
               ->addViolation();
         } elseif ($this->getType() == self::TYPE_URL_LINK) {
-            if (strlen($this->getTitle()) == 0) {
+            if ($this->getTitle() === '') {
                 $context->buildViolation('Please set the link title')
                   ->atPath('title')
                   ->addViolation();
             }
-            if (strlen($this->getUrl()) == 0) {
+            if ($this->getUrl() === '') {
                 $context->buildViolation('Please set the link URL')
                   ->atPath('url')
                   ->addViolation();

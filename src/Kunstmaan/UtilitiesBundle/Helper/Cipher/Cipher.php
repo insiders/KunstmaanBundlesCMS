@@ -1,11 +1,10 @@
 <?php
 
-    namespace Kunstmaan\UtilitiesBundle\Helper\Cipher;
+namespace Kunstmaan\UtilitiesBundle\Helper\Cipher;
 
 use Defuse\Crypto\Crypto;
 use Defuse\Crypto\File;
-use Defuse\Crypto\Key;
-use Webmozart\Assert\Assert;
+use InvalidArgumentException;
 
 /**
  * Cipher, this class can be used to encrypt and decrypt string values.
@@ -13,18 +12,20 @@ use Webmozart\Assert\Assert;
 class Cipher implements CipherInterface
 {
     /**
-     * @var string $secret
+     * @var string
      */
     private $secret;
 
     /**
-     * @param string $secret
-     * @throws \Defuse\Crypto\Exception\EnvironmentIsBrokenException
-     * @throws \Defuse\Crypto\Exception\BadFormatException
+     * Cipher constructor.
+     *
+     * @param $secret
      */
     public function __construct($secret)
     {
-        Assert::stringNotEmpty($secret, 'You need to configure a Cipher secret in your parameters.yml before you can use this!');
+        if (empty($secret)) {
+            throw new InvalidArgumentException('You need to configure a Cipher secret in your parameters.yml before you can use this!');
+        }
 
         $this->secret = $secret;
     }
@@ -33,11 +34,13 @@ class Cipher implements CipherInterface
      * Encrypt the given value to an unreadable string.
      *
      * @param string $value
-     * @param bool $raw_binary
+     * @param bool   $raw_binary
+     *
      * @return string
+     *
      * @throws \Defuse\Crypto\Exception\EnvironmentIsBrokenException
      */
-    public function encrypt($value, $raw_binary=false)
+    public function encrypt($value, $raw_binary = false)
     {
         return Crypto::encryptWithPassword($value, $this->secret, $raw_binary);
     }
@@ -46,12 +49,14 @@ class Cipher implements CipherInterface
      * Decrypt the given value so that it's readable again.
      *
      * @param string $value
-     * @param bool $raw_binary
+     * @param bool   $raw_binary
+     *
      * @return string
+     *
      * @throws \Defuse\Crypto\Exception\WrongKeyOrModifiedCiphertextException
      * @throws \Defuse\Crypto\Exception\EnvironmentIsBrokenException
      */
-    public function decrypt($value, $raw_binary=false)
+    public function decrypt($value, $raw_binary = false)
     {
         return Crypto::decryptWithPassword($value, $this->secret, $raw_binary);
     }
@@ -59,7 +64,7 @@ class Cipher implements CipherInterface
     /**
      * @param string $inputFile
      * @param string $outputFile
-     * @return void
+     *
      * @throws \Defuse\Crypto\Exception\IOException
      * @throws \Defuse\Crypto\Exception\EnvironmentIsBrokenException
      */
@@ -71,7 +76,7 @@ class Cipher implements CipherInterface
     /**
      * @param string $inputFile
      * @param string $outputFile
-     * @return void
+     *
      * @throws \Defuse\Crypto\Exception\WrongKeyOrModifiedCiphertextException
      * @throws \Defuse\Crypto\Exception\IOException
      * @throws \Defuse\Crypto\Exception\EnvironmentIsBrokenException
@@ -80,5 +85,4 @@ class Cipher implements CipherInterface
     {
         File::decryptFileWithPassword($inputFile, $outputFile, $this->secret);
     }
-
 }

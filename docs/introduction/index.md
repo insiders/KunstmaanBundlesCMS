@@ -30,7 +30,7 @@ Starting fresh has a lot of advantages and going further we defined the basic pr
 2. Added on top of the framework we included a lot of **community components** that provide our extended framework with functionality like Image resizing, pagination, user management, an advanced router, etc.
 3. And we wrap all this into a **user friendly admin interface with content management** functionalities.
 
-We are able to support PHP 5.4 and up, and all Symfony versions since 2.3. We constantly test and adapt to be able to run the latest and greatest from Symfony and the community.
+We support PHP 7.1 and up, and Symfony 3.4. We constantly test and adapt to be able to run the latest and greatest from Symfony and the community.
 
 # Open Source
 
@@ -38,6 +38,6 @@ We released the entire system as **MIT licensed open-source** in January of 2012
 
 Developers over the **entire world** have started using the CMS, some of which in companies who have built their business on top of this technology.
 
-![Countries where developers use the Kunstmaan Bundles CMS](https://raw.githubusercontent.com/kunstmaan/KunstmaanBundlesCMS/master/docs/images/world.png)
+![Countries where developers use the Kunstmaan CMS](https://raw.githubusercontent.com/kunstmaan/KunstmaanBundlesCMS/master/docs/images/world.png)
 
 This much activity results in a lot of feedback and pull requests from developers and users. The contributions of these **~70** fantastic people have made it better than we could have ever hoped for.

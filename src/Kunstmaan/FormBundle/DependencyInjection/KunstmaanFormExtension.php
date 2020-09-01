@@ -7,6 +7,7 @@ use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Extension\PrependExtensionInterface;
 use Symfony\Component\DependencyInjection\Loader;
 use Symfony\Component\HttpKernel\DependencyInjection\Extension;
+use Symfony\Component\HttpKernel\Kernel;
 
 /**
  * This is the class that loads and manages your bundle configuration
@@ -16,13 +17,14 @@ use Symfony\Component\HttpKernel\DependencyInjection\Extension;
 class KunstmaanFormExtension extends Extension implements PrependExtensionInterface
 {
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function load(array $configs, ContainerBuilder $container)
     {
-
         $configuration = new Configuration();
-        $this->processConfiguration($configuration, $configs);
+        $config = $this->processConfiguration($configuration, $configs);
+
+        $container->setParameter('kunstmaan_form.deletable_formsubmissions', $config['deletable_formsubmissions']);
 
         $loader = new Loader\YamlFileLoader($container, new FileLocator(__DIR__.'/../Resources/config'));
         $loader->load('services.yml');
@@ -30,12 +32,12 @@ class KunstmaanFormExtension extends Extension implements PrependExtensionInterf
 
     public function prepend(ContainerBuilder $container)
     {
-        if(!$container->hasParameter('form_submission_rootdir')) {
+        if (!$container->hasParameter('form_submission_rootdir')) {
             $container->setParameter('form_submission_rootdir',
-                sprintf('%s/../web/uploads/formsubmissions', $container->getParameter('kernel.root_dir')));
+                sprintf('%s/%s/uploads/formsubmissions', $container->getParameter('kernel.project_dir'), Kernel::VERSION_ID >= 40000 ? 'public' : 'web'));
         }
 
-        if(!$container->hasParameter('form_submission_webdir')) {
+        if (!$container->hasParameter('form_submission_webdir')) {
             $container->setParameter('form_submission_webdir', '/uploads/formsubmissions/');
         }
 

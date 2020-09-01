@@ -93,7 +93,7 @@
             {% set rootFolder = foldermanager.getRootFolderFor(folder) %}
             {% set folders = foldermanager.getFolderHierarchy(rootFolder) %}
             {% for mediaFolder in folders %}
-                {% include 'KunstmaanMediaBundle:Chooser:chooserShowRecTreeView.html.twig' %}
+                {% include '@KunstmaanMedia/Chooser/chooserShowRecTreeView.html.twig' %}
             {% endfor %}
         </ul>
     </nav>
@@ -114,7 +114,7 @@
     <div class="page-sub-actions page-sub-actions--has-buttons">
         <div class="btn-group">
             <a href="{{ path('KunstmaanMediaBundle_chooser_show_folder', urlParams|merge({'folderId': folder.id, viewMode: 'thumb-view'})) }}" class="btn btn-default btn--raise-on-hover{% if not app.session.get('media-list-view') %} active{% endif %}">
-                <i class="fa fa-picture-o btn__icon"></i>
+                <i class="fa fa-image btn__icon"></i>
             </a>
             <a href="{{ path('KunstmaanMediaBundle_chooser_show_folder', urlParams|merge({'folderId': folder.id, viewMode: 'list-view'})) }}" class="btn btn-default btn--raise-on-hover{% if app.session.get('media-list-view') %} active{% endif %}">
                 <i class="fa fa-list btn__icon"></i>
@@ -143,11 +143,11 @@
                 </div>
                 <button class="btn btn-default btn--raise-on-hover" data-target="#addsub-modal" data-toggle="modal" type="button">
                     <span class="large-screen">{{ 'media.folder.addsub.action' |trans }}</span>
-                    <span class="small-screen">{{ 'media.folder.addsub.action_short' |trans }} <i class="fa fa-folder-o btn__icon-folder"></i></span>
+                    <span class="small-screen">{{ 'media.folder.addsub.action_short' |trans }} <i class="fa fa-plus-circle btn__icon-folder"></i></span>
                 </button>
                 <button class="btn btn-default btn--raise-on-hover" data-target="#delete-modal" data-toggle="modal" type="button">
                     <span class="large-screen">{{ 'media.folder.delete.action' |trans }}</span>
-                    <span class="small-screen">{{ 'media.folder.delete.action_short' |trans }} <i class="fa fa-folder-o btn__icon-folder"></i></span>
+                    <span class="small-screen">{{ 'media.folder.delete.action_short' |trans }} <i class="fa fa-minus-circle btn__icon-folder"></i></span>
                 </button>
             {% endblock %}
         </div>
@@ -214,10 +214,13 @@
                                         {% if imageurl %}
                                             <img src="{{ imageurl }}" srcset="{{ imageurl }} 1x, {{ imageurlretina is defined ? ', ' ~ imageurlretina ~ " 2x" }}" alt="{{ media.name }}" class="media-thumbnail__img">
                                         {% else %}
-                                            <i class="fa fa-file-o media-thumbnail__icon"></i>
+                                            <i class="fa fa-file media-thumbnail__icon"></i>
                                         {% endif %}
                                         <figcaption class="media-thumbnail__caption">
-                                            {{ media.name }}
+                                            {{ media.name }}<br>
+                                            {% if media.metadata.original_width is defined and media.metadata.original_height is defined and media.metadata.original_width is not empty and media.metadata.original_height is not empty %}
+                                                {{ media.metadata.original_width }}px x {{ media.metadata.original_height }}px
+                                            {% endif %}
                                         </figcaption>
                                     </figure>
                                     <span class="media-thumbnail__helper">

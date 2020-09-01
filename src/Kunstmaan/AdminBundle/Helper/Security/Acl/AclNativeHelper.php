@@ -9,7 +9,6 @@ use Kunstmaan\AdminBundle\Helper\Security\Acl\Permission\PermissionDefinition;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Role\RoleHierarchyInterface;
-use Symfony\Component\Security\Core\Role\RoleInterface;
 
 /**
  * AclHelper is a helper class to help setting the permissions when querying using native queries
@@ -34,17 +33,23 @@ class AclNativeHelper
     private $roleHierarchy = null;
 
     /**
+     * @var bool
+     */
+    private $permissionsEnabled;
+
+    /**
      * Constructor.
      *
-     * @param EntityManager            $em The entity manager
-     * @param TokenStorageInterface    $tokenStorage The security context
-     * @param RoleHierarchyInterface   $rh The role hierarchies
+     * @param EntityManager          $em           The entity manager
+     * @param TokenStorageInterface  $tokenStorage The security context
+     * @param RoleHierarchyInterface $rh           The role hierarchies
      */
-    public function __construct(EntityManager $em, TokenStorageInterface $tokenStorage, RoleHierarchyInterface $rh)
+    public function __construct(EntityManager $em, TokenStorageInterface $tokenStorage, RoleHierarchyInterface $rh, $permissionsEnabled = true)
     {
-        $this->em              = $em;
-        $this->tokenStorage    = $tokenStorage;
-        $this->roleHierarchy   = $rh;
+        $this->em = $em;
+        $this->tokenStorage = $tokenStorage;
+        $this->roleHierarchy = $rh;
+        $this->permissionsEnabled = $permissionsEnabled;
     }
 
     /**
@@ -57,51 +62,67 @@ class AclNativeHelper
      */
     public function apply(QueryBuilder $queryBuilder, PermissionDefinition $permissionDef)
     {
+        if (!$this->permissionsEnabled) {
+            return $queryBuilder;
+        }
+
         $aclConnection = $this->em->getConnection();
 
         $databasePrefix = is_file($aclConnection->getDatabase()) ? '' : $aclConnection->getDatabase().'.';
-        $rootEntity     = $permissionDef->getEntity();
-        $linkAlias      = $permissionDef->getAlias();
+        $rootEntity = $permissionDef->getEntity();
+        $linkAlias = $permissionDef->getAlias();
         // Only tables with a single ID PK are currently supported
-        $linkField      = $this->em->getClassMetadata($rootEntity)->getSingleIdentifierColumnName();
+        $linkField = $this->em->getClassMetadata($rootEntity)->getSingleIdentifierColumnName();
 
         $rootEntity = '"' . str_replace('\\', '\\\\', $rootEntity) . '"';
-        $query      = $queryBuilder;
+        $query = $queryBuilder;
 
         $builder = new MaskBuilder();
         foreach ($permissionDef->getPermissions() as $permission) {
-            $mask = constant(get_class($builder) . '::MASK_' . strtoupper($permission));
+            $mask = \constant(\get_class($builder) . '::MASK_' . strtoupper($permission));
             $builder->add($mask);
         }
         $mask = $builder->get();
 
         /* @var $token TokenInterface */
-        $token     = $this->tokenStorage->getToken();
+        $token = $this->tokenStorage->getToken();
         $userRoles = array();
-        if (!is_null($token)) {
-            $user      = $token->getUser();
-            $userRoles = $this->roleHierarchy->getReachableRoles($token->getRoles());
+        $user = null;
+        if (!\is_null($token)) {
+            $user = $token->getUser();
+            if (method_exists($this->roleHierarchy, 'getReachableRoleNames')) {
+                $userRoles = $this->roleHierarchy->getReachableRoleNames($token->getRoleNames());
+            } else {
+                // Symfony 3.4 compatibility
+                $userRoles = $this->roleHierarchy->getReachableRoles($token->getRoles());
+            }
         }
 
         // Security context does not provide anonymous role automatically.
         $uR = array('"IS_AUTHENTICATED_ANONYMOUSLY"');
 
-        /* @var $role RoleInterface */
         foreach ($userRoles as $role) {
             // The reason we ignore this is because by default FOSUserBundle adds ROLE_USER for every user
-            if ($role->getRole() !== 'ROLE_USER') {
-                $uR[] = '"' . $role->getRole() . '"';
+            if (is_string($role)) {
+                if ($role !== 'ROLE_USER') {
+                    $uR[] = '"' . $role . '"';
+                }
+            } else {
+                // Symfony 3.4 compatibility
+                if ($role->getRole() !== 'ROLE_USER') {
+                    $uR[] = '"' . $role->getRole() . '"';
+                }
             }
         }
-        $uR       = array_unique($uR);
-        $inString = implode(' OR s.identifier = ', (array) $uR);
+        $uR = array_unique($uR);
+        $inString = implode(' OR s.identifier = ', $uR);
 
-        if (is_object($user)) {
+        if (\is_object($user)) {
             $inString .= ' OR s.identifier = "' . str_replace(
-                    '\\',
-                    '\\\\',
-                    get_class($user)
-                ) . '-' . $user->getUserName() . '"';
+                '\\',
+                '\\\\',
+                \get_class($user)
+            ) . '-' . $user->getUserName() . '"';
         }
 
         $joinTableQuery = <<<SELECTQUERY

@@ -8,21 +8,20 @@ use Doctrine\ORM\EntityManager;
 use InvalidArgumentException;
 use Kunstmaan\AdminBundle\Entity\BaseUser;
 use Kunstmaan\AdminBundle\Entity\EntityInterface;
-use Kunstmaan\AdminBundle\Entity\User;
 use Kunstmaan\AdminBundle\FlashMessages\FlashTypes;
 use Kunstmaan\AdminBundle\Helper\FormWidgets\FormWidget;
-
 use Kunstmaan\AdminBundle\Helper\FormWidgets\Tabs\Tab;
 use Kunstmaan\AdminBundle\Helper\FormWidgets\Tabs\TabPane;
-
 use Kunstmaan\AdminBundle\Helper\Security\Acl\AclHelper;
 use Kunstmaan\AdminBundle\Helper\Security\Acl\Permission\PermissionMap;
+use Kunstmaan\AdminBundle\Service\AclManager;
 use Kunstmaan\AdminListBundle\AdminList\AdminList;
 use Kunstmaan\NodeBundle\AdminList\NodeAdminListConfigurator;
 use Kunstmaan\NodeBundle\Entity\HasNodeInterface;
 use Kunstmaan\NodeBundle\Entity\Node;
 use Kunstmaan\NodeBundle\Entity\NodeTranslation;
 use Kunstmaan\NodeBundle\Entity\NodeVersion;
+use Kunstmaan\NodeBundle\Entity\QueuedNodeTranslationAction;
 use Kunstmaan\NodeBundle\Event\AdaptFormEvent;
 use Kunstmaan\NodeBundle\Event\CopyPageTranslationNodeEvent;
 use Kunstmaan\NodeBundle\Event\Events;
@@ -31,22 +30,20 @@ use Kunstmaan\NodeBundle\Event\RecopyPageTranslationNodeEvent;
 use Kunstmaan\NodeBundle\Event\RevertNodeAction;
 use Kunstmaan\NodeBundle\Form\NodeMenuTabAdminType;
 use Kunstmaan\NodeBundle\Form\NodeMenuTabTranslationAdminType;
+use Kunstmaan\NodeBundle\Helper\NodeAdmin\NodeAdminPublisher;
 use Kunstmaan\NodeBundle\Helper\NodeAdmin\NodeVersionLockHelper;
+use Kunstmaan\NodeBundle\Helper\PageCloningHelper;
 use Kunstmaan\NodeBundle\Repository\NodeVersionRepository;
 use Kunstmaan\UtilitiesBundle\Helper\ClassLookup;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Template;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\Security\Acl\Domain\RoleSecurityIdentity;
-use Symfony\Component\Security\Acl\Model\EntryInterface;
-use Symfony\Component\Security\Acl\Model\MutableAclProviderInterface;
-use Symfony\Component\Security\Acl\Model\ObjectIdentityRetrievalStrategyInterface;
+use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
 use Symfony\Component\Security\Core\Exception\AccessDeniedException;
+use Symfony\Component\Translation\TranslatorInterface;
 
 /**
  * NodeAdminController
@@ -54,30 +51,47 @@ use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 class NodeAdminController extends Controller
 {
     /**
-     * @var EntityManager $em
+     * @var EntityManager
      */
     protected $em;
 
     /**
-     * @var string $locale
+     * @var string
      */
     protected $locale;
 
     /**
-     * @var AuthorizationCheckerInterface $authorizationChecker
+     * @var AuthorizationCheckerInterface
      */
     protected $authorizationChecker;
 
     /**
-     * @var BaseUser $user
+     * @var BaseUser
      */
     protected $user;
 
     /**
-     * @var AclHelper $aclHelper
+     * @var AclHelper
      */
     protected $aclHelper;
 
+    /**
+     * @var AclManager
+     */
+    protected $aclManager;
+
+    /**
+     * @var NodeAdminPublisher
+     */
+    protected $nodePublisher;
+
+    /**
+     * @var TranslatorInterface
+     */
+    protected $translator;
+
+    /** @var PageCloningHelper */
+    private $pageCloningHelper;
 
     /**
      * init
@@ -88,14 +102,18 @@ class NodeAdminController extends Controller
     {
         $this->em = $this->getDoctrine()->getManager();
         $this->locale = $request->getLocale();
-        $this->authorizationChecker = $this->get('security.authorization_checker');
+        $this->authorizationChecker = $this->container->get('security.authorization_checker');
         $this->user = $this->getUser();
-        $this->aclHelper = $this->get('kunstmaan_admin.acl.helper');
+        $this->aclHelper = $this->container->get('kunstmaan_admin.acl.helper');
+        $this->aclManager = $this->container->get('kunstmaan_admin.acl.manager');
+        $this->nodePublisher = $this->container->get('kunstmaan_node.admin_node.publisher');
+        $this->translator = $this->container->get('translator');
+        $this->pageCloningHelper = $this->container->get(PageCloningHelper::class);
     }
 
     /**
      * @Route("/", name="KunstmaanNodeBundle_nodes")
-     * @Template("KunstmaanNodeBundle:Admin:list.html.twig")
+     * @Template("@KunstmaanNode/Admin/list.html.twig")
      *
      * @param Request $request
      *
@@ -119,7 +137,7 @@ class NodeAdminController extends Controller
             if ($acl->isGranted(PermissionMap::PERMISSION_VIEW, $item->getNode())) {
                 return array(
                     'path' => '_slug_preview',
-                    'params' => ['_locale' => $locale, 'url' => $item->getUrl()]
+                    'params' => ['_locale' => $locale, 'url' => $item->getUrl()],
                 );
             }
         };
@@ -140,22 +158,22 @@ class NodeAdminController extends Controller
      * @Route(
      *      "/{id}/copyfromotherlanguage",
      *      requirements={"id" = "\d+"},
-     *      name="KunstmaanNodeBundle_nodes_copyfromotherlanguage"
+     *      name="KunstmaanNodeBundle_nodes_copyfromotherlanguage",
+     *      methods={"GET"}
      * )
-     * @Method("GET")
-     * @Template()
      *
      * @param Request $request
-     * @param int $id The node id
+     * @param int     $id      The node id
      *
      * @return RedirectResponse
+     *
      * @throws AccessDeniedException
      */
     public function copyFromOtherLanguageAction(Request $request, $id)
     {
         $this->init($request);
         /* @var Node $node */
-        $node = $this->em->getRepository('KunstmaanNodeBundle:Node')->find($id);
+        $node = $this->em->getRepository(Node::class)->find($id);
 
         $this->denyAccessUnlessGranted(PermissionMap::PERMISSION_EDIT, $node);
 
@@ -167,7 +185,7 @@ class NodeAdminController extends Controller
             ->deepCloneAndSave($otherLanguagePage);
 
         /* @var NodeTranslation $nodeTranslation */
-        $nodeTranslation = $this->em->getRepository('KunstmaanNodeBundle:NodeTranslation')
+        $nodeTranslation = $this->em->getRepository(NodeTranslation::class)
             ->createNodeTranslationFor($myLanguagePage, $this->locale, $node, $this->user);
         $nodeVersion = $nodeTranslation->getPublicNodeVersion();
 
@@ -192,33 +210,33 @@ class NodeAdminController extends Controller
      * @Route(
      *      "/{id}/recopyfromotherlanguage",
      *      requirements={"id" = "\d+"},
-     *      name="KunstmaanNodeBundle_nodes_recopyfromotherlanguage"
+     *      name="KunstmaanNodeBundle_nodes_recopyfromotherlanguage",
+     *      methods={"POST"}
      * )
-     * @Method("POST")
-     * @Template()
      *
      * @param Request $request
-     * @param int $id The node id
+     * @param int     $id      The node id
      *
      * @return RedirectResponse
+     *
      * @throws AccessDeniedException
      */
     public function recopyFromOtherLanguageAction(Request $request, $id)
     {
         $this->init($request);
         /* @var Node $node */
-        $node = $this->em->getRepository('KunstmaanNodeBundle:Node')->find($id);
+        $node = $this->em->getRepository(Node::class)->find($id);
 
         $this->denyAccessUnlessGranted(PermissionMap::PERMISSION_EDIT, $node);
 
-        $otherLanguageNodeTranslation = $this->em->getRepository('KunstmaanNodeBundle:NodeTranslation')->find($request->get('source'));
+        $otherLanguageNodeTranslation = $this->em->getRepository(NodeTranslation::class)->find($request->get('source'));
         $otherLanguageNodeNodeVersion = $otherLanguageNodeTranslation->getPublicNodeVersion();
         $otherLanguagePage = $otherLanguageNodeNodeVersion->getRef($this->em);
         $myLanguagePage = $this->get('kunstmaan_admin.clone.helper')
             ->deepCloneAndSave($otherLanguagePage);
 
         /* @var NodeTranslation $nodeTranslation */
-        $nodeTranslation = $this->em->getRepository('KunstmaanNodeBundle:NodeTranslation')
+        $nodeTranslation = $this->em->getRepository(NodeTranslation::class)
             ->addDraftNodeVersionFor($myLanguagePage, $this->locale, $node, $this->user);
         $nodeVersion = $nodeTranslation->getPublicNodeVersion();
 
@@ -243,22 +261,22 @@ class NodeAdminController extends Controller
      * @Route(
      *      "/{id}/createemptypage",
      *      requirements={"id" = "\d+"},
-     *      name="KunstmaanNodeBundle_nodes_createemptypage"
+     *      name="KunstmaanNodeBundle_nodes_createemptypage",
+     *      methods={"GET"}
      * )
-     * @Method("GET")
-     * @Template()
      *
      * @param Request $request
-     * @param int $id
+     * @param int     $id
      *
      * @return RedirectResponse
+     *
      * @throws AccessDeniedException
      */
     public function createEmptyPageAction(Request $request, $id)
     {
         $this->init($request);
         /* @var Node $node */
-        $node = $this->em->getRepository('KunstmaanNodeBundle:Node')->find($id);
+        $node = $this->em->getRepository(Node::class)->find($id);
 
         $this->denyAccessUnlessGranted(PermissionMap::PERMISSION_EDIT, $node);
 
@@ -270,7 +288,7 @@ class NodeAdminController extends Controller
         $this->em->persist($myLanguagePage);
         $this->em->flush();
         /* @var NodeTranslation $nodeTranslation */
-        $nodeTranslation = $this->em->getRepository('KunstmaanNodeBundle:NodeTranslation')
+        $nodeTranslation = $this->em->getRepository(NodeTranslation::class)
             ->createNodeTranslationFor($myLanguagePage, $this->locale, $node, $this->user);
         $nodeVersion = $nodeTranslation->getPublicNodeVersion();
 
@@ -285,45 +303,24 @@ class NodeAdminController extends Controller
     /**
      * @Route("/{id}/publish", requirements={"id" =
      *                         "\d+"},
-     *                         name="KunstmaanNodeBundle_nodes_publish")
-     * @Method({"GET", "POST"})
+     *                         name="KunstmaanNodeBundle_nodes_publish", methods={"GET", "POST"})
      *
      * @param Request $request
-     * @param int $id
+     * @param int     $id
      *
      * @return RedirectResponse
+     *
      * @throws AccessDeniedException
      */
     public function publishAction(Request $request, $id)
     {
         $this->init($request);
         /* @var Node $node */
-        $node = $this->em->getRepository('KunstmaanNodeBundle:Node')->find($id);
+        $node = $this->em->getRepository(Node::class)->find($id);
 
         $nodeTranslation = $node->getNodeTranslation($this->locale, true);
         $request = $this->get('request_stack')->getCurrentRequest();
-
-        if ($request->get('pub_date')) {
-            $date = new \DateTime(
-                $request->get('pub_date') . ' ' . $request->get('pub_time')
-            );
-            $this->get('kunstmaan_node.admin_node.publisher')->publishLater(
-                $nodeTranslation,
-                $date
-            );
-            $this->addFlash(
-                FlashTypes::SUCCESS,
-                $this->get('translator')->trans('kuma_node.admin.publish.flash.success_scheduled')
-            );
-        } else {
-            $this->get('kunstmaan_node.admin_node.publisher')->publish(
-                $nodeTranslation
-            );
-            $this->addFlash(
-                FlashTypes::SUCCESS,
-                $this->get('translator')->trans('kuma_node.admin.publish.flash.success_published')
-            );
-        }
+        $this->nodePublisher->chooseHowToPublish($request, $nodeTranslation, $this->translator);
 
         return $this->redirect($this->generateUrl('KunstmaanNodeBundle_nodes_edit', array('id' => $node->getId())));
     }
@@ -332,39 +329,26 @@ class NodeAdminController extends Controller
      * @Route(
      *      "/{id}/unpublish",
      *      requirements={"id" = "\d+"},
-     *      name="KunstmaanNodeBundle_nodes_unpublish"
+     *      name="KunstmaanNodeBundle_nodes_unpublish",
+     *      methods={"GET", "POST"}
      * )
-     * @Method({"GET", "POST"})
      *
      * @param Request $request
-     * @param int $id
+     * @param int     $id
      *
      * @return RedirectResponse
+     *
      * @throws AccessDeniedException
      */
     public function unPublishAction(Request $request, $id)
     {
         $this->init($request);
         /* @var Node $node */
-        $node = $this->em->getRepository('KunstmaanNodeBundle:Node')->find($id);
+        $node = $this->em->getRepository(Node::class)->find($id);
 
         $nodeTranslation = $node->getNodeTranslation($this->locale, true);
         $request = $this->get('request_stack')->getCurrentRequest();
-
-        if ($request->get('unpub_date')) {
-            $date = new \DateTime($request->get('unpub_date') . ' ' . $request->get('unpub_time'));
-            $this->get('kunstmaan_node.admin_node.publisher')->unPublishLater($nodeTranslation, $date);
-            $this->addFlash(
-                FlashTypes::SUCCESS,
-                $this->get('translator')->trans('kuma_node.admin.unpublish.flash.success_scheduled')
-            );
-        } else {
-            $this->get('kunstmaan_node.admin_node.publisher')->unPublish($nodeTranslation);
-            $this->addFlash(
-                FlashTypes::SUCCESS,
-                $this->get('translator')->trans('kuma_node.admin.unpublish.flash.success_unpublished')
-            );
-        }
+        $this->nodePublisher->chooseHowToUnpublish($request, $nodeTranslation, $this->translator);
 
         return $this->redirect($this->generateUrl('KunstmaanNodeBundle_nodes_edit', array('id' => $node->getId())));
     }
@@ -373,14 +357,15 @@ class NodeAdminController extends Controller
      * @Route(
      *      "/{id}/unschedulepublish",
      *      requirements={"id" = "\d+"},
-     *      name="KunstmaanNodeBundle_nodes_unschedule_publish"
+     *      name="KunstmaanNodeBundle_nodes_unschedule_publish",
+     *      methods={"GET", "POST"}
      * )
-     * @Method({"GET", "POST"})
      *
      * @param Request $request
-     * @param int $id
+     * @param int     $id
      *
      * @return RedirectResponse
+     *
      * @throws AccessDeniedException
      */
     public function unSchedulePublishAction(Request $request, $id)
@@ -388,10 +373,10 @@ class NodeAdminController extends Controller
         $this->init($request);
 
         /* @var Node $node */
-        $node = $this->em->getRepository('KunstmaanNodeBundle:Node')->find($id);
+        $node = $this->em->getRepository(Node::class)->find($id);
 
         $nodeTranslation = $node->getNodeTranslation($this->locale, true);
-        $this->get('kunstmaan_node.admin_node.publisher')->unSchedulePublish($nodeTranslation);
+        $this->nodePublisher->unSchedulePublish($nodeTranslation);
 
         $this->addFlash(
             FlashTypes::SUCCESS,
@@ -405,22 +390,22 @@ class NodeAdminController extends Controller
      * @Route(
      *      "/{id}/delete",
      *      requirements={"id" = "\d+"},
-     *      name="KunstmaanNodeBundle_nodes_delete"
+     *      name="KunstmaanNodeBundle_nodes_delete",
+     *      methods={"POST"}
      * )
-     * @Template()
-     * @Method("POST")
      *
      * @param Request $request
-     * @param int $id
+     * @param int     $id
      *
      * @return RedirectResponse
+     *
      * @throws AccessDeniedException
      */
     public function deleteAction(Request $request, $id)
     {
         $this->init($request);
         /* @var Node $node */
-        $node = $this->em->getRepository('KunstmaanNodeBundle:Node')->find($id);
+        $node = $this->em->getRepository(Node::class)->find($id);
 
         $this->denyAccessUnlessGranted(PermissionMap::PERMISSION_DELETE, $node);
 
@@ -470,22 +455,22 @@ class NodeAdminController extends Controller
      * @Route(
      *      "/{id}/duplicate",
      *      requirements={"id" = "\d+"},
-     *      name="KunstmaanNodeBundle_nodes_duplicate"
+     *      name="KunstmaanNodeBundle_nodes_duplicate",
+     *      methods={"POST"}
      * )
-     * @Template()
-     * @Method("POST")
      *
      * @param Request $request
-     * @param int $id
+     * @param int     $id
      *
      * @return RedirectResponse
+     *
      * @throws AccessDeniedException
      */
     public function duplicateAction(Request $request, $id)
     {
         $this->init($request);
         /* @var Node $parentNode */
-        $originalNode = $this->em->getRepository('KunstmaanNodeBundle:Node')
+        $originalNode = $this->em->getRepository(Node::class)
             ->find($id);
 
         // Check with Acl
@@ -500,7 +485,7 @@ class NodeAdminController extends Controller
 
         //set the title
         $title = $request->get('title');
-        if (is_string($title) && !empty($title)) {
+        if (\is_string($title) && !empty($title)) {
             $newPage->setTitle($title);
         } else {
             $newPage->setTitle('New page');
@@ -514,7 +499,7 @@ class NodeAdminController extends Controller
         $this->em->flush();
 
         /* @var Node $nodeNewPage */
-        $nodeNewPage = $this->em->getRepository('KunstmaanNodeBundle:Node')->createNodeFor(
+        $nodeNewPage = $this->em->getRepository(Node::class)->createNodeFor(
             $newPage,
             $this->locale,
             $this->user
@@ -527,7 +512,7 @@ class NodeAdminController extends Controller
         }
         $this->em->flush();
 
-        $this->updateAcl($originalNode, $nodeNewPage);
+        $this->aclManager->updateNodeAcl($originalNode, $nodeNewPage);
 
         $this->addFlash(
             FlashTypes::SUCCESS,
@@ -541,18 +526,44 @@ class NodeAdminController extends Controller
 
     /**
      * @Route(
+     *      "/{id}/duplicate-with-children",
+     *      requirements={"id" = "\d+"},
+     *      name="KunstmaanNodeBundle_nodes_duplicate_with_children",
+     *      methods={"POST"}
+     * )
+     *
+     * @throws AccessDeniedException
+     */
+    public function duplicateWithChildrenAction(Request $request, $id)
+    {
+        if (!$this->getParameter('kunstmaan_node.show_duplicate_with_children')) {
+            return $this->redirectToRoute('KunstmaanNodeBundle_nodes_edit', ['id' => $id]);
+        }
+
+        $this->init($request);
+        $title = $request->get('title', null);
+
+        $nodeNewPage = $this->pageCloningHelper->duplicateWithChildren($id, $this->locale, $this->user, $title);
+
+        $this->addFlash(FlashTypes::SUCCESS, $this->get('translator')->trans('kuma_node.admin.duplicate.flash.success'));
+
+        return $this->redirectToRoute('KunstmaanNodeBundle_nodes_edit', ['id' => $nodeNewPage->getId()]);
+    }
+
+    /**
+     * @Route(
      *      "/{id}/revert",
      *      requirements={"id" = "\d+"},
      *      defaults={"subaction" = "public"},
-     *      name="KunstmaanNodeBundle_nodes_revert"
+     *      name="KunstmaanNodeBundle_nodes_revert",
+     *      methods={"GET"}
      * )
-     * @Template()
-     * @Method("GET")
      *
      * @param Request $request
-     * @param int $id The node id
+     * @param int     $id      The node id
      *
      * @return RedirectResponse
+     *
      * @throws AccessDeniedException
      * @throws InvalidArgumentException
      */
@@ -560,7 +571,7 @@ class NodeAdminController extends Controller
     {
         $this->init($request);
         /* @var Node $node */
-        $node = $this->em->getRepository('KunstmaanNodeBundle:Node')->find($id);
+        $node = $this->em->getRepository(Node::class)->find($id);
 
         $this->denyAccessUnlessGranted(PermissionMap::PERMISSION_EDIT, $node);
 
@@ -571,11 +582,11 @@ class NodeAdminController extends Controller
         }
 
         /* @var NodeVersionRepository $nodeVersionRepo */
-        $nodeVersionRepo = $this->em->getRepository('KunstmaanNodeBundle:NodeVersion');
+        $nodeVersionRepo = $this->em->getRepository(NodeVersion::class);
         /* @var NodeVersion $nodeVersion */
         $nodeVersion = $nodeVersionRepo->find($version);
 
-        if (is_null($nodeVersion)) {
+        if (\is_null($nodeVersion)) {
             throw new InvalidArgumentException('Version does not exist');
         }
 
@@ -619,7 +630,7 @@ class NodeAdminController extends Controller
                 'KunstmaanNodeBundle_nodes_edit',
                 array(
                     'id' => $id,
-                    'subaction' => 'draft'
+                    'subaction' => 'draft',
                 )
             )
         );
@@ -629,15 +640,15 @@ class NodeAdminController extends Controller
      * @Route(
      *      "/{id}/add",
      *      requirements={"id" = "\d+"},
-     *      name="KunstmaanNodeBundle_nodes_add"
+     *      name="KunstmaanNodeBundle_nodes_add",
+     *      methods={"POST"}
      * )
-     * @Template()
-     * @Method("POST")
      *
      * @param Request $request
-     * @param int $id
+     * @param int     $id
      *
      * @return RedirectResponse
+     *
      * @throws AccessDeniedException
      * @throws InvalidArgumentException
      */
@@ -645,7 +656,7 @@ class NodeAdminController extends Controller
     {
         $this->init($request);
         /* @var Node $parentNode */
-        $parentNode = $this->em->getRepository('KunstmaanNodeBundle:Node')->find($id);
+        $parentNode = $this->em->getRepository(Node::class)->find($id);
 
         // Check with Acl
         $this->denyAccessUnlessGranted(PermissionMap::PERMISSION_EDIT, $parentNode);
@@ -659,13 +670,13 @@ class NodeAdminController extends Controller
         $newPage->setParent($parentPage);
 
         /* @var Node $nodeNewPage */
-        $nodeNewPage = $this->em->getRepository('KunstmaanNodeBundle:Node')
+        $nodeNewPage = $this->em->getRepository(Node::class)
             ->createNodeFor($newPage, $this->locale, $this->user);
         $nodeTranslation = $nodeNewPage->getNodeTranslation(
             $this->locale,
             true
         );
-        $weight = $this->em->getRepository('KunstmaanNodeBundle:NodeTranslation')
+        $weight = $this->em->getRepository(NodeTranslation::class)
                 ->getMaxChildrenWeight($parentNode, $this->locale) + 1;
         $nodeTranslation->setWeight($weight);
 
@@ -676,7 +687,7 @@ class NodeAdminController extends Controller
         $this->em->persist($nodeTranslation);
         $this->em->flush();
 
-        $this->updateAcl($parentNode, $nodeNewPage);
+        $this->aclManager->updateNodeAcl($parentNode, $nodeNewPage);
 
         $nodeVersion = $nodeTranslation->getPublicNodeVersion();
 
@@ -696,11 +707,10 @@ class NodeAdminController extends Controller
     }
 
     /**
-     * @Route("/add-homepage", name="KunstmaanNodeBundle_nodes_add_homepage")
-     * @Template()
-     * @Method("POST")
+     * @Route("/add-homepage", name="KunstmaanNodeBundle_nodes_add_homepage", methods={"POST"})
      *
      * @return RedirectResponse
+     *
      * @throws AccessDeniedException
      * @throws InvalidArgumentException
      */
@@ -716,7 +726,7 @@ class NodeAdminController extends Controller
         $newPage = $this->createNewPage($request, $type);
 
         /* @var Node $nodeNewPage */
-        $nodeNewPage = $this->em->getRepository('KunstmaanNodeBundle:Node')
+        $nodeNewPage = $this->em->getRepository(Node::class)
             ->createNodeFor($newPage, $this->locale, $this->user);
         $nodeTranslation = $nodeNewPage->getNodeTranslation(
             $this->locale,
@@ -725,7 +735,7 @@ class NodeAdminController extends Controller
         $this->em->flush();
 
         // Set default permissions
-        $this->get('kunstmaan_node.acl_permission_creator_service')
+        $this->container->get('kunstmaan_node.acl_permission_creator_service')
             ->createPermission($nodeNewPage);
 
         $nodeVersion = $nodeTranslation->getPublicNodeVersion();
@@ -746,12 +756,12 @@ class NodeAdminController extends Controller
     }
 
     /**
-     * @Route("/reorder", name="KunstmaanNodeBundle_nodes_reorder")
-     * @Method("POST")
+     * @Route("/reorder", name="KunstmaanNodeBundle_nodes_reorder", methods={"POST"})
      *
      * @param Request $request
      *
      * @return string
+     *
      * @throws AccessDeniedException
      */
     public function reorderAction(Request $request)
@@ -763,23 +773,21 @@ class NodeAdminController extends Controller
 
         foreach ($nodeIds as $id) {
             /* @var Node $node */
-            $node = $this->em->getRepository('KunstmaanNodeBundle:Node')->find($id);
+            $node = $this->em->getRepository(Node::class)->find($id);
             $this->denyAccessUnlessGranted(PermissionMap::PERMISSION_EDIT, $node);
             $nodes[] = $node;
         }
 
-        $weight = 0;
+        $weight = 1;
         foreach ($nodes as $node) {
-
             $newParentId = isset($changeParents[$node->getId()]) ? $changeParents[$node->getId()] : null;
             if ($newParentId) {
-                $parent = $this->em->getRepository('KunstmaanNodeBundle:Node')->find($newParentId);
+                $parent = $this->em->getRepository(Node::class)->find($newParentId);
                 $this->denyAccessUnlessGranted(PermissionMap::PERMISSION_EDIT, $parent);
                 $node->setParent($parent);
                 $this->em->persist($node);
                 $this->em->flush($node);
             }
-
 
             /* @var NodeTranslation $nodeTranslation */
             $nodeTranslation = $node->getNodeTranslation($this->locale, true);
@@ -802,13 +810,13 @@ class NodeAdminController extends Controller
                     new NodeEvent($node, $nodeTranslation, $nodeVersion, $page)
                 );
 
-                $weight++;
+                ++$weight;
             }
         }
 
         return new JsonResponse(
             array(
-                'Success' => 'The node-translations for [' . $this->locale . '] have got new weight values'
+                'Success' => 'The node-translations for [' . $this->locale . '] have got new weight values',
             )
         );
     }
@@ -818,23 +826,24 @@ class NodeAdminController extends Controller
      *      "/{id}/{subaction}",
      *      requirements={"id" = "\d+"},
      *      defaults={"subaction" = "public"},
-     *      name="KunstmaanNodeBundle_nodes_edit"
+     *      name="KunstmaanNodeBundle_nodes_edit",
+     *      methods={"GET", "POST"}
      * )
-     * @Template()
-     * @Method({"GET", "POST"})
+     * @Template("@KunstmaanNode/NodeAdmin/edit.html.twig")
      *
      * @param Request $request
-     * @param int $id The node id
-     * @param string $subaction The subaction (draft|public)
+     * @param int     $id        The node id
+     * @param string  $subaction The subaction (draft|public)
      *
      * @return RedirectResponse|array
+     *
      * @throws AccessDeniedException
      */
     public function editAction(Request $request, $id, $subaction)
     {
         $this->init($request);
         /* @var Node $node */
-        $node = $this->em->getRepository('KunstmaanNodeBundle:Node')->find($id);
+        $node = $this->em->getRepository(Node::class)->find($id);
 
         $this->denyAccessUnlessGranted(PermissionMap::PERMISSION_EDIT, $node);
 
@@ -857,10 +866,10 @@ class NodeAdminController extends Controller
         $page = null;
         $draft = ($subaction == 'draft');
         $saveAsDraft = $request->get('saveasdraft');
-        if ((!$draft && !empty($saveAsDraft)) || ($draft && is_null($draftNodeVersion))) {
+        if ((!$draft && !empty($saveAsDraft)) || ($draft && \is_null($draftNodeVersion))) {
             // Create a new draft version
             $draft = true;
-            $subaction = "draft";
+            $subaction = 'draft';
             $page = $nodeVersion->getRef($this->em);
             $nodeVersion = $this->createDraftVersion(
                 $page,
@@ -877,19 +886,19 @@ class NodeAdminController extends Controller
 
                 //Check the version timeout and make a new nodeversion if the timeout is passed
                 $thresholdDate = date(
-                    "Y-m-d H:i:s",
+                    'Y-m-d H:i:s',
                     time() - $this->getParameter(
-                        "kunstmaan_node.version_timeout"
+                        'kunstmaan_node.version_timeout'
                     )
                 );
                 $updatedDate = date(
-                    "Y-m-d H:i:s",
-                    strtotime($nodeVersion->getUpdated()->format("Y-m-d H:i:s"))
+                    'Y-m-d H:i:s',
+                    strtotime($nodeVersion->getUpdated()->format('Y-m-d H:i:s'))
                 );
                 if ($thresholdDate >= $updatedDate || $nodeVersionIsLocked) {
                     $page = $nodeVersion->getRef($this->em);
-                    if ($nodeVersion == $nodeTranslation->getPublicNodeVersion()) {
-                        $this->get('kunstmaan_node.admin_node.publisher')
+                    if ($nodeVersion === $nodeTranslation->getPublicNodeVersion()) {
+                        $this->nodePublisher
                             ->createPublicVersion(
                                 $page,
                                 $nodeTranslation,
@@ -977,6 +986,10 @@ class NodeAdminController extends Controller
                         FlashTypes::SUCCESS,
                         $this->get('translator')->trans('kuma_node.admin.edit.flash.locked_success')
                     );
+                } elseif ($request->request->has('publishing') || $request->request->has('publish_later')) {
+                    $this->nodePublisher->chooseHowToPublish($request, $nodeTranslation, $this->translator);
+                } elseif ($request->request->has('unpublishing') || $request->request->has('unpublish_later')) {
+                    $this->nodePublisher->chooseHowToUnpublish($request, $nodeTranslation, $this->translator);
                 } else {
                     $this->addFlash(
                         FlashTypes::SUCCESS,
@@ -984,15 +997,19 @@ class NodeAdminController extends Controller
                     );
                 }
 
-                $params = array(
+                $params = [
                     'id' => $node->getId(),
                     'subaction' => $subaction,
-                    'currenttab' => $tabPane->getActiveTab()
-                );
+                    'currenttab' => $tabPane->getActiveTab(),
+                ];
                 $params = array_merge(
                     $params,
                     $tabPane->getExtraParams($request)
                 );
+
+                if ($subaction === 'draft' && ($request->request->has('publishing') || $request->request->has('publish_later'))) {
+                    unset($params['subaction']);
+                }
 
                 return $this->redirect(
                     $this->generateUrl(
@@ -1003,17 +1020,13 @@ class NodeAdminController extends Controller
             }
         }
 
-        $nodeVersions = $this->em->getRepository(
-            'KunstmaanNodeBundle:NodeVersion'
-        )->findBy(
-            array('nodeTranslation' => $nodeTranslation),
-            array('updated' => 'DESC')
+        $nodeVersions = $this->em->getRepository(NodeVersion::class)->findBy(
+            ['nodeTranslation' => $nodeTranslation],
+            ['updated' => 'DESC']
         );
-        $queuedNodeTranslationAction = $this->em->getRepository(
-            'KunstmaanNodeBundle:QueuedNodeTranslationAction'
-        )->findOneBy(array('nodeTranslation' => $nodeTranslation));
+        $queuedNodeTranslationAction = $this->em->getRepository(QueuedNodeTranslationAction::class)->findOneBy(['nodeTranslation' => $nodeTranslation]);
 
-        return array(
+        return [
             'page' => $page,
             'entityname' => ClassLookup::getClass($page),
             'nodeVersions' => $nodeVersions,
@@ -1021,14 +1034,16 @@ class NodeAdminController extends Controller
             'nodeTranslation' => $nodeTranslation,
             'draft' => $draft,
             'draftNodeVersion' => $draftNodeVersion,
+            'showDuplicateWithChildren' => $this->getParameter('kunstmaan_node.show_duplicate_with_children'),
             'nodeVersion' => $nodeVersion,
             'subaction' => $subaction,
             'tabPane' => $tabPane,
             'editmode' => true,
+            'childCount' => $this->em->getRepository('KunstmaanNodeBundle:Node')->getChildCount($node),
             'queuedNodeTranslationAction' => $queuedNodeTranslationAction,
             'nodeVersionLockCheck' => $this->container->getParameter('kunstmaan_node.lock_enabled'),
-            'nodeVersionLockInterval' => $this->container->getParameter('kunstmaan_node.lock_check_interval')
-        );
+            'nodeVersionLockInterval' => $this->container->getParameter('kunstmaan_node.lock_check_interval'),
+        ];
     }
 
     /**
@@ -1037,8 +1052,10 @@ class NodeAdminController extends Controller
      *      requirements={"id" = "\d+", "public" = "(0|1)"},
      *      name="KunstmaanNodeBundle_nodes_versionlock_check"
      * )
+     *
      * @param Request $request
      * @param $id
+     *
      * @return JsonResponse
      */
     public function checkNodeVersionLockAction(Request $request, $id, $public)
@@ -1048,7 +1065,7 @@ class NodeAdminController extends Controller
         $this->init($request);
 
         /* @var Node $node */
-        $node = $this->em->getRepository('KunstmaanNodeBundle:Node')->find($id);
+        $node = $this->em->getRepository(Node::class)->find($id);
 
         try {
             $this->checkPermission($node, PermissionMap::PERMISSION_EDIT);
@@ -1065,15 +1082,16 @@ class NodeAdminController extends Controller
                     $message = $this->get('translator')->trans('kuma_node.admin.edit.flash.locked', array('%users%' => implode(', ', $users)));
                 }
             }
-
-        } catch (AccessDeniedException $ade) {}
+        } catch (AccessDeniedException $ade) {
+        }
 
         return new JsonResponse(['lock' => $nodeVersionIsLocked, 'message' => $message]);
     }
 
     /**
      * @param NodeTranslation $nodeTranslation
-     * @param bool $isPublic
+     * @param bool            $isPublic
+     *
      * @return bool
      */
     private function isNodeVersionLocked(NodeTranslation $nodeTranslation, $isPublic)
@@ -1082,15 +1100,17 @@ class NodeAdminController extends Controller
             /** @var NodeVersionLockHelper $nodeVersionLockHelper */
             $nodeVersionLockHelper = $this->get('kunstmaan_node.admin_node.node_version_lock_helper');
             $nodeVersionIsLocked = $nodeVersionLockHelper->isNodeVersionLocked($this->getUser(), $nodeTranslation, $isPublic);
+
             return $nodeVersionIsLocked;
         }
+
         return false;
     }
 
     /**
-     * @param HasNodeInterface $page The page
-     * @param NodeTranslation $nodeTranslation The node translation
-     * @param NodeVersion $nodeVersion The node version
+     * @param HasNodeInterface $page            The page
+     * @param NodeTranslation  $nodeTranslation The node translation
+     * @param NodeVersion      $nodeVersion     The node version
      *
      * @return NodeVersion
      */
@@ -1098,14 +1118,13 @@ class NodeAdminController extends Controller
         HasNodeInterface $page,
         NodeTranslation $nodeTranslation,
         NodeVersion $nodeVersion
-    )
-    {
+    ) {
         $publicPage = $this->get('kunstmaan_admin.clone.helper')
             ->deepCloneAndSave($page);
         /* @var NodeVersion $publicNodeVersion */
 
         $publicNodeVersion = $this->em->getRepository(
-            'KunstmaanNodeBundle:NodeVersion'
+            NodeVersion::class
         )->createNodeVersionFor(
             $publicPage,
             $nodeTranslation,
@@ -1138,7 +1157,7 @@ class NodeAdminController extends Controller
     }
 
     /**
-     * @param Node $node The node
+     * @param Node   $node       The node
      * @param string $permission The permission to check for
      *
      * @throws AccessDeniedException
@@ -1161,8 +1180,7 @@ class NodeAdminController extends Controller
         BaseUser $user,
         $locale,
         ArrayCollection $children
-    )
-    {
+    ) {
         /* @var Node $childNode */
         foreach ($children as $childNode) {
             $childNodeTranslation = $childNode->getNodeTranslation(
@@ -1202,37 +1220,8 @@ class NodeAdminController extends Controller
     }
 
     /**
-     * @param $originalNode
-     * @param $nodeNewPage
-     */
-    private function updateAcl($originalNode, $nodeNewPage)
-    {
-        /* @var MutableAclProviderInterface $aclProvider */
-        $aclProvider = $this->container->get('security.acl.provider');
-        /* @var ObjectIdentityRetrievalStrategyInterface $strategy */
-        $strategy = $this->container->get(
-            'security.acl.object_identity_retrieval_strategy'
-        );
-        $originalIdentity = $strategy->getObjectIdentity($originalNode);
-        $originalAcl = $aclProvider->findAcl($originalIdentity);
-
-        $newIdentity = $strategy->getObjectIdentity($nodeNewPage);
-        $newAcl = $aclProvider->createAcl($newIdentity);
-
-        $aces = $originalAcl->getObjectAces();
-        /* @var EntryInterface $ace */
-        foreach ($aces as $ace) {
-            $securityIdentity = $ace->getSecurityIdentity();
-            if ($securityIdentity instanceof RoleSecurityIdentity) {
-                $newAcl->insertObjectAce($securityIdentity, $ace->getMask());
-            }
-        }
-        $aclProvider->updateAcl($newAcl);
-    }
-
-    /**
      * @param Request $request
-     * @param string $type
+     * @param string  $type
      *
      * @return HasNodeInterface
      */
@@ -1242,7 +1231,7 @@ class NodeAdminController extends Controller
         $newPage = new $type();
 
         $title = $request->get('title');
-        if (is_string($title) && !empty($title)) {
+        if (\is_string($title) && !empty($title)) {
             $newPage->setTitle($title);
         } else {
             $newPage->setTitle($this->get('translator')->trans('kuma_node.admin.new_page.title.default'));
@@ -1264,9 +1253,7 @@ class NodeAdminController extends Controller
         $type = $request->get('type');
 
         if (empty($type)) {
-            throw new InvalidArgumentException(
-                'Please specify a type of page you want to create'
-            );
+            throw new InvalidArgumentException('Please specify a type of page you want to create');
         }
 
         return $type;
@@ -1274,6 +1261,7 @@ class NodeAdminController extends Controller
 
     /**
      * @param Node $node
+     *
      * @return \Symfony\Component\HttpFoundation\Response
      */
     private function renderNodeNotTranslatedPage(Node $node)
@@ -1290,7 +1278,7 @@ class NodeAdminController extends Controller
 
             if ($parentNodeTranslation) {
                 $parentsAreOk = $this->em->getRepository(
-                    'KunstmaanNodeBundle:NodeTranslation'
+                    NodeTranslation::class
                 )->hasParentNodeTranslationsForLanguage(
                     $node->getParent()->getNodeTranslation(
                         $this->locale,
@@ -1304,13 +1292,13 @@ class NodeAdminController extends Controller
         }
 
         return $this->render(
-            'KunstmaanNodeBundle:NodeAdmin:pagenottranslated.html.twig',
+            '@KunstmaanNode/NodeAdmin/pagenottranslated.html.twig',
             array(
                 'node' => $node,
                 'nodeTranslations' => $node->getNodeTranslations(
                     true
                 ),
-                'copyfromotherlanguages' => $parentsAreOk
+                'copyfromotherlanguages' => $parentsAreOk,
             )
         );
     }

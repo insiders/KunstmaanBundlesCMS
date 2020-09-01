@@ -1,3 +1,4 @@
+import 'picturefill';
 {% if demosite %}
 import velocity from 'velocity-animate'; // eslint-disable-line
 
@@ -12,13 +13,13 @@ import cookieConsent from './cookieConsent';
 import videolink from './videolink';
 
 {% if demosite %}
-$(function() {
+$(() => {
     cbToggle.init();
     cbScrollToTop.init();
     cbSidebarToggle.init();
 
-    search.init();
-    demoMsg.init();
+    search();
+    demoMsg();
     cookieConsent();
     videolink();
 });

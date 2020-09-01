@@ -1,20 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<phpunit backupGlobals="false"
-         backupStaticAttributes="false"
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/7.5/phpunit.xsd"
          colors="true"
-         convertErrorsToExceptions="true"
-         convertNoticesToExceptions="true"
-         convertWarningsToExceptions="true"
-         processIsolation="false"
-         stopOnFailure="false"
-         syntaxCheck="true"
-         bootstrap="./vendor/autoload.php"
-        >
+         bootstrap="vendor/autoload.php"
+>
+    <php>
+        <ini name="error_reporting" value="-1" />
+    </php>
 
     <testsuites>
-        <testsuite name="Kunstmaan Test Suite">
-            <directory suffix="Test.php">./Tests</directory>
+        <testsuite name="Kunstmaan CMS NodeBundle Test Suite">
+            <directory>./Tests/</directory>
         </testsuite>
     </testsuites>
 
@@ -23,12 +20,13 @@
             <directory>./</directory>
             <exclude>
                 <directory>./Resources</directory>
+                <directory>./Tests</directory>
                 <directory>./vendor</directory>
             </exclude>
         </whitelist>
     </filter>
 
-    <logging>
-        <log type="coverage-text" target="php://stdout" showUncoveredFiles="false"/>
-    </logging>
+    <listeners>
+        <listener class="Symfony\Bridge\PhpUnit\SymfonyTestsListener" />
+    </listeners>
 </phpunit>

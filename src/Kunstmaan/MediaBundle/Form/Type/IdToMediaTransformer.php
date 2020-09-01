@@ -20,7 +20,6 @@ class IdToMediaTransformer implements DataTransformerInterface
     private $objectManager;
 
     /**
-     *
      * @var CurrentValueContainer
      */
     private $currentValueContainer;
@@ -31,7 +30,7 @@ class IdToMediaTransformer implements DataTransformerInterface
      */
     public function __construct(ObjectManager $objectManager, CurrentValueContainer $currentValueContainer)
     {
-        $this->objectManager         = $objectManager;
+        $this->objectManager = $objectManager;
         $this->currentValueContainer = $currentValueContainer;
     }
 
@@ -40,7 +39,7 @@ class IdToMediaTransformer implements DataTransformerInterface
      *
      * @return mixed The value in the transformed representation
      *
-     * @throws UnexpectedTypeException when the argument is not an object
+     * @throws UnexpectedTypeException   when the argument is not an object
      * @throws \InvalidArgumentException when the parameter is a collection
      */
     public function transform($entity)
@@ -48,7 +47,7 @@ class IdToMediaTransformer implements DataTransformerInterface
         if (empty($entity)) {
             return '';
         }
-        if (!is_object($entity)) {
+        if (!\is_object($entity)) {
             throw new UnexpectedTypeException($entity, 'object');
         }
         if ($entity instanceof Collection) {
@@ -58,7 +57,7 @@ class IdToMediaTransformer implements DataTransformerInterface
 
         return array(
             'ent' => $entity,
-            'id'  => $entity->getId()
+            'id' => $entity->getId(),
         );
     }
 
@@ -67,7 +66,7 @@ class IdToMediaTransformer implements DataTransformerInterface
      *
      * @return Media
      *
-     * @throws UnexpectedTypeException when the parameter is not numeric
+     * @throws UnexpectedTypeException       when the parameter is not numeric
      * @throws TransformationFailedException when the media item cannot be loaded/found
      */
     public function reverseTransform($key)
@@ -78,7 +77,7 @@ class IdToMediaTransformer implements DataTransformerInterface
         if (!is_numeric($key)) {
             throw new UnexpectedTypeException($key, 'numeric');
         }
-        if (!($entity = $this->objectManager->getRepository('KunstmaanMediaBundle:Media')->find($key))) {
+        if (!($entity = $this->objectManager->getRepository(Media::class)->find($key))) {
             throw new TransformationFailedException(sprintf('The entity with key "%s" could not be found', $key));
         }
         $this->currentValueContainer->setCurrentValue($entity);

@@ -22,13 +22,16 @@ services:
         calls:
             - [setTranslationFileExplorer, ['@kunstmaan_translator.service.file_explorer']]
             - [setImporter, ['@kunstmaan_translator.service.importer.importer']]
+        public: true
 
+    # TODO: needs to be refactored, should not need to be public
     kunstmaan_translator.service.exporter.command_handler:
         parent: kunstmaan_translator.service.abstract_command_handler
         class: 'Kunstmaan\TranslatorBundle\Service\Command\Exporter\ExportCommandHandler'
         calls:
             - [setTranslationRepository, ['@kunstmaan_translator.repository.translation']]
             - [setExporter, ['@kunstmaan_translator.service.exporter.exporter']]
+        public: true
 
     kunstmaan_translator.service.exporter.exporter:
         class: 'Kunstmaan\TranslatorBundle\Service\Command\Exporter\Exporter'
@@ -50,20 +53,23 @@ services:
 
     kunstmaan_translator.service.importer.importer:
         class: 'Kunstmaan\TranslatorBundle\Service\Command\Importer\Importer'
-        calls:
-            - [setTranslationGroupManager, ['@kunstmaan_translator.service.group_manager']] # default, maken via config var
+        arguments:
+            - '@kunstmaan_translator.service.group_manager'
+        public: true
 
     kunstmaan_translator.service.group_manager:
         class: 'Kunstmaan\TranslatorBundle\Service\TranslationGroupManager'
-        calls:
-            - [setTranslationRepository, ['@kunstmaan_translator.repository.translation']]
+        arguments:
+            - '@kunstmaan_translator.repository.translation'
 
+    # TODO: needs to be refactored, should not need to be public
     kunstmaan_translator.service.translator.loader:
         class: Kunstmaan\TranslatorBundle\Service\Translator\Loader
         tags:
             - { name: 'translation.loader', alias: 'database' }
         calls:
             - [setTranslationRepository, ['@kunstmaan_translator.repository.translation']]
+        public: true
 
     kunstmaan_translator.service.translator.resource_cacher:
         class: Kunstmaan\TranslatorBundle\Service\Translator\ResourceCacher
@@ -71,33 +77,40 @@ services:
             - [setDebug, ['%kuma_translator.debug%']]
             - [setCacheDir, ['%kuma_translator.cache_dir%']]
             - [setLogger, ['@logger']]
+        public: true
 
     kunstmaan_translator.service.translator.cache_validator:
         class: Kunstmaan\TranslatorBundle\Service\Translator\CacheValidator
         calls:
             - [setCacheDir, ['%kuma_translator.cache_dir%']]
             - [setTranslationRepository, ['@kunstmaan_translator.repository.translation']]
+        public: true
 
     kunstmaan_translator.service.translator.translator:
         class: Kunstmaan\TranslatorBundle\Service\Translator\Translator
         arguments:
             - '@service_container'
-            - '@translator.selector'
+            - '@translator.formatter'
+            - '%kernel.default_locale%'
             - {}
             - { cache_dir: '%kuma_translator.cache_dir%', debug: '%kuma_translator.debug%' }
-            - ['@session']
+            - '%kuma_translator.profiler%'
         calls:
             - [setTranslationRepository, ['@kunstmaan_translator.repository.translation']]
             - [setResourceCacher, ['@kunstmaan_translator.service.translator.resource_cacher']]
+        tags: ['kernel.locale_aware']
 
+    # TODO: needs to be refactored, should not need to be public
     kunstmaan_translator.service.migrations.migrations:
         class: 'Kunstmaan\TranslatorBundle\Service\Migrations\MigrationsService'
         calls:
             - [setTranslationRepository, ['@kunstmaan_translator.repository.translation']]
             - [setEntityManager, ['@doctrine.orm.default_entity_manager']]
+        public: true
 
     kunstmaan_translator.service.command.diff:
         class: 'Kunstmaan\TranslatorBundle\Service\Command\DiffCommand'
+        deprecated: 'The "%service_id%" service is deprecated since KunstmaanTranslatorBundle 5.2 and will be removed in 6.0.'
 
     kunstmaan_translator.datacollector:
         class: Kunstmaan\TranslatorBundle\Toolbar\DataCollectorTranslator
@@ -111,4 +124,4 @@ services:
             - '@kunstmaan_translator.datacollector'
             - '@router'
         tags:
-            - { name: kunstmaan_admin.toolbar_collector, template: 'KunstmaanTranslatorBundle:Toolbar:translations.html.twig', id: kuma_translation}
+            - { name: kunstmaan_admin.toolbar_collector, template: '@KunstmaanTranslator/Toolbar/translations.html.twig', id: kuma_translation}

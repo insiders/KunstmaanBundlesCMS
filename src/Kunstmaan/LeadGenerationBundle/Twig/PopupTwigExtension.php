@@ -7,8 +7,14 @@ use Kunstmaan\LeadGenerationBundle\Entity\Rule\AbstractRule;
 use Kunstmaan\LeadGenerationBundle\Service\PopupManager;
 use Kunstmaan\LeadGenerationBundle\Service\RuleServiceInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
+use Twig\Environment;
+use Twig\Extension\AbstractExtension;
+use Twig\TwigFunction;
 
-class PopupTwigExtension extends \Twig_Extension
+/**
+ * @final since 5.4
+ */
+class PopupTwigExtension extends AbstractExtension
 {
     /**
      * @var PopupManager
@@ -52,53 +58,54 @@ class PopupTwigExtension extends \Twig_Extension
     public function getFunctions()
     {
         return array(
-            new \Twig_SimpleFunction('lead_generation_render_js_includes', array($this, 'renderJsIncludes'), array('is_safe' => array('html'), 'needs_environment' => true)),
-            new \Twig_SimpleFunction('lead_generation_render_popups_html', array($this, 'renderPopupsHtml'), array('is_safe' => array('html'), 'needs_environment' => true)),
-            new \Twig_SimpleFunction('lead_generation_render_initialize_js', array($this, 'renderInitializeJs'), array('is_safe' => array('html'), 'needs_environment' => true)),
-            new \Twig_SimpleFunction('lead_generation_get_rule_properties', array($this, 'getRuleProperties')),
-            new \Twig_SimpleFunction('get_available_popup_types', array($this, 'getAvailablePopupTypes')),
-            new \Twig_SimpleFunction('get_available_rule_types', array($this, 'getAvailableRuleTypes')),
+            new TwigFunction('lead_generation_render_js_includes', array($this, 'renderJsIncludes'), array('is_safe' => array('html'), 'needs_environment' => true)),
+            new TwigFunction('lead_generation_render_popups_html', array($this, 'renderPopupsHtml'), array('is_safe' => array('html'), 'needs_environment' => true)),
+            new TwigFunction('lead_generation_render_initialize_js', array($this, 'renderInitializeJs'), array('is_safe' => array('html'), 'needs_environment' => true)),
+            new TwigFunction('lead_generation_get_rule_properties', array($this, 'getRuleProperties')),
+            new TwigFunction('get_available_popup_types', array($this, 'getAvailablePopupTypes')),
+            new TwigFunction('get_available_rule_types', array($this, 'getAvailableRuleTypes')),
         );
     }
 
     /**
      * @return string
      */
-    public function renderJsIncludes(\Twig_Environment $environment)
+    public function renderJsIncludes(Environment $environment)
     {
         $files = $this->popupManager->getUniqueJsIncludes();
 
-        return $environment->render('KunstmaanLeadGenerationBundle::js-includes.html.twig', array('files' => $files));
+        return $environment->render('@KunstmaanLeadGeneration/js-includes.html.twig', array('files' => $files));
     }
 
     /**
      * @return string
      */
-    public function renderPopupsHtml(\Twig_Environment $environment)
+    public function renderPopupsHtml(Environment $environment)
     {
         $popups = $this->popupManager->getPopups();
 
-        return $environment->render('KunstmaanLeadGenerationBundle::popups-html.html.twig', array('popups' => $popups));
+        return $environment->render('@KunstmaanLeadGeneration/popups-html.html.twig', array('popups' => $popups));
     }
 
     /**
      * @return string
      */
-    public function renderInitializeJs(\Twig_Environment $environment)
+    public function renderInitializeJs(Environment $environment)
     {
         $popups = $this->popupManager->getPopups();
 
-        return $environment->render('KunstmaanLeadGenerationBundle::initialize-js.html.twig', array('popups' => $popups, 'debug' => $this->debug));
+        return $environment->render('@KunstmaanLeadGeneration/initialize-js.html.twig', array('popups' => $popups, 'debug' => $this->debug));
     }
 
     /**
      * @param AbstractRule $rule
+     *
      * @return array
      */
     public function getRuleProperties(AbstractRule $rule)
     {
         $properties = array();
-        if (!is_null($rule->getService())) {
+        if (!\is_null($rule->getService())) {
             $service = $this->container->get($rule->getService());
             if ($service instanceof RuleServiceInterface) {
                 $properties = $service->getJsProperties($rule);
@@ -128,6 +135,7 @@ class PopupTwigExtension extends \Twig_Extension
      * Get the available popup types for a specific popup.
      *
      * @param AbstractPopup $popup
+     *
      * @return array
      */
     public function getAvailableRuleTypes(AbstractPopup $popup)

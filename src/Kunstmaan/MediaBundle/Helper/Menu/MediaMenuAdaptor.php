@@ -16,7 +16,7 @@ use Symfony\Component\HttpFoundation\Request;
 class MediaMenuAdaptor implements MenuAdaptorInterface
 {
     /**
-     * @var FolderRepository $repo
+     * @var FolderRepository
      */
     private $repo;
 
@@ -31,14 +31,14 @@ class MediaMenuAdaptor implements MenuAdaptorInterface
     /**
      * In this method you can add children for a specific parent, but also remove and change the already created children
      *
-     * @param MenuBuilder $menu The MenuBuilder
-     * @param MenuItem[] &$children The current children
-     * @param MenuItem $parent The parent Menu item
-     * @param Request $request The Request
+     * @param MenuBuilder $menu      The MenuBuilder
+     * @param MenuItem[]  &$children The current children
+     * @param MenuItem    $parent    The parent Menu item
+     * @param Request     $request   The Request
      */
     public function adaptChildren(MenuBuilder $menu, array &$children, MenuItem $parent = null, Request $request = null)
     {
-        if (is_null($parent)) {
+        if (\is_null($parent)) {
             // Add menu item for root gallery
             $rootFolders = $this->repo->getRootNodes();
             $currentId = $request->get('folderId');
@@ -59,9 +59,9 @@ class MediaMenuAdaptor implements MenuAdaptorInterface
                     ->setParent(null)
                     ->setRole($rootFolder->getRel());
 
-                if (!is_null($currentFolder)) {
+                if (!\is_null($currentFolder)) {
                     $parentIds = $this->repo->getParentIds($currentFolder);
-                    if (in_array($rootFolder->getId(), $parentIds)) {
+                    if (\in_array($rootFolder->getId(), $parentIds)) {
                         $menuItem->setActive(true);
                     }
                 }

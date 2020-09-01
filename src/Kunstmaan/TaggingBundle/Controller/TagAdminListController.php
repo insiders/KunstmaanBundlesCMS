@@ -5,8 +5,8 @@ namespace Kunstmaan\TaggingBundle\Controller;
 use Kunstmaan\AdminListBundle\AdminList\Configurator\AdminListConfiguratorInterface;
 use Kunstmaan\AdminListBundle\Controller\AdminListController;
 use Kunstmaan\TaggingBundle\AdminList\TagAdminListConfigurator;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
+use Kunstmaan\TaggingBundle\Entity\Tag;
+use Symfony\Component\Routing\Annotation\Route;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Template;
 use Symfony\Component\HttpFoundation\Request;
 
@@ -31,7 +31,7 @@ class TagAdminListController extends AdminListController
 
     /**
      * @Route("/", name="kunstmaantaggingbundle_admin_tag")
-     * @Template("KunstmaanAdminListBundle:Default:list.html.twig")
+     * @Template("@KunstmaanAdminList/Default/list.html.twig")
      */
     public function indexAction(Request $request)
     {
@@ -39,9 +39,9 @@ class TagAdminListController extends AdminListController
     }
 
     /**
-     * @Route("/add", name="kunstmaantaggingbundle_admin_tag_add")
-     * @Method({"GET", "POST"})
-     * @Template("KunstmaanAdminListBundle:Default:add.html.twig")
+     * @Route("/add", name="kunstmaantaggingbundle_admin_tag_add", methods={"GET", "POST"})
+     * @Template("@KunstmaanAdminList/Default/add.html.twig")
+     *
      * @return array
      */
     public function addAction(Request $request)
@@ -50,9 +50,8 @@ class TagAdminListController extends AdminListController
     }
 
     /**
-     * @Route("/{id}/edit", requirements={"id" = "\d+"}, name="kunstmaantaggingbundle_admin_tag_edit")
-     * @Method({"GET", "POST"})
-     * @Template("KunstmaanAdminListBundle:Default:edit.html.twig")
+     * @Route("/{id}/edit", requirements={"id" = "\d+"}, name="kunstmaantaggingbundle_admin_tag_edit", methods={"GET", "POST"})
+     * @Template("@KunstmaanAdminList/Default/edit.html.twig")
      */
     public function editAction(Request $request, $id)
     {
@@ -60,9 +59,8 @@ class TagAdminListController extends AdminListController
     }
 
     /**
-     * @Route("/{id}/delete", requirements={"id" = "\d+"}, name="kunstmaantaggingbundle_admin_tag_delete")
-     * @Method({"GET", "POST"})
-     * @Template("KunstmaanAdminListBundle:Default:delete.html.twig")
+     * @Route("/{id}/delete", requirements={"id" = "\d+"}, name="kunstmaantaggingbundle_admin_tag_delete", methods={"GET", "POST"})
+     * @Template("@KunstmaanAdminList/Default/delete.html.twig")
      */
     public function deleteAction(Request $request, $id)
     {
@@ -71,7 +69,7 @@ class TagAdminListController extends AdminListController
 
     /**
      * @Route("/autocomplete.{_format}", name="kunstmaantaggingbundle_admin_tag_autocomplete", defaults={"_format" = "json"})
-     * @Template()
+     * @Template("@KunstmaanTagging/Tags/autocomplete.json.twig")
      *
      * @param \Symfony\Component\HttpFoundation\Request $request
      *
@@ -81,7 +79,7 @@ class TagAdminListController extends AdminListController
     {
         $search = $request->get('term');
         $em = $this->getDoctrine()->getManager();
-        $qb = $em->getRepository('KunstmaanTaggingBundle:Tag')->createQueryBuilder('n')
+        $qb = $em->getRepository(Tag::class)->createQueryBuilder('n')
             ->where('n.name LIKE :search')
             ->orderBy('n.name', 'ASC')
             ->setParameter('search', '%' . $search . '%');

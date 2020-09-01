@@ -45,13 +45,13 @@ class Redirect extends AbstractEntity
     /**
      * @var string
      *
-     * @ORM\Column(name="target", type="string", length=255)
+     * @ORM\Column(name="target", type="text")
      * @Assert\NotBlank()
      */
     private $target;
 
     /**
-     * @var boolean
+     * @var bool
      *
      * @ORM\Column(name="permanent", type="boolean")
      */
@@ -71,7 +71,7 @@ class Redirect extends AbstractEntity
      * Set domain
      *
      * @param string $domain
-     * 
+     *
      * @return Redirect
      */
     public function setDomain($domain)
@@ -132,7 +132,7 @@ class Redirect extends AbstractEntity
     /**
      * Set permanent
      *
-     * @param boolean $permanent
+     * @param bool $permanent
      *
      * @return Redirect
      */
@@ -146,7 +146,7 @@ class Redirect extends AbstractEntity
     /**
      * Get permanent
      *
-     * @return boolean
+     * @return bool
      */
     public function isPermanent()
     {
@@ -170,7 +170,6 @@ class Redirect extends AbstractEntity
     {
         $this->note = $note;
     }
-
 
     /**
      * @Assert\Callback

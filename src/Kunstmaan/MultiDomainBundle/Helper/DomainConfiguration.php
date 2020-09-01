@@ -2,6 +2,8 @@
 
 namespace Kunstmaan\MultiDomainBundle\Helper;
 
+use Doctrine\ORM\EntityManagerInterface;
+use Kunstmaan\AdminBundle\Helper\AdminRouteHelper;
 use Kunstmaan\AdminBundle\Helper\DomainConfiguration as BaseDomainConfiguration;
 use Kunstmaan\NodeBundle\Entity\Node;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -14,7 +16,7 @@ class DomainConfiguration extends BaseDomainConfiguration
     /**
      * @var Node
      */
-    protected $rootNode = null;
+    protected $rootNode;
 
     /**
      * @var array
@@ -31,14 +33,29 @@ class DomainConfiguration extends BaseDomainConfiguration
      */
     protected $adminRouteHelper;
 
-    /**
-     * @param ContainerInterface $container
-     */
-    public function __construct(ContainerInterface $container)
-    {
-        parent::__construct($container);
+    /** @var EntityManagerInterface */
+    private $em;
 
-        $this->hosts = $container->getParameter('kunstmaan_multi_domain.hosts');
+    /**
+     * @param ContainerInterface|string $multilanguage
+     */
+    public function __construct(/*ContainerInterface|RequestStack*/ $requestStack, $multilanguage = null, $defaultLocale = null, $requiredLocales = null, AdminRouteHelper $adminRouteHelper = null, EntityManagerInterface $em = null, array $hosts = null)
+    {
+        parent::__construct($requestStack, $multilanguage, $defaultLocale, $requiredLocales);
+
+        if ($requestStack instanceof ContainerInterface) {
+            @trigger_error('Container injection and the usage of the container is deprecated in KunstmaanNodeBundle 5.1 and will be removed in KunstmaanNodeBundle 6.0.', E_USER_DEPRECATED);
+
+            $this->container = $requestStack;
+            $this->adminRouteHelper = $this->container->get('kunstmaan_admin.adminroute.helper');
+            $this->hosts = $this->container->getParameter('kunstmaan_multi_domain.hosts');
+            $this->em = $this->container->get('doctrine.orm.entity_manager');
+        } else {
+            $this->adminRouteHelper = $adminRouteHelper;
+            $this->hosts = $hosts;
+            $this->em = $em;
+        }
+
         foreach ($this->hosts as $host => $hostInfo) {
             if (isset($hostInfo['aliases'])) {
                 foreach ($hostInfo['aliases'] as $alias) {
@@ -46,8 +63,6 @@ class DomainConfiguration extends BaseDomainConfiguration
                 }
             }
         }
-
-        $this->adminRouteHelper = $container->get('kunstmaan_admin.adminroute.helper');
     }
 
     /**
@@ -100,7 +115,7 @@ class DomainConfiguration extends BaseDomainConfiguration
         if (isset($this->hosts[$host])) {
             $hostInfo = $this->hosts[$host];
 
-            return ('multi_lang' === $hostInfo['type']);
+            return 'multi_lang' === $hostInfo['type'];
         }
 
         return parent::isMultiLanguage();
@@ -161,12 +176,11 @@ class DomainConfiguration extends BaseDomainConfiguration
             return parent::getRootNode();
         }
 
-        if (is_null($this->rootNode)) {
+        if (\is_null($this->rootNode)) {
             $host = $this->getRealHost($host);
 
             $internalName = $this->hosts[$host]['root'];
-            $em = $this->container->get('doctrine.orm.entity_manager');
-            $nodeRepo = $em->getRepository('KunstmaanNodeBundle:Node');
+            $nodeRepo = $this->em->getRepository(Node::class);
             $this->rootNode = $nodeRepo->getNodeByInternalName($internalName);
         }
 
@@ -208,7 +222,7 @@ class DomainConfiguration extends BaseDomainConfiguration
     {
         $request = $this->getMasterRequest();
 
-        return !is_null($request) &&
+        return !\is_null($request) &&
         $this->adminRouteHelper->isAdminRoute($request->getRequestUri()) &&
         $request->hasPreviousSession() &&
         $request->getSession()->has(self::OVERRIDE_HOST);
@@ -221,7 +235,7 @@ class DomainConfiguration extends BaseDomainConfiguration
     {
         $request = $this->getMasterRequest();
 
-        return !is_null($request) &&
+        return !\is_null($request) &&
         $this->adminRouteHelper->isAdminRoute($request->getRequestUri()) &&
         $request->hasPreviousSession() &&
         $request->getSession()->has(self::SWITCH_HOST);
@@ -240,7 +254,7 @@ class DomainConfiguration extends BaseDomainConfiguration
     }
 
     /**
-     * @return string|null
+     * @return array
      */
     public function getHostSwitched()
     {
@@ -272,16 +286,15 @@ class DomainConfiguration extends BaseDomainConfiguration
     {
         $host = $this->getRealHost($host);
 
-        if ($host) {
+        if ($host && isset($this->hosts[$host])) {
             return $this->hosts[$host];
         }
 
         return null;
     }
 
-
     /**
-     * @param int $id
+     * @param string|int $id
      *
      * @return array
      */

@@ -14,7 +14,6 @@ use Kunstmaan\AdminBundle\Helper\Security\Acl\Permission\PermissionDefinition;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Role\RoleHierarchyInterface;
-use Symfony\Component\Security\Core\Role\RoleInterface;
 
 /**
  * AclHelper is a helper class to help setting the permissions when querying using ORM
@@ -44,18 +43,24 @@ class AclHelper
     private $roleHierarchy = null;
 
     /**
+     * @var bool
+     */
+    private $permissionsEnabled;
+
+    /**
      * Constructor.
      *
-     * @param EntityManager            $em The entity manager
-     * @param TokenStorageInterface    $tokenStorage The security token storage
-     * @param RoleHierarchyInterface   $rh The role hierarchies
+     * @param EntityManager          $em           The entity manager
+     * @param TokenStorageInterface  $tokenStorage The security token storage
+     * @param RoleHierarchyInterface $rh           The role hierarchies
      */
-    public function __construct(EntityManager $em, TokenStorageInterface $tokenStorage, RoleHierarchyInterface $rh)
+    public function __construct(EntityManager $em, TokenStorageInterface $tokenStorage, RoleHierarchyInterface $rh, $permissionsEnabled = true)
     {
-        $this->em              = $em;
-        $this->tokenStorage    = $tokenStorage;
-        $this->quoteStrategy   = $em->getConfiguration()->getQuoteStrategy();
-        $this->roleHierarchy   = $rh;
+        $this->em = $em;
+        $this->tokenStorage = $tokenStorage;
+        $this->quoteStrategy = $em->getConfiguration()->getQuoteStrategy();
+        $this->roleHierarchy = $rh;
+        $this->permissionsEnabled = $permissionsEnabled;
     }
 
     /**
@@ -68,7 +73,7 @@ class AclHelper
     protected function cloneQuery(Query $query)
     {
         $aclAppliedQuery = clone $query;
-        $params          = $query->getParameters();
+        $params = $query->getParameters();
         /* @var $param Parameter */
         foreach ($params as $param) {
             $aclAppliedQuery->setParameter($param->getName(), $param->getValue(), $param->getType());
@@ -87,6 +92,10 @@ class AclHelper
      */
     public function apply(QueryBuilder $queryBuilder, PermissionDefinition $permissionDef)
     {
+        if (!$this->permissionsEnabled) {
+            return $queryBuilder->getQuery();
+        }
+
         $whereQueryParts = $queryBuilder->getDQLPart('where');
         if (empty($whereQueryParts)) {
             $queryBuilder->where('1 = 1'); // this will help in cases where no where query is specified
@@ -96,25 +105,25 @@ class AclHelper
 
         $builder = new MaskBuilder();
         foreach ($permissionDef->getPermissions() as $permission) {
-            $mask = constant(get_class($builder) . '::MASK_' . strtoupper($permission));
+            $mask = \constant(\get_class($builder) . '::MASK_' . strtoupper($permission));
             $builder->add($mask);
         }
         $query->setHint('acl.mask', $builder->get());
         $query->setHint(Query::HINT_CUSTOM_OUTPUT_WALKER, 'Kunstmaan\AdminBundle\Helper\Security\Acl\AclWalker');
 
         $rootEntity = $permissionDef->getEntity();
-        $rootAlias  = $permissionDef->getAlias();
+        $rootAlias = $permissionDef->getAlias();
         // If either alias or entity was not specified - use default from QueryBuilder
         if (empty($rootEntity) || empty($rootAlias)) {
             $rootEntities = $queryBuilder->getRootEntities();
-            $rootAliases  = $queryBuilder->getRootAliases();
-            $rootEntity   = $rootEntities[0];
-            $rootAlias    = $rootAliases[0];
+            $rootAliases = $queryBuilder->getRootAliases();
+            $rootEntity = $rootEntities[0];
+            $rootAlias = $rootAliases[0];
         }
         $query->setHint('acl.root.entity', $rootEntity);
         $query->setHint('acl.extra.query', $this->getPermittedAclIdsSQLForUser($query));
 
-        $classMeta           = $this->em->getClassMetadata($rootEntity);
+        $classMeta = $this->em->getClassMetadata($rootEntity);
         $entityRootTableName = $this->quoteStrategy->getTableName(
             $classMeta,
             $this->em->getConnection()->getDatabasePlatform()
@@ -137,39 +146,50 @@ class AclHelper
      */
     private function getPermittedAclIdsSQLForUser(Query $query)
     {
-        $aclConnection  = $this->em->getConnection();
+        $aclConnection = $this->em->getConnection();
         $databasePrefix = is_file($aclConnection->getDatabase()) ? '' : $aclConnection->getDatabase().'.';
-        $mask           = $query->getHint('acl.mask');
-        $rootEntity     = '"' . str_replace('\\', '\\\\', $query->getHint('acl.root.entity')) . '"';
+        $mask = $query->getHint('acl.mask');
+        $rootEntity = '"' . str_replace('\\', '\\\\', $query->getHint('acl.root.entity')) . '"';
 
         /* @var $token TokenInterface */
-        $token     = $this->tokenStorage->getToken();
+        $token = $this->tokenStorage->getToken();
         $userRoles = array();
         $user = null;
-        if (!is_null($token)) {
-            $user      = $token->getUser();
-            $userRoles = $this->roleHierarchy->getReachableRoles($token->getRoles());
+        if (!\is_null($token)) {
+            $user = $token->getUser();
+            if (method_exists($this->roleHierarchy, 'getReachableRoleNames')) {
+                $userRoles = $this->roleHierarchy->getReachableRoleNames($token->getRoleNames());
+            } else {
+                // Symfony 3.4 compatibility
+                $userRoles = $this->roleHierarchy->getReachableRoles($token->getRoles());
+            }
         }
 
         // Security context does not provide anonymous role automatically.
         $uR = array('"IS_AUTHENTICATED_ANONYMOUSLY"');
 
-        /* @var $role RoleInterface */
         foreach ($userRoles as $role) {
             // The reason we ignore this is because by default FOSUserBundle adds ROLE_USER for every user
-            if ($role->getRole() !== 'ROLE_USER') {
-                $uR[] = '"' . $role->getRole() . '"';
+            if (is_string($role)) {
+                if ($role !== 'ROLE_USER') {
+                    $uR[] = '"' . $role . '"';
+                }
+            } else {
+                // Symfony 3.4 compatibility
+                if ($role->getRole() !== 'ROLE_USER') {
+                    $uR[] = '"' . $role->getRole() . '"';
+                }
             }
         }
-        $uR       = array_unique($uR);
+        $uR = array_unique($uR);
         $inString = implode(' OR s.identifier = ', $uR);
 
-        if (is_object($user)) {
+        if (\is_object($user)) {
             $inString .= ' OR s.identifier = "' . str_replace(
-                    '\\',
-                    '\\\\',
-                    get_class($user)
-                ) . '-' . $user->getUserName() . '"';
+                '\\',
+                '\\\\',
+                \get_class($user)
+            ) . '-' . $user->getUserName() . '"';
         }
 
         $selectQuery = <<<SELECTQUERY
@@ -203,11 +223,11 @@ SELECTQUERY;
     {
         $rootEntity = $permissionDef->getEntity();
         if (empty($rootEntity)) {
-            throw new InvalidArgumentException("You have to provide an entity class name!");
+            throw new InvalidArgumentException('You have to provide an entity class name!');
         }
         $builder = new MaskBuilder();
         foreach ($permissionDef->getPermissions() as $permission) {
-            $mask = constant(get_class($builder) . '::MASK_' . strtoupper($permission));
+            $mask = \constant(\get_class($builder) . '::MASK_' . strtoupper($permission));
             $builder->add($mask);
         }
 
@@ -223,7 +243,7 @@ SELECTQUERY;
         $transform = function ($item) {
             return $item['id'];
         };
-        $result    = array_map($transform, $nativeQuery->getScalarResult());
+        $result = array_map($transform, $nativeQuery->getScalarResult());
 
         return $result;
     }

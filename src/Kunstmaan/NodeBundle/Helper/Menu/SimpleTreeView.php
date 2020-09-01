@@ -15,7 +15,7 @@ class SimpleTreeView
     /**
      * Add an item to the tree array
      *
-     * @param int $parentId
+     * @param int          $parentId
      * @param array|object $data
      */
     public function addItem($parentId, $data)
@@ -25,7 +25,6 @@ class SimpleTreeView
         } else {
             $this->items[$parentId][] = $data;
         }
-
     }
 
     /**
@@ -42,14 +41,15 @@ class SimpleTreeView
      * Get the child items for a tree item.
      *
      * @param int $parentId
+     *
      * @return array
      */
     public function getChildren($parentId)
     {
-        if (array_key_exists($parentId, $this->items)) {
+        if (\array_key_exists($parentId, $this->items)) {
             return $this->items[$parentId];
-        } else {
-            return array();
         }
+
+        return [];
     }
 }

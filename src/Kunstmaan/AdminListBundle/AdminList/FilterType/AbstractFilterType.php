@@ -12,12 +12,12 @@ abstract class AbstractFilterType implements FilterTypeInterface
     /**
      * @var null|string
      */
-    protected $columnName = null;
+    protected $columnName;
 
     /**
      * @var null|string
      */
-    protected $alias = null;
+    protected $alias;
 
     /**
      * @param string $columnName The column name
@@ -26,7 +26,7 @@ abstract class AbstractFilterType implements FilterTypeInterface
     public function __construct($columnName, $alias = 'b')
     {
         $this->columnName = $columnName;
-        $this->alias      = $alias;
+        $this->alias = $alias;
     }
 
     /**

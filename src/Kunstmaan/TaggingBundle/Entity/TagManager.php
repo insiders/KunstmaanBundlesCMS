@@ -6,14 +6,15 @@ use Doctrine\ORM\Query\Expr;
 use Doctrine\ORM\Query\ResultSetMappingBuilder;
 use DoctrineExtensions\Taggable\Taggable as BaseTaggable;
 use DoctrineExtensions\Taggable\TagManager as BaseTagManager;
-
 use Kunstmaan\NodeBundle\Entity\AbstractPage;
 
 class TagManager extends BaseTagManager
 {
-
     const TAGGING_HYDRATOR = 'taggingHydrator';
 
+    /**
+     * @param BaseTaggable $resource
+     */
     public function loadTagging(BaseTaggable $resource)
     {
         if ($resource instanceof LazyLoadingTaggableInterface) {
@@ -21,30 +22,32 @@ class TagManager extends BaseTagManager
                 parent::loadTagging($taggable);
             });
 
-            return ;
+            return;
         }
 
         parent::loadTagging($resource);
     }
 
+    /**
+     * @param BaseTaggable $resource
+     */
     public function saveTagging(BaseTaggable $resource)
     {
         $tags = clone $resource->getTags();
         parent::saveTagging($resource);
-        if (count($tags) !== count($resource->getTags())) {
+        if (\count($tags) !== \count($resource->getTags())) {
             // parent::saveTagging uses getTags by reference and removes elements, so it ends up empty :-/
             // this causes all tags to be deleted when an entity is persisted more than once in a request
             // Restore:
             $this->replaceTags($tags->toArray(), $resource);
         }
-
     }
-
 
     /**
      * Gets all tags for the given taggable resource
      *
      * @param BaseTaggable $resource Taggable resource
+     *
      * @return array
      */
     public function getTagging(BaseTaggable $resource)
@@ -52,7 +55,7 @@ class TagManager extends BaseTagManager
         $em = $this->em;
 
         $config = $em->getConfiguration();
-        if (is_null($config->getCustomHydrationMode(self::TAGGING_HYDRATOR))) {
+        if (\is_null($config->getCustomHydrationMode(self::TAGGING_HYDRATOR))) {
             $config->addCustomHydrationMode(self::TAGGING_HYDRATOR, 'Doctrine\ORM\Internal\Hydration\ObjectHydrator');
         }
 
@@ -70,11 +73,17 @@ class TagManager extends BaseTagManager
             ->getResult(self::TAGGING_HYDRATOR);
     }
 
+    /**
+     * @param $id
+     *
+     * @return mixed|null
+     *
+     * @throws \Doctrine\ORM\NonUniqueResultException
+     */
     public function findById($id)
     {
-
-        if (!isset($id) || is_null($id)) {
-            return NULL;
+        if (!isset($id) || \is_null($id)) {
+            return null;
         }
         $builder = $this->em->createQueryBuilder();
 
@@ -90,6 +99,9 @@ class TagManager extends BaseTagManager
         return $tag;
     }
 
+    /**
+     * @return array
+     */
     public function findAll()
     {
         $tagsRepo = $this->em->getRepository('KunstmaanTaggingBundle:Tag');
@@ -97,11 +109,19 @@ class TagManager extends BaseTagManager
         return $tagsRepo->findAll();
     }
 
-    public function findRelatedItems(Taggable $item, $class, $locale, $nbOfItems=1)
+    /**
+     * @param Taggable $item
+     * @param $class
+     * @param $locale
+     * @param int $nbOfItems
+     *
+     * @return array|null
+     */
+    public function findRelatedItems(Taggable $item, $class, $locale, $nbOfItems = 1)
     {
         $instance = new $class();
         if (!($instance instanceof Taggable)) {
-            return NULL;
+            return null;
         }
 
         $em = $this->em;
@@ -155,9 +175,6 @@ EOD;
             LIMIT {$nbOfItems};
 EOD;
 
-        $items = $em->createNativeQuery($query, $rsm)->getResult();
-
-        return $items;
+        return $em->createNativeQuery($query, $rsm)->getResult();
     }
-
 }

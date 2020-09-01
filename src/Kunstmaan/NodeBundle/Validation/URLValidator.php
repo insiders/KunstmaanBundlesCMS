@@ -17,18 +17,18 @@ trait URLValidator
      */
     public function isInternalLink($link)
     {
-        preg_match_all("/\[(([a-z_A-Z]+):)?NT([0-9]+)\]|(link:\/\/[0-9]+)/", $link, $matches, PREG_SET_ORDER);
+        preg_match_all("/\[(([a-z_A-Z\.]+):)?NT([0-9]+)\]|(link:\/\/[0-9]+)/", $link, $matches, PREG_SET_ORDER);
 
-        return count($matches) > 0;
+        return \count($matches) > 0;
     }
-    
+
     /**
      * Check if given text is an internal media link.
      */
     public function isInternalMediaLink($link)
     {
-        preg_match_all("/\[(([a-z_A-Z]+):)?M([0-9]+)\]/", $link, $matches, PREG_SET_ORDER);
+        preg_match_all("/\[(([a-z_A-Z]+):)?M(\d+)\]/", $link, $matches, PREG_SET_ORDER);
 
-        return count($matches) > 0;
+        return \count($matches) > 0;
     }
 }

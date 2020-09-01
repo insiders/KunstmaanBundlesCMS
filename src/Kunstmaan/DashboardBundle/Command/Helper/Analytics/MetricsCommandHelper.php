@@ -1,6 +1,6 @@
 <?php
-namespace Kunstmaan\DashboardBundle\Command\Helper\Analytics;
 
+namespace Kunstmaan\DashboardBundle\Command\Helper\Analytics;
 
 use Kunstmaan\DashboardBundle\Entity\AnalyticsOverview;
 
@@ -29,7 +29,7 @@ class MetricsCommandHelper extends AbstractAnalyticsCommandHelper
 
         // pageviews metric
         $pageviews = is_numeric($rows[0][2]) ? $rows[0][2] : 0;
-        $overview->setPageViews($pageviews);
+        $overview->setPageviews($pageviews);
 
         // pages per visit metric
         $pagesPerVisit = is_numeric($rows[0][3]) ? $rows[0][3] : 0;
@@ -37,7 +37,6 @@ class MetricsCommandHelper extends AbstractAnalyticsCommandHelper
 
         // avg visit duration metric
         $avgVisitDuration = is_numeric($rows[0][4]) ? $rows[0][4] : 0;
-        $overview->setAvgSessionDuration(gmdate("H:i:s", $avgVisitDuration));
+        $overview->setAvgSessionDuration(gmdate('H:i:s', $avgVisitDuration));
     }
-
 }

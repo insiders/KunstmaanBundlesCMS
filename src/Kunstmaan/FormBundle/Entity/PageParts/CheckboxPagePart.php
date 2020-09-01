@@ -7,7 +7,6 @@ use Doctrine\ORM\Mapping as ORM;
 use Kunstmaan\FormBundle\Entity\FormSubmissionFieldTypes\BooleanFormSubmissionField;
 use Kunstmaan\FormBundle\Form\BooleanFormSubmissionType;
 use Kunstmaan\FormBundle\Form\CheckboxPagePartAdminType;
-use Kunstmaan\FormBundle\Form\SingleLineTextPagePartAdminType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\Validator\Constraints\NotBlank;
 
@@ -88,7 +87,7 @@ class CheckboxPagePart extends AbstractFormPagePart
      */
     public function getDefaultView()
     {
-        return "KunstmaanFormBundle:CheckboxPagePart:view.html.twig";
+        return '@KunstmaanForm/CheckboxPagePart/view.html.twig';
     }
 
     /**
@@ -101,27 +100,28 @@ class CheckboxPagePart extends AbstractFormPagePart
     public function adaptForm(FormBuilderInterface $formBuilder, ArrayObject $fields, $sequence)
     {
         $bfsf = new BooleanFormSubmissionField();
-        $bfsf->setFieldName('field_' . $this->getUniqueId());
+        $bfsf->setFieldName('field_'.$this->getUniqueId());
         $bfsf->setLabel($this->getLabel());
         $bfsf->setSequence($sequence);
 
         $data = $formBuilder->getData();
-        $data['formwidget_' . $this->getUniqueId()] = $bfsf;
-        $constraints = array();
+        $data['formwidget_'.$this->getUniqueId()] = $bfsf;
+        $constraints = [];
         if ($this->getRequired()) {
-            $options = array();
+            $options = [];
             if (!empty($this->errorMessageRequired)) {
                 $options['message'] = $this->errorMessageRequired;
             }
             $constraints[] = new NotBlank($options);
         }
-        $formBuilder->add('formwidget_' . $this->getUniqueId(),
+        $formBuilder->add(
+            'formwidget_'.$this->getUniqueId(),
             BooleanFormSubmissionType::class,
-            array(
-                'label'       => $this->getLabel(),
-                'constraints' => $constraints,
-                'required'    => $this->getRequired()
-            )
+            [
+                'label' => $this->getLabel(),
+                'value_constraints' => $constraints,
+                'required' => $this->getRequired(),
+            ]
         );
         $formBuilder->setData($data);
 

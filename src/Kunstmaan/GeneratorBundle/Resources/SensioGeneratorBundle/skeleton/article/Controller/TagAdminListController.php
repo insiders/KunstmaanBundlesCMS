@@ -4,133 +4,82 @@ namespace {{ namespace }}\Controller;
 
 use {{ namespace }}\AdminList\{{ entity_class }}TagAdminListConfigurator;
 use Kunstmaan\ArticleBundle\Controller\AbstractArticleTagAdminListController;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Template;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
+use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+{% if isV4 %}
 
 /**
- * The admin list controller for Tag
+ * @Route("/{_locale}/%kunstmaan_admin.admin_prefix%/{{ entity_class|lower}}-tag", requirements={"_locale"="%requiredlocales%"})
  */
+{% endif %}
 class {{ entity_class }}TagAdminListController extends AbstractArticleTagAdminListController
 {
     /**
-     * The index action
-     *
      * @Route("/", name="{{ bundle.getName()|lower }}_admin_{{ entity_class|lower }}tag")
-     * @return array
      */
-    public function indexAction(Request $request)
+    public function indexAction(Request $request): Response
     {
         return parent::doIndexAction($this->getAdminListConfigurator($request), $request);
     }
 
     /**
-     * The add action
-     *
-     * @Route("/add", name="{{ bundle.getName()|lower }}_admin_{{ entity_class|lower }}tag_add")
-     * @Method({"GET", "POST"})
-     * @return array
+     * @Route("/add", name="{{ bundle.getName()|lower }}_admin_{{ entity_class|lower }}tag_add", methods={"GET", "POST"})
      */
-    public function addAction(Request $request)
+    public function addAction(Request $request): Response
     {
         return parent::doAddAction($this->getAdminListConfigurator($request), null, $request);
     }
 
     /**
-     * The edit action
-     *
-     * @param int $id
-     *
-     * @Route("/{id}", requirements={"id" = "\d+"}, name="{{ bundle.getName()|lower }}_admin_{{ entity_class|lower }}tag_edit")
-     * @Method({"GET", "POST"})
-     *
-     * @return Response
+     * @Route("/{id}", requirements={"id" = "\d+"}, name="{{ bundle.getName()|lower }}_admin_{{ entity_class|lower }}tag_edit", methods={"GET", "POST"})
      */
-    public function editAction(Request $request, $id)
+    public function editAction(Request $request, int $id): Response
     {
         return parent::doEditAction($this->getAdminListConfigurator($request), $id, $request);
     }
 
     /**
-     * The edit action
-     *
-     * @param int $id
-     *
-     * @Route("/{id}", requirements={"id" = "\d+"}, name="{{ bundle.getName()|lower }}_admin_{{ entity_class|lower }}tag_view")
-     * @Method({"GET"})
-     *
-     * @return Response
+     * @Route("/{id}", requirements={"id" = "\d+"}, name="{{ bundle.getName()|lower }}_admin_{{ entity_class|lower }}tag_view", methods={"GET"})
      */
-    public function viewAction(Request $request, $id)
+    public function viewAction(Request $request, int $id): Response
     {
         return parent::doViewAction($this->getAdminListConfigurator($request), $id, $request);
     }
 
     /**
-     * The delete action
-     *
-     * @param int $id
-     *
-     * @Route("/{id}/delete", requirements={"id" = "\d+"}, name="{{ bundle.getName()|lower }}_admin_{{ entity_class|lower }}tag_delete")
-     * @Method({"GET", "POST"})
-     *
-     * @return Response
+     * @Route("/{id}/delete", requirements={"id" = "\d+"}, name="{{ bundle.getName()|lower }}_admin_{{ entity_class|lower }}tag_delete", methods={"GET", "POST"})
      */
-    public function deleteAction(Request $request, $id)
+    public function deleteAction(Request $request, int $id): Response
     {
         return parent::doDeleteAction($this->getAdminListConfigurator($request), $id, $request);
     }
 
     /**
-     * The export action
-     *
-     * @param string $_format
-     *
-     * @Route("/export.{_format}", requirements={"_format" = "csv|xlsx|ods"}, name="{{ bundle.getName()|lower }}_admin_{{ entity_class|lower }}tag_export")
-     * @Method({"GET", "POST"})
-     * @return array
+     * @Route("/export.{_format}", requirements={"_format" = "csv|xlsx|ods"}, name="{{ bundle.getName()|lower }}_admin_{{ entity_class|lower }}tag_export", methods={"GET", "POST"})
      */
-    public function exportAction(Request $request, $_format)
+    public function exportAction(Request $request, string $_format): Response
     {
         return parent::doExportAction($this->getAdminListConfigurator($request), $_format, $request);
     }
 
     /**
-     * The move up action
-     *
-     * @param int $id
-     *
-     * @Route("/{id}/move-up", requirements={"id" = "\d+"}, name="{{ bundle.getName()|lower }}_admin_{{ entity_class|lower }}tag_move_up")
-     * @Method({"GET"})
-     *
-     * @return Response
+     * @Route("/{id}/move-up", requirements={"id" = "\d+"}, name="{{ bundle.getName()|lower }}_admin_{{ entity_class|lower }}tag_move_up", methods={"GET"})
      */
-    public function moveUpAction(Request $request, $id)
+    public function moveUpAction(Request $request, int $id): Response
     {
         return parent::doMoveUpAction($this->getAdminListConfigurator($request), $id, $request);
     }
 
     /**
-     * The move down action
-     *
-     * @param int $id
-     *
-     * @Route("/{id}/move-down", requirements={"id" = "\d+"}, name="{{ bundle.getName()|lower }}_admin_{{ entity_class|lower }}tag_move_down")
-     * @Method({"GET"})
-     *
-     * @return array
+     * @Route("/{id}/move-down", requirements={"id" = "\d+"}, name="{{ bundle.getName()|lower }}_admin_{{ entity_class|lower }}tag_move_down", methods={"GET"})
      */
-    public function moveDownAction(Request $request, $id)
+    public function moveDownAction(Request $request, int $id): Response
     {
         return parent::doMoveDownAction($this->getAdminListConfigurator($request), $id, $request);
     }
 
-    /**
-     * @return {{ entity_class }}TagAdminListConfigurator
-     */
-    public function createAdminListConfigurator()
+    public function createAdminListConfigurator(): {{ entity_class }}TagAdminListConfigurator
     {
         return new {{ entity_class }}TagAdminListConfigurator($this->em, $this->aclHelper);
     }

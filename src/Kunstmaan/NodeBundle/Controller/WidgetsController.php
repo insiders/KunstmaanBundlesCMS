@@ -4,15 +4,15 @@ namespace Kunstmaan\NodeBundle\Controller;
 
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\EntityManagerInterface;
-use Kunstmaan\MultiDomainBundle\Helper\DomainConfiguration;
+use Kunstmaan\AdminBundle\Helper\DomainConfigurationInterface;
 use Kunstmaan\NodeBundle\Entity\Node;
 use Kunstmaan\NodeBundle\Entity\NodeTranslation;
 use Kunstmaan\NodeBundle\Entity\StructureNode;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
+use Symfony\Component\Routing\Annotation\Route;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Template;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
-use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\Request;
 
 /**
  * WidgetsController
@@ -21,16 +21,17 @@ class WidgetsController extends Controller
 {
     /**
      * @Route("/ckselecturl", name="KunstmaanNodeBundle_ckselecturl")
-     * @Template("KunstmaanNodeBundle:Widgets:selectLink.html.twig")
+     * @Template("@KunstmaanNode/Widgets/selectLink.html.twig")
      *
      * @param \Symfony\Component\HttpFoundation\Request $request
+     *
      * @return array
      */
     public function ckSelectLinkAction(Request $request)
     {
         $params = $this->getTemplateParameters($request);
         $params['cke'] = true;
-        $params['multilanguage'] = $this->getParameter('multilanguage');
+        $params['multilanguage'] = $this->getParameter('kunstmaan_admin.multi_language');
 
         return $params;
     }
@@ -39,16 +40,17 @@ class WidgetsController extends Controller
      * Select a link
      *
      * @Route("/selecturl", name="KunstmaanNodeBundle_selecturl")
-     * @Template("KunstmaanNodeBundle:Widgets:selectLink.html.twig")
+     * @Template("@KunstmaanNode/Widgets/selectLink.html.twig")
      *
      * @param \Symfony\Component\HttpFoundation\Request $request
+     *
      * @return array
      */
     public function selectLinkAction(Request $request)
     {
         $params = $this->getTemplateParameters($request);
         $params['cke'] = false;
-        $params['multilanguage'] = $this->getParameter('multilanguage');
+        $params['multilanguage'] = $this->getParameter('kunstmaan_admin.multi_language');
 
         return $params;
     }
@@ -59,10 +61,13 @@ class WidgetsController extends Controller
      * @Route("/select-nodes-lazy_search", name="KunstmaanNodeBundle_nodes_lazy_search")
      *
      * @param \Symfony\Component\HttpFoundation\Request $request
+     *
      * @return JsonResponse
      */
     public function selectNodesLazySearch(Request $request)
     {
+        @trigger_error(sprintf('The "%s" controller action is deprecated in KunstmaanNodeBundle 5.1 and will be removed in KunstmaanNodeBundle 6.0.', __METHOD__), E_USER_DEPRECATED);
+
         /* @var EntityManagerInterface $em */
         $em = $this->getDoctrine()->getManager();
         $locale = $request->getLocale();
@@ -70,7 +75,7 @@ class WidgetsController extends Controller
 
         $results = [];
         if ($search) {
-            $nts = $em->getRepository('KunstmaanNodeBundle:NodeTranslation')->getNodeTranslationsLikeTitle($search, $locale);
+            $nts = $em->getRepository(NodeTranslation::class)->getNodeTranslationsLikeTitle($search, $locale);
             /** @var NodeTranslation $nt */
             foreach ($nts as $nt) {
                 $node = $nt->getNode();
@@ -93,6 +98,7 @@ class WidgetsController extends Controller
      * @Route("/select-nodes-lazy", name="KunstmaanNodeBundle_nodes_lazy")
      *
      * @param \Symfony\Component\HttpFoundation\Request $request
+     *
      * @return JsonResponse
      */
     public function selectNodesLazy(Request $request)
@@ -104,12 +110,20 @@ class WidgetsController extends Controller
         $depth = $this->getParameter('kunstmaan_node.url_chooser.lazy_increment');
 
         if (!$id || $id == '#') {
-            $rootItems = $em->getRepository('KunstmaanNodeBundle:Node')->getAllTopNodes();
+            $domainConfig = $this->get('kunstmaan_admin.domain_configuration');
+
+            if ($domainConfig->isMultiDomainHost()) {
+                $switchedHost = $domainConfig->getHostSwitched();
+                $rootItems = [$domainConfig->getRootNode($switchedHost['host'])];
+            } else {
+                $rootItems = $em->getRepository(Node::class)->getAllTopNodes();
+            }
         } else {
-            $rootItems = $em->getRepository('KunstmaanNodeBundle:Node')->find($id)->getChildren();
+            $rootItems = $em->getRepository(Node::class)->find($id)->getChildren();
         }
 
         $results = $this->nodesToArray($locale, $rootItems, $depth);
+
         return new JsonResponse($results);
     }
 
@@ -118,6 +132,7 @@ class WidgetsController extends Controller
      * default link chooser and the cke link chooser.
      *
      * @param \Symfony\Component\HttpFoundation\Request $request
+     *
      * @return array
      */
     private function getTemplateParameters(Request $request)
@@ -126,7 +141,7 @@ class WidgetsController extends Controller
         $allBundles = $this->getParameter('kernel.bundles');
         $mediaChooserLink = null;
 
-        if (array_key_exists('KunstmaanMediaBundle', $allBundles)) {
+        if (\array_key_exists('KunstmaanMediaBundle', $allBundles)) {
             $params = ['linkChooser' => 1];
             $cKEditorFuncNum = $request->get('CKEditorFuncNum');
             if (!empty($cKEditorFuncNum)) {
@@ -139,7 +154,7 @@ class WidgetsController extends Controller
         }
 
         return [
-            'mediaChooserLink' => $mediaChooserLink
+            'mediaChooserLink' => $mediaChooserLink,
         ];
     }
 
@@ -165,19 +180,19 @@ class WidgetsController extends Controller
     /**
      * Determine if current node is a structure node.
      *
-     * @param string $locale
+     * @param string                 $locale
      * @param Node[]|ArrayCollection $rootNodes
-     * @param integer $depth
+     * @param int                    $depth
      *
      * @return array
      */
     protected function nodesToArray($locale, $rootNodes, $depth = 2)
     {
-        /** @var DomainConfiguration $domainconfig */
+        /** @var DomainConfigurationInterface $domainconfig */
         $domainconfig = $this->get('kunstmaan_admin.domain_configuration');
         $isMultiDomain = $domainconfig->isMultiDomainHost();
-        $switchedHost = $domainconfig->getHostSwitched()['host'];
-        $switched = $domainconfig->getHost() == $switchedHost;
+        $switchedHost = $domainconfig->getHostSwitched();
+        $switched = null !== $switchedHost && array_key_exists('host', $switchedHost) && $domainconfig->getHost() === $switchedHost['host'];
 
         $results = [];
 
@@ -190,11 +205,24 @@ class WidgetsController extends Controller
                     $slug = sprintf("link://%s/%s", $nodeTranslation->getId(), $nodeTranslation->getSlug());
                 }
 
+                switch (true) {
+                    case !$nodeTranslation->isOnline():
+                        $type = 'offline';
+
+                        break;
+                    case $rootNode->isHiddenFromNav():
+                        $type = 'hidden-from-nav';
+
+                        break;
+                    default:
+                        $type = 'default';
+                }
+
                 $root = [
                     'id' => $rootNode->getId(),
-                    'type' => $nodeTranslation->isOnline() ? "default" : "offline",
+                    'type' => $type,
                     'text' => $nodeTranslation->getTitle(),
-                    'li_attr' => ['class' => 'js-url-chooser-link-select', 'data-slug' => $slug, 'data-id' => $rootNode->getId()]
+                    'li_attr' => ['class' => 'js-url-chooser-link-select', 'data-slug' => $slug, 'data-id' => $rootNode->getId()],
                 ];
 
                 if ($rootNode->getChildren()->count()) {

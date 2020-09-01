@@ -1,35 +1,34 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<phpunit backupGlobals="false"
-         backupStaticAttributes="false"
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/7.5/phpunit.xsd"
          colors="true"
-         convertErrorsToExceptions="true"
-         convertNoticesToExceptions="true"
-         convertWarningsToExceptions="true"
-         processIsolation="false"
-         stopOnFailure="false"
-         syntaxCheck="true"
-         bootstrap="autoload.php.dist"
-        >
-
+         bootstrap="vendor/autoload.php"
+>
     <php>
-        <ini name="intl.default_locale" value="en"/>
-        <ini name="intl.error_level" value="0"/>
-        <ini name="memory_limit" value="-1"/>
-        <env name="SYMFONY_DEPRECATIONS_HELPER" value="weak"/>
+        <ini name="error_reporting" value="-1" />
+        <ini name="intl.default_locale" value="en" />
+        <ini name="intl.error_level" value="0" />
+        <ini name="memory_limit" value="-1" />
     </php>
 
     <testsuites>
-        <testsuite name="Kunstmaan Test Suite">
-            <directory suffix="Test.php">./src/Kunstmaan/*/Tests</directory>
+        <testsuite name="Kunstmaan CMS Test Suite">
+            <directory>./src/Kunstmaan/*/Tests</directory>
         </testsuite>
     </testsuites>
 
+    <groups>
+        <exclude>
+            <group>migrations</group>
+            <group>importer</group>
+        </exclude>
+    </groups>
+
     <filter>
         <whitelist>
-            <directory suffix=".php">./</directory>
+            <directory>./src/Kunstmaan/</directory>
             <exclude>
-                <directory>./Resources</directory>
                 <directory>./vendor</directory>
                 <directory>./src/Kunstmaan/*/Resources</directory>
                 <directory>./src/Kunstmaan/*/vendor</directory>
@@ -39,18 +38,7 @@
         </whitelist>
     </filter>
 
-    <groups>
-        <exclude>
-            <group>migrations</group>
-            <group>importer</group>
-        </exclude>
-    </groups>
-
-    <logging>
-        <log type="coverage-text" target="php://stdout" showUncoveredFiles="false"/>
-    </logging>
-
     <listeners>
-        <listener class="TestListener" file="TestListener.php"/>
+        <listener class="Symfony\Bridge\PhpUnit\SymfonyTestsListener" />
     </listeners>
 </phpunit>

@@ -43,16 +43,16 @@ class FileUploadPagePart extends AbstractFormPagePart
     public function adaptForm(FormBuilderInterface $formBuilder, ArrayObject $fields, $sequence)
     {
         $ffsf = new FileFormSubmissionField();
-        $ffsf->setFieldName('field_' . $this->getUniqueId());
+        $ffsf->setFieldName('field_'.$this->getUniqueId());
         $ffsf->setLabel($this->getLabel());
         $ffsf->setSequence($sequence);
 
         $data = $formBuilder->getData();
-        $data['formwidget_' . $this->getUniqueId()] = $ffsf;
+        $data['formwidget_'.$this->getUniqueId()] = $ffsf;
 
-        $constraints = array();
+        $constraints = [];
         if ($this->getRequired()) {
-            $options = array();
+            $options = [];
             if (!empty($this->errorMessageRequired)) {
                 $options['message'] = $this->errorMessageRequired;
             }
@@ -60,13 +60,13 @@ class FileUploadPagePart extends AbstractFormPagePart
         }
 
         $formBuilder->add(
-            'formwidget_' . $this->getUniqueId(),
+            'formwidget_'.$this->getUniqueId(),
             FileFormSubmissionType::class,
-            array(
-                'label'       => $this->getLabel(),
-                'constraints' => $constraints,
-                'required'    => $this->getRequired()
-            )
+            [
+                'label' => $this->getLabel(),
+                'value_constraints' => $constraints,
+                'required' => $this->getRequired(),
+            ]
         );
         $formBuilder->setData($data);
 
@@ -128,7 +128,7 @@ class FileUploadPagePart extends AbstractFormPagePart
      */
     public function getDefaultView()
     {
-        return "KunstmaanFormBundle:FileUploadPagePart:view.html.twig";
+        return '@KunstmaanForm/FileUploadPagePart/view.html.twig';
     }
 
     /**

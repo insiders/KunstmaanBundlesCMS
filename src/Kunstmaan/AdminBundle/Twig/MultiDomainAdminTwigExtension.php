@@ -3,8 +3,14 @@
 namespace Kunstmaan\AdminBundle\Twig;
 
 use Kunstmaan\AdminBundle\Helper\DomainConfigurationInterface;
+use Twig\Environment;
+use Twig\Extension\AbstractExtension;
+use Twig\TwigFunction;
 
-class MultiDomainAdminTwigExtension extends \Twig_Extension
+/**
+ * @final since 5.4
+ */
+class MultiDomainAdminTwigExtension extends AbstractExtension
 {
     /**
      * @var DomainConfigurationInterface
@@ -16,7 +22,6 @@ class MultiDomainAdminTwigExtension extends \Twig_Extension
         $this->domainConfiguration = $domainConfiguration;
     }
 
-
     /**
      * Get Twig functions defined in this extension.
      *
@@ -24,37 +29,35 @@ class MultiDomainAdminTwigExtension extends \Twig_Extension
      */
     public function getFunctions()
     {
-        return array(
-            new \Twig_SimpleFunction('multidomain_widget', array($this, 'renderWidget'), array('needs_environment' => true, 'is_safe' => array('html'))),
-            new \Twig_SimpleFunction('is_multidomain_site', array($this, 'isMultiDomainSite')),
-            new \Twig_SimpleFunction('get_switched_host', array($this, 'getSwitchedHost')),
-            new \Twig_SimpleFunction('switched_host_is_current', array($this, 'switchedHostIsCurrent')),
-        );
+        return [
+            new TwigFunction('multidomain_widget', [$this, 'renderWidget'], ['needs_environment' => true, 'is_safe' => ['html']]),
+            new TwigFunction('is_multidomain_site', [$this, 'isMultiDomainSite']),
+            new TwigFunction('get_switched_host', [$this, 'getSwitchedHost']),
+            new TwigFunction('switched_host_is_current', [$this, 'switchedHostIsCurrent']),
+        ];
     }
 
     /**
      * Render multidomain switcher widget.
      *
-     * @param \Twig_Environment $env
-     * @param array             $locales    The locales
-     * @param string            $route      The route
-     * @param array             $parameters The route parameters
+     * @param Environment $env
+     * @param string      $route      The route
+     * @param array       $parameters The route parameters
      *
      * @return string
      */
-    public function renderWidget(\Twig_Environment $env, $route, array $parameters = array())
+    public function renderWidget(Environment $env, $route, array $parameters = [])
     {
-        $template = $env->loadTemplate(
-            "@KunstmaanAdmin/MultiDomainAdminTwigExtension/widget.html.twig"
+        $template = $env->load(
+            '@KunstmaanAdmin/MultiDomainAdminTwigExtension/widget.html.twig'
         );
 
         return $template->render(
-            array_merge(
-                $parameters,
-                array(
+            \array_merge(
+                $parameters, [
                     'hosts' => $this->getAdminDomainHosts(),
-                    'route' => $route
-                )
+                    'route' => $route,
+                ]
             )
         );
     }
@@ -70,7 +73,7 @@ class MultiDomainAdminTwigExtension extends \Twig_Extension
     }
 
     /**
-     * @return string
+     * @return array|null
      */
     public function getSwitchedHost()
     {
@@ -78,13 +81,18 @@ class MultiDomainAdminTwigExtension extends \Twig_Extension
     }
 
     /**
-     * @return string
+     * @return bool
      */
     public function switchedHostIsCurrent()
     {
-        return $this->domainConfiguration->getHost() == $this->getSwitchedHost()['host'];
+        $hostInfo = $this->getSwitchedHost();
+
+        return $this->domainConfiguration->getHost() === $hostInfo['host'];
     }
 
+    /**
+     * @return array
+     */
     public function getAdminDomainHosts()
     {
         return $this->domainConfiguration->getHosts();

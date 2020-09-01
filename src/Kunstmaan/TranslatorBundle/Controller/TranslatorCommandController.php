@@ -5,7 +5,7 @@ namespace Kunstmaan\TranslatorBundle\Controller;
 use Kunstmaan\AdminBundle\FlashMessages\FlashTypes;
 use Kunstmaan\TranslatorBundle\Model\Export\ExportCommand;
 use Kunstmaan\TranslatorBundle\Model\Import\ImportCommand;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
+use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 
@@ -16,7 +16,6 @@ class TranslatorCommandController extends Controller
      */
     public function clearCacheAction()
     {
-
         $this->get('kunstmaan_translator.service.translator.resource_cacher')->flushCache();
         $this->addFlash(
             FlashTypes::SUCCESS,
@@ -72,15 +71,18 @@ class TranslatorCommandController extends Controller
 
     /**
      * @Route("/export", name="KunstmaanTranslatorBundle_command_export")
+     *
+     * @deprecated Using the "KunstmaanTranslatorBundle_command_export" route is deprecated since KunstmaanTranslatorBundle 5.4 and will be removed in KunstmaanTranslatorBundle 6.0. Use the default adminlist bundle export functionality instead.
      */
     public function exportAction()
     {
-        $locales = explode('|', $this->getParameter('requiredlocales'));
+        // NEXT_MAJOR this route will be removed because we are now using the common export logic
+        @trigger_error('Using the "KunstmaanTranslatorBundle_command_export" route is deprecated since KunstmaanTranslatorBundle 5.4 and will be removed in KunstmaanTranslatorBundle 6.0. Use the default adminlist bundle export functionality instead.', E_USER_DEPRECATED);
+        $locales = $this->getParameter('kuma_translator.managed_locales');
         $exportCommand = new ExportCommand();
         $exportCommand
             ->setLocales($locales)
-            ->setFormat('csv')
-            ->setDomains('messages');
+            ->setFormat('csv');
 
         $response = $this->get('kunstmaan_translator.service.exporter.command_handler')->executeExportCSVCommand($exportCommand);
 

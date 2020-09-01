@@ -11,7 +11,7 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class NodeChoiceType extends AbstractType
 {
-    /** @var $requestStack RequestStack */
+    /** @var RequestStack */
     private $requestStack;
 
     /**
@@ -38,8 +38,8 @@ class NodeChoiceType extends AbstractType
         );
 
         $queryBuilderNormalizer = function (Options $options, $queryBuilder) {
-            if (is_callable($queryBuilder)) {
-                $queryBuilder = call_user_func($queryBuilder, $options['em']->getRepository($options['class']));
+            if (\is_callable($queryBuilder)) {
+                $queryBuilder = \call_user_func($queryBuilder, $options['em']->getRepository($options['class']));
             }
 
             if (!empty($options['page_class'])) {
@@ -61,7 +61,6 @@ class NodeChoiceType extends AbstractType
 
         $resolver->setNormalizer('query_builder', $queryBuilderNormalizer);
         $resolver->setAllowedTypes('query_builder', array('null', 'callable', 'Doctrine\ORM\QueryBuilder'));
-
     }
 
     public function getParent()

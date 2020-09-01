@@ -6,7 +6,6 @@ use Doctrine\ORM\EntityManager;
 use Kunstmaan\AdminBundle\Helper\DomainConfigurationInterface;
 use Kunstmaan\NodeBundle\Validation\URLValidator;
 use Psr\Log\LoggerInterface;
-use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Routing\RouterInterface;
 
 /**
@@ -31,15 +30,11 @@ class URLHelper
      */
     private $logger;
 
-    /**
-     * @var array|null
-     */
-    private $nodeTranslationMap = null;
+    /** @var array */
+    private $nodeTranslationCache = [];
 
-    /**
-     * @var array|null
-     */
-    private $mediaMap = null;
+    /** @var array */
+    private $mediaCache = [];
 
     /**
      * @var DomainConfigurationInterface
@@ -47,9 +42,9 @@ class URLHelper
     private $domainConfiguration;
 
     /**
-     * @param EntityManager $em
-     * @param RouterInterface $router
-     * @param LoggerInterface $logger
+     * @param EntityManager                $em
+     * @param RouterInterface              $router
+     * @param LoggerInterface              $logger
      * @param DomainConfigurationInterface $domainConfiguration
      */
     public function __construct(EntityManager $em, RouterInterface $router, LoggerInterface $logger, DomainConfigurationInterface $domainConfiguration)
@@ -63,8 +58,9 @@ class URLHelper
     /**
      * Replace a given text, according to the node translation id and the multidomain site id.
      *
-     * @param $text
-     * @return mixed
+     * @param string $text
+     *
+     * @return string
      */
     public function replaceUrl($text)
     {
@@ -73,43 +69,38 @@ class URLHelper
         }
 
         if ($this->isInternalLink($text)) {
-            preg_match_all("/\[(([a-z_A-Z]+):)?NT([0-9]+)\]|(link:\/\/([a-z_A-Z]*):?([0-9]+)([\w-._~!?$&%'()*+,;=:@\/]+))/", $text, $matches, PREG_SET_ORDER);
+            preg_match_all("/\[(([a-z_A-Z\.]+):)?NT([0-9]+)\]|(link:\/\/([a-z_A-Z]*):?([0-9]+)([\w-._~!?$&%'()*+,;=:@\/]+))/", $text, $matches, PREG_SET_ORDER);
 
-            if (count($matches) > 0) {
-                $map = $this->getNodeTranslationMap();
+            if (\count($matches) > 0) {
                 foreach ($matches as $match) {
-                    $nodeTranslationFound = false;
                     $fullTag = $match[0];
 
                     $isSchemaLink = empty($match[3]);
                     $hostId = $isSchemaLink ? $match[5] : $match[2];
+
+                    $hostConfig = !empty($hostId) ? $this->domainConfiguration->getFullHostById($hostId) : null;
+                    $host = null !== $hostConfig && array_key_exists('host', $hostConfig) ? $hostConfig['host'] : null;
+                    $hostBaseUrl = $this->domainConfiguration->getHostBaseUrl($host);
+
                     $nodeTranslationId = $isSchemaLink ? $match[6] : $match[3];
+                    $nodeTranslation = $this->getNodeTranslation($nodeTranslationId);
 
-                    $hostConfig = $this->domainConfiguration->getFullHostById($hostId);
-                    $hostBaseUrl = $this->domainConfiguration->getHostBaseUrl($hostConfig['host']);
-
-
-                    foreach ($map as $nodeTranslation) {
-                        if ($nodeTranslation['id'] == $nodeTranslationId) {
-                            $urlParams = ['url' => $nodeTranslation['url']];
-                            $nodeTranslationFound = true;
-                            // Only add locale if multilingual site
-                            if ($this->domainConfiguration->isMultiLanguage($hostConfig['host'])) {
-                                $urlParams['_locale'] = $nodeTranslation['lang'];
-                            }
-
-                            // Only add other site, when having this.
-                            if ($hostId) {
-                                $urlParams['otherSite'] = $hostId;
-                            }
-
-                            $url = $this->router->generate('_slug', $urlParams);
-
-                            $text = str_replace($fullTag, $hostId ? $hostBaseUrl . $url : $url, $text);
+                    if ($nodeTranslation) {
+                        $urlParams = ['url' => $nodeTranslation['url']];
+                        // Only add locale if multilingual site
+                        if ($this->domainConfiguration->isMultiLanguage($host)) {
+                            $urlParams['_locale'] = $nodeTranslation['lang'];
                         }
-                    }
 
-                    if (!$nodeTranslationFound) {
+                        // Only add other site, when having this.
+                        if ($hostId) {
+                            $urlParams['otherSite'] = $hostId;
+                        }
+
+                        $url = $this->router->generate('_slug', $urlParams);
+
+                        $text = str_replace($fullTag, $hostId ? $hostBaseUrl . $url : $url, $text);
+                    } else {
                         $this->logger->error('No NodeTranslation found in the database when replacing url tag ' . $fullTag);
                     }
                 }
@@ -119,21 +110,15 @@ class URLHelper
         if ($this->isInternalMediaLink($text)) {
             preg_match_all("/\[(([a-z_A-Z]+):)?M([0-9]+)\]/", $text, $matches, PREG_SET_ORDER);
 
-            if (count($matches) > 0) {
-                $map = $this->getMediaMap();
+            if (\count($matches) > 0) {
                 foreach ($matches as $match) {
-                    $mediaFound = false;
                     $fullTag = $match[0];
                     $mediaId = $match[3];
 
-                    foreach ($map as $mediaItem) {
-                        if ($mediaItem['id'] == $mediaId) {
-                            $mediaFound = true;
-                            $text = str_replace($fullTag, $mediaItem['url'], $text);
-                        }
-                    }
-
-                    if (!$mediaFound) {
+                    $mediaItem = $this->getMedia($mediaId);
+                    if ($mediaItem) {
+                        $text = str_replace($fullTag, $mediaItem['url'], $text);
+                    } else {
                         $this->logger->error('No Media found in the database when replacing url tag ' . $fullTag);
                     }
                 }
@@ -143,39 +128,37 @@ class URLHelper
         return $text;
     }
 
-    /**
-     * Get a map of all node translations. Only called once for caching.
-     *
-     * @return array|null
-     * @throws \Doctrine\DBAL\DBALException
-     */
-    private function getNodeTranslationMap()
+    private function getNodeTranslation($nodeTranslationId): array
     {
-        if (is_null($this->nodeTranslationMap)) {
-            $sql = "SELECT id, url, lang FROM kuma_node_translations";
-            $stmt = $this->em->getConnection()->prepare($sql);
-            $stmt->execute();
-            $this->nodeTranslationMap = $stmt->fetchAll();
+        if (isset($this->nodeTranslationCache[$nodeTranslationId])) {
+            return $this->nodeTranslationCache[$nodeTranslationId];
         }
 
-        return $this->nodeTranslationMap;
+        $stmt = $this->em->getConnection()->executeQuery(
+            'SELECT url, lang FROM kuma_node_translations WHERE id = :nodeTranslationId',
+            ['nodeTranslationId' => $nodeTranslationId]
+        );
+        $nodeTranslation = $stmt->fetch();
+
+        $this->nodeTranslationCache[$nodeTranslationId] = $nodeTranslation;
+
+        return $nodeTranslation;
     }
 
-    /**
-     * Get a map of all media items. Only called once for caching.
-     *
-     * @return array|null
-     * @throws \Doctrine\DBAL\DBALException
-     */
-    private function getMediaMap()
+    private function getMedia($mediaId): array
     {
-        if (is_null($this->mediaMap)) {
-            $sql = "SELECT id, url FROM kuma_media";
-            $stmt = $this->em->getConnection()->prepare($sql);
-            $stmt->execute();
-            $this->mediaMap = $stmt->fetchAll();
+        if (isset($this->mediaCache[$mediaId])) {
+            return $this->mediaCache[$mediaId];
         }
 
-        return $this->mediaMap;
+        $stmt = $this->em->getConnection()->executeQuery(
+            'SELECT url FROM kuma_media WHERE id = :mediaId',
+            ['mediaId' => $mediaId]
+        );
+        $media = $stmt->fetch();
+
+        $this->mediaCache[$mediaId] = $media;
+
+        return $media;
     }
 }

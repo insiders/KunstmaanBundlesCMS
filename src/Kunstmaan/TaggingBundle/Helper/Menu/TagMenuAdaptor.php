@@ -10,7 +10,6 @@ use Symfony\Component\HttpFoundation\Request;
 
 class TagMenuAdaptor implements MenuAdaptorInterface
 {
-
     /**
      * In this method you can add children for a specific parent, but also remove and change the already created children
      *
@@ -21,7 +20,7 @@ class TagMenuAdaptor implements MenuAdaptorInterface
      */
     public function adaptChildren(MenuBuilder $menu, array &$children, MenuItem $parent = null, Request $request = null)
     {
-        if (!is_null($parent) && 'KunstmaanAdminBundle_modules' == $parent->getRoute()) {
+        if (!\is_null($parent) && 'KunstmaanAdminBundle_modules' == $parent->getRoute()) {
             $menuItem = new TopMenuItem($menu);
             $menuItem
                 ->setRoute('kunstmaantaggingbundle_admin_tag')

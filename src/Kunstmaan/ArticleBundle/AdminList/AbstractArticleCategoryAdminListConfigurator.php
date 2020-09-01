@@ -2,7 +2,6 @@
 
 namespace Kunstmaan\ArticleBundle\AdminList;
 
-use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\QueryBuilder;
 use Kunstmaan\AdminBundle\Helper\Security\Acl\AclHelper;
@@ -30,7 +29,7 @@ class AbstractArticleCategoryAdminListConfigurator extends AbstractDoctrineORMAd
      */
     public function getBundleName()
     {
-        return "KunstmaanArticleBundle";
+        return 'KunstmaanArticleBundle';
     }
 
     /**
@@ -40,7 +39,7 @@ class AbstractArticleCategoryAdminListConfigurator extends AbstractDoctrineORMAd
      */
     public function getEntityName()
     {
-        return "AbstractArticleCategory";
+        return 'AbstractArticleCategory';
     }
 
     /**
@@ -59,7 +58,6 @@ class AbstractArticleCategoryAdminListConfigurator extends AbstractDoctrineORMAd
         $this->addField('name', 'article.category.list.header.name', true);
     }
 
-
     /**
      * @param QueryBuilder $queryBuilder
      */
@@ -77,7 +75,7 @@ class AbstractArticleCategoryAdminListConfigurator extends AbstractDoctrineORMAd
     {
         $query = parent::getQuery();
 
-        if (!is_null($query)) {
+        if (!\is_null($query)) {
             $query->setHint(
                 \Doctrine\ORM\Query::HINT_CUSTOM_OUTPUT_WALKER,
                 'Gedmo\\Translatable\\Query\\TreeWalker\\TranslationWalker'

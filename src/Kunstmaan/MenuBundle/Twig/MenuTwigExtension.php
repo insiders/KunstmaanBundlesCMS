@@ -5,11 +5,17 @@ namespace Kunstmaan\MenuBundle\Twig;
 use Kunstmaan\MenuBundle\Entity\MenuItem;
 use Kunstmaan\MenuBundle\Repository\MenuItemRepositoryInterface;
 use Kunstmaan\MenuBundle\Service\RenderService;
+use Twig\Environment;
+use Twig\Extension\AbstractExtension;
+use Twig\TwigFunction;
 
-class MenuTwigExtension extends \Twig_Extension
+/**
+ * @final since 5.4
+ */
+class MenuTwigExtension extends AbstractExtension
 {
     /**
-     * @var RenderService $renderService
+     * @var RenderService
      */
     private $renderService;
 
@@ -36,7 +42,7 @@ class MenuTwigExtension extends \Twig_Extension
     public function getFunctions()
     {
         return array(
-            new \Twig_SimpleFunction(
+            new TwigFunction(
                 'get_menu',
                 array($this, 'getMenu'),
                 array(
@@ -44,7 +50,7 @@ class MenuTwigExtension extends \Twig_Extension
                     'needs_environment' => true,
                 )
             ),
-            new \Twig_SimpleFunction('get_menu_items', array($this, 'getMenuItems')),
+            new TwigFunction('get_menu_items', array($this, 'getMenuItems')),
         );
     }
 
@@ -54,9 +60,10 @@ class MenuTwigExtension extends \Twig_Extension
      * @param string $name
      * @param string $lang
      * @param array  $options
+     *
      * @return string
      */
-    public function getMenu(\Twig_Environment $environment, $name, $lang, $options = array())
+    public function getMenu(Environment $environment, $name, $lang, $options = array())
     {
         $options = array_merge($this->getDefaultOptions(), $options);
 
@@ -66,9 +73,8 @@ class MenuTwigExtension extends \Twig_Extension
         };
 
         $arrayResult = $this->getMenuItems($name, $lang);
-        $html = $this->repository->buildTree($arrayResult, $options);
 
-        return $html;
+        return $this->repository->buildTree($arrayResult, $options);
     }
 
     /**
@@ -76,6 +82,7 @@ class MenuTwigExtension extends \Twig_Extension
      *
      * @param string $name
      * @param string $lang
+     *
      * @return array
      */
     public function getMenuItems($name, $lang)
@@ -89,7 +96,7 @@ class MenuTwigExtension extends \Twig_Extension
             $foundIds[] = $array['id'];
         }
         foreach ($arrayResult as $key => $array) {
-            if (!is_null($array['parent']) && !in_array($array['parent']['id'], $foundIds)) {
+            if (!\is_null($array['parent']) && !\in_array($array['parent']['id'], $foundIds)) {
                 unset($arrayResult[$key]);
             }
         }

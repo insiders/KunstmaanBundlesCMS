@@ -73,7 +73,7 @@ interface DomainConfigurationInterface
      * Return optional extra data for the current host from the multi domain
      * configuration. Returns an empty array if no data was defined...
      *
-     * @return mixed
+     * @return array
      */
     public function getExtraData();
 
@@ -81,7 +81,7 @@ interface DomainConfigurationInterface
      * Return optional extra locales data for the current host from the multi domain
      * configuration. Returns an empty array if no data was defined...
      *
-     * @return mixed
+     * @return array
      */
     public function getLocalesExtraData();
 
@@ -97,23 +97,23 @@ interface DomainConfigurationInterface
      *
      * @param string|null $host
      *
-     * @return mixed
+     * @return array|null
      */
     public function getFullHost($host = null);
 
     /**
      * Return the full host of a given id.
      *
-     * @param int $id
+     * @param string|int $id
      *
-     * @return mixed
+     * @return array|null
      */
     public function getFullHostById($id);
 
     /**
      * Return the host switched to from url chooser
      *
-     * @return mixed
+     * @return array|null
      */
     public function getHostSwitched();
 
@@ -122,8 +122,7 @@ interface DomainConfigurationInterface
      *
      * @param string|null $host
      *
-     * @return mixed
+     * @return string|null
      */
     public function getHostBaseUrl($host = null);
-
 }

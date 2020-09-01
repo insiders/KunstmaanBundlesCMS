@@ -29,7 +29,6 @@ use Symfony\Component\Validator\Constraints as Assert;
  */
 class Node extends AbstractEntity implements GedmoNode
 {
-
     /**
      * @var Node
      *
@@ -110,10 +109,10 @@ class Node extends AbstractEntity implements GedmoNode
      */
     public function __construct()
     {
-        $this->children         = new ArrayCollection();
+        $this->children = new ArrayCollection();
         $this->nodeTranslations = new ArrayCollection();
-        $this->deleted          = false;
-        $this->hiddenFromNav    = false;
+        $this->deleted = false;
+        $this->hiddenFromNav = false;
     }
 
     /**
@@ -145,7 +144,7 @@ class Node extends AbstractEntity implements GedmoNode
     }
 
     /**
-     * @return ArrayCollection
+     * @return ArrayCollection|Node[]
      */
     public function getChildren()
     {
@@ -196,11 +195,7 @@ class Node extends AbstractEntity implements GedmoNode
     {
         return $this->nodeTranslations
             ->filter(function (NodeTranslation $entry) use ($includeOffline) {
-                if ($includeOffline || $entry->isOnline()) {
-                    return true;
-                }
-
-                return false;
+                return $includeOffline || $entry->isOnline();
             }
             );
     }
@@ -280,11 +275,11 @@ class Node extends AbstractEntity implements GedmoNode
      */
     public function getParents()
     {
-        $parent  = $this->getParent();
+        $parent = $this->getParent();
         $parents = array();
         while ($parent !== null) {
             $parents[] = $parent;
-            $parent    = $parent->getParent();
+            $parent = $parent->getParent();
         }
 
         return array_reverse($parents);
@@ -415,6 +410,6 @@ class Node extends AbstractEntity implements GedmoNode
      */
     public function __toString()
     {
-        return "node " . $this->getId() . ", refEntityName: " . $this->getRefEntityName();
+        return 'node ' . $this->getId() . ', refEntityName: ' . $this->getRefEntityName();
     }
 }

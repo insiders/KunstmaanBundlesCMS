@@ -1,4 +1,5 @@
 <?php
+
 namespace Kunstmaan\TranslatorBundle\Service\Command\Exporter;
 
 use Symfony\Component\Yaml\Dumper;
@@ -14,9 +15,8 @@ class YamlFileExporter implements FileExporterInterface
     public function export(array $translations)
     {
         $ymlDumper = new Dumper();
-        $ymlContent = $ymlDumper->dump($translations);
 
-        return $ymlContent;
+        return $ymlDumper->dump($translations);
     }
 
     /**
@@ -26,5 +26,4 @@ class YamlFileExporter implements FileExporterInterface
     {
         return 'yml' === $format;
     }
-
 }

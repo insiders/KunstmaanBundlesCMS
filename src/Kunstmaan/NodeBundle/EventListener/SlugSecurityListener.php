@@ -21,11 +21,16 @@ class SlugSecurityListener
      * @var EntityManager
      */
     protected $em;
-    
+
     /**
      * @var NodeMenu
      */
     protected $nodeMenu;
+
+    /**
+     * @var bool
+     */
+    private $permissionsEnabled;
 
     /**
      * @param EntityManager                 $entityManager
@@ -35,11 +40,13 @@ class SlugSecurityListener
     public function __construct(
         EntityManager $entityManager,
         AuthorizationCheckerInterface $authorizationChecker,
-        NodeMenu $nodeMenu
+        NodeMenu $nodeMenu,
+        $permissionsEnabled = true
     ) {
-        $this->em                   = $entityManager;
+        $this->em = $entityManager;
         $this->authorizationChecker = $authorizationChecker;
-        $this->nodeMenu             = $nodeMenu;
+        $this->nodeMenu = $nodeMenu;
+        $this->permissionsEnabled = $permissionsEnabled;
     }
 
     /**
@@ -52,14 +59,12 @@ class SlugSecurityListener
      */
     public function onSlugSecurityEvent(SlugSecurityEvent $event)
     {
-        $node            = $event->getNode();
+        $node = $event->getNode();
         $nodeTranslation = $event->getNodeTranslation();
-        $request         = $event->getRequest();
+        $request = $event->getRequest();
 
-        if (false === $this->authorizationChecker->isGranted(PermissionMap::PERMISSION_VIEW, $node)) {
-            throw new AccessDeniedException(
-                'You do not have sufficient rights to access this page.'
-            );
+        if ($this->permissionsEnabled && false === $this->authorizationChecker->isGranted(PermissionMap::PERMISSION_VIEW, $node)) {
+            throw new AccessDeniedException('You do not have sufficient rights to access this page.');
         }
 
         $isPreview = $request->attributes->get('preview');
@@ -67,12 +72,12 @@ class SlugSecurityListener
         if (!$isPreview && !$nodeTranslation->isOnline()) {
             throw new NotFoundHttpException('The requested page is not online');
         }
-        
+
         $nodeMenu = $this->nodeMenu;
         $nodeMenu->setLocale($nodeTranslation->getLang());
         $nodeMenu->setCurrentNode($node);
         $nodeMenu->setIncludeOffline($isPreview);
-        
+
         $request->attributes->set('_nodeMenu', $nodeMenu);
     }
 }

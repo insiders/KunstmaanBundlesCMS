@@ -1,6 +1,4 @@
 parameters:
-    kunstmaan_search.hostname: 'localhost'
-    kunstmaan_search.port: 9200
     kunstmaan_search.search_provider: 'Elastica'
     kunstmaan_search.search_configuration_chain.class: Kunstmaan\SearchBundle\Configuration\SearchConfigurationChain
     kunstmaan_search.search_provider_chain.class: Kunstmaan\SearchBundle\Provider\SearchProviderChain
@@ -17,10 +15,11 @@ parameters:
 services:
     kunstmaan_search.search:
         class: '%kunstmaan_search.search.class%'
-        arguments: ['@kunstmaan_search.search_provider_chain', '%searchindexprefix%', '%kunstmaan_search.search_provider%']
+        arguments: ['@kunstmaan_search.search_provider_chain', '%kunstmaan_search.index_prefix%', '%kunstmaan_search.search_provider%']
 
     kunstmaan_search.search.factory.analysis:
         class: '%kunstmaan_search.search.factory.analysis.class%'
+        public: true
 
     # Providers
     kunstmaan_search.search_provider_chain:
@@ -29,7 +28,7 @@ services:
     kunstmaan_search.search_provider.elastica:
         class: '%kunstmaan_search.search_provider.elastica.class%'
         calls:
-            - [ addNode, ['%kunstmaan_search.hostname%', '%kunstmaan_search.port%'] ]
+            - [ addNode, ['%kunstmaan_search.hostname%', '%kunstmaan_search.port%', '%kunstmaan_search.username%', '%kunstmaan_search.password%'] ]
         tags:
             - { name: kunstmaan_search.search_provider, alias: Elastica }
 
@@ -39,6 +38,8 @@ services:
 
     kunstmaan_search.command.setup:
         class: Kunstmaan\SearchBundle\Command\SetupIndexCommand
+        arguments:
+            - '@kunstmaan_search.search_configuration_chain'
         calls:
             - [setContainer, ['@service_container'] ]
         tags:
@@ -46,6 +47,8 @@ services:
 
     kunstmaan_search.command.delete:
         class: Kunstmaan\SearchBundle\Command\DeleteIndexCommand
+        arguments:
+            - '@kunstmaan_search.search_configuration_chain'
         calls:
             - [setContainer, ['@service_container'] ]
         tags:
@@ -53,7 +56,13 @@ services:
 
     kunstmaan_search.command.populate:
         class: Kunstmaan\SearchBundle\Command\PopulateIndexCommand
+        arguments:
+            - '@kunstmaan_search.search_configuration_chain'
         calls:
             - [setContainer, ['@service_container'] ]
         tags:
             - { name: console.command }
+
+    Twig\Extensions\TextExtension:
+        tags:
+            - { name: twig.extension }

@@ -6,12 +6,9 @@ namespace Kunstmaan\SeoBundle\Helper;
  * Prepares an order with it's orderitems for conversion.
  *
  * Class OrderPreparer
- *
- * @package Kunstmaan\SeoBundle\Helper
  */
 class OrderPreparer
 {
-
     /**
      * Fully prepares an order for conversion.
      * What it does for now is deduplicate the OrderItems.
@@ -26,10 +23,10 @@ class OrderPreparer
      */
     public function prepare(Order $order)
     {
-        /** @var $orderItems OrderItem[] */
+        /** @var OrderItem[] $orderItems */
         $orderItems = $order->orderItems;
 
-        /** @var $newOrderItems OrderItem[] */
+        /** @var OrderItem[] $newOrderItems */
         $newOrderItems = array();
 
         foreach ($orderItems as $item) {
@@ -45,5 +42,4 @@ class OrderPreparer
 
         return $order;
     }
-
 }

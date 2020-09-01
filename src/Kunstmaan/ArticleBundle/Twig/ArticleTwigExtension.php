@@ -4,18 +4,20 @@ namespace Kunstmaan\ArticleBundle\Twig;
 
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Routing\RouterInterface;
-use Twig_Extension;
+use Twig\Extension\AbstractExtension;
+use Twig\TwigFunction;
 
 /**
  * Extension for article bundle.
+ *
+ * @final since 5.4
  */
-class ArticleTwigExtension extends Twig_Extension
+class ArticleTwigExtension extends AbstractExtension
 {
     /**
-     * @var EntityManagerInterface $em
+     * @var EntityManagerInterface
      */
     private $em;
 
@@ -25,21 +27,19 @@ class ArticleTwigExtension extends Twig_Extension
     private $router;
 
     /**
-     * @var RequestStack
-     */
-    private $requestStack;
-
-    /**
      * ArticleTwigExtension constructor.
      *
      * @param EntityManagerInterface $em
      * @param RouterInterface        $router
-     * @param RequestStack           $requestStack
      */
-    public function __construct(EntityManagerInterface $em, RouterInterface $router, RequestStack $requestStack) {
+    public function __construct(EntityManagerInterface $em, RouterInterface $router)
+    {
         $this->em = $em;
         $this->router = $router;
-        $this->requestStack = $requestStack;
+
+        if (\func_num_args() > 2) {
+            @trigger_error(sprintf('Passing the "request_stack" service as the third argument in "%s" is deprecated in KunstmaanArticleBundle 5.1 and will be removed in KunstmaanArticleBundle 6.0. Remove the "request_stack" argument from your service definition.', __METHOD__), E_USER_DEPRECATED);
+        }
     }
 
     /**
@@ -50,21 +50,20 @@ class ArticleTwigExtension extends Twig_Extension
     public function getFunctions()
     {
         return array(
-            new \Twig_SimpleFunction(
+            new TwigFunction(
                 'get_article_tag_path', array($this, 'getArticleTagRouterPath')
             ),
-            new \Twig_SimpleFunction(
+            new TwigFunction(
                 'get_article_category_path', array($this, 'getArticleCategoryRouterPath')
             ),
-            new \Twig_SimpleFunction(
+            new TwigFunction(
                 'get_article_categories', array($this, 'getCategories')
             ),
-            new \Twig_SimpleFunction(
+            new TwigFunction(
                 'get_article_tags', array($this, 'getTags')
             ),
         );
     }
-
 
     /**
      * Get tags array for view.
@@ -95,6 +94,7 @@ class ArticleTwigExtension extends Twig_Extension
      *
      * @param Request $request
      * @param string  $className
+     *
      * @return array
      */
     public function getCategories(Request $request, $className)
@@ -125,6 +125,7 @@ class ArticleTwigExtension extends Twig_Extension
     public function getArticleTagRouterPath($slug, $tag, $locale, $parameters = [], $referenceType = UrlGeneratorInterface::ABSOLUTE_PATH)
     {
         $routeName = sprintf('_slug_tag_%s', $locale);
+
         return $this->getArticleRouterPath($routeName, 'tag', $slug, $tag, $locale, $parameters, $referenceType);
     }
 
@@ -140,6 +141,7 @@ class ArticleTwigExtension extends Twig_Extension
     public function getArticleCategoryRouterPath($slug, $category, $locale, $parameters = [], $referenceType = UrlGeneratorInterface::ABSOLUTE_PATH)
     {
         $routeName = sprintf('_slug_category_%s', $locale);
+
         return $this->getArticleRouterPath($routeName, 'category', $slug, $category, $locale, $parameters, $referenceType);
     }
 
@@ -176,12 +178,14 @@ class ArticleTwigExtension extends Twig_Extension
         if (!isset($parameters['_locale'])) {
             $parameters['_locale'] = $locale;
         }
+
         return $this->router->generate($routeName, $parameters, $referenceType);
     }
 
     /**
      * @param string $type
      * @param string $locale
+     *
      * @return bool
      */
     protected function articleRouteExists($type, $locale)
@@ -189,7 +193,7 @@ class ArticleTwigExtension extends Twig_Extension
         $routeName = sprintf('_slug_%s_%s', $type, $locale);
 
         try {
-            return !is_null($this->router->getRouteCollection()->get($routeName));
+            return !\is_null($this->router->getRouteCollection()->get($routeName));
         } catch (\Exception $e) {
             return false;
         }

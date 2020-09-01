@@ -12,6 +12,7 @@ use Kunstmaan\AdminListBundle\AdminList\FilterType\ORM\DateFilterType;
 use Kunstmaan\AdminListBundle\AdminList\FilterType\ORM\StringFilterType;
 use Kunstmaan\ArticleBundle\Entity\AbstractArticleOverviewPage;
 use Kunstmaan\NodeBundle\Entity\Node;
+use Kunstmaan\NodeBundle\Entity\NodeTranslation;
 
 /**
  * The AdminList configurator for the AbstractArticlePage
@@ -50,7 +51,7 @@ abstract class AbstractArticlePageAdminListConfigurator extends AbstractDoctrine
      */
     public function getBundleName()
     {
-        return "KunstmaanArticleBundle";
+        return 'KunstmaanArticleBundle';
     }
 
     /**
@@ -60,7 +61,7 @@ abstract class AbstractArticlePageAdminListConfigurator extends AbstractDoctrine
      */
     public function getEntityName()
     {
-        return "AbstractArticlePage";
+        return 'AbstractArticlePage';
     }
 
     /**
@@ -79,10 +80,10 @@ abstract class AbstractArticlePageAdminListConfigurator extends AbstractDoctrine
      */
     public function buildFields()
     {
-        $this->addField('title', 'article.page.list.header.title', true, 'KunstmaanNodeBundle:Admin:title.html.twig')
+        $this->addField('title', 'article.page.list.header.title', true, '@KunstmaanNode/Admin/title.html.twig')
             ->addField('created', 'article.page.list.header.created_at', true)
             ->addField('updated', 'article.page.list.header.updated_at', true)
-            ->addField('online', 'article.page.list.header.online', true, 'KunstmaanNodeBundle:Admin:online.html.twig');
+            ->addField('online', 'article.page.list.header.online', true, '@KunstmaanNode/Admin/online.html.twig');
     }
 
     /**
@@ -91,7 +92,7 @@ abstract class AbstractArticlePageAdminListConfigurator extends AbstractDoctrine
     protected function getQueryBuilder()
     {
         $queryBuilder = $this->em
-            ->getRepository('KunstmaanNodeBundle:NodeTranslation')
+            ->getRepository(NodeTranslation::class)
             ->createQueryBuilder('b');
 
         return $queryBuilder;
@@ -109,7 +110,7 @@ abstract class AbstractArticlePageAdminListConfigurator extends AbstractDoctrine
         $queryBuilder->andWhere('b.lang = :lang');
         $queryBuilder->andWhere('n.deleted = 0');
         $queryBuilder->andWhere('n.refEntityName = :class');
-        $queryBuilder->addOrderBy("b.updated", "DESC");
+        $queryBuilder->addOrderBy('b.updated', 'DESC');
         $queryBuilder->setParameter('lang', $this->locale);
     }
 
@@ -124,8 +125,8 @@ abstract class AbstractArticlePageAdminListConfigurator extends AbstractDoctrine
         $node = $item->getNode();
 
         return array(
-            'path'   => 'KunstmaanNodeBundle_nodes_edit',
-            'params' => array('id' => $node->getId())
+            'path' => 'KunstmaanNodeBundle_nodes_edit',
+            'params' => array('id' => $node->getId()),
         );
     }
 
@@ -142,8 +143,8 @@ abstract class AbstractArticlePageAdminListConfigurator extends AbstractDoctrine
         $node = $item->getNode();
 
         return array(
-            'path'   => 'KunstmaanNodeBundle_nodes_delete',
-            'params' => array('id' => $node->getId())
+            'path' => 'KunstmaanNodeBundle_nodes_delete',
+            'params' => array('id' => $node->getId()),
         );
     }
 
@@ -157,7 +158,7 @@ abstract class AbstractArticlePageAdminListConfigurator extends AbstractDoctrine
         $repository = $this->getOverviewPageRepository();
         $pages = $repository->findActiveOverviewPages();
 
-        if (isset($pages) && count($pages) > 0) {
+        if (isset($pages) && \count($pages) > 0) {
             return $pages[0];
         }
 
@@ -166,6 +167,7 @@ abstract class AbstractArticlePageAdminListConfigurator extends AbstractDoctrine
 
     /**
      * Returns all overview pages
+     *
      * @return mixed
      */
     public function getOverviewPages()
@@ -178,11 +180,12 @@ abstract class AbstractArticlePageAdminListConfigurator extends AbstractDoctrine
      */
     public function getListTemplate()
     {
-        return 'KunstmaanArticleBundle:AbstractArticlePageAdminList:list.html.twig';
+        return '@KunstmaanArticle/AbstractArticlePageAdminList/list.html.twig';
     }
 
     /**
      * Returns the full entity class name
+     *
      * @return string
      */
     public function getEntityClassName()

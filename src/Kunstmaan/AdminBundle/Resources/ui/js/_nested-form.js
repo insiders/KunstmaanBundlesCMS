@@ -9,7 +9,7 @@ kunstmaanbundles.nestedForm = (function(window, undefined) {
 
 
     var newButtonHtml = '<button type="button" class="js-nested-form__add-btn btn btn-primary btn--raise-on-hover nested-form__add-btn">%label%</button>';
-    var delButtonHtml = '<button type="button" class="js-nested-form__del-btn btn--raise-on-hover nested-form__item__header__actions__action nested-form__item__header__actions__action--del"><i class="fa fa-trash-o"></i></button>';
+    var delButtonHtml = '<button type="button" class="js-nested-form__del-btn btn--raise-on-hover nested-form__item__header__actions__action nested-form__item__header__actions__action--del"><i class="fa fa-trash"></i></button>';
 
 
     init = reInit = function() {
@@ -170,20 +170,11 @@ kunstmaanbundles.nestedForm = (function(window, undefined) {
 
         showOrHideActions($form);
 
-        // Init new rich editors
-        kunstmaanbundles.richEditor.init();
+        // Reinit required modules.
+        kunstmaanbundles.app.initModules();
 
-        kunstmaanbundles.nestedForm.init();
-        kunstmaanbundles.advancedSelect.init();
-
-        // Init new tooltips
-        kunstmaanbundles.tooltip.init();
-
-        // Init new colorpicker
-        kunstmaanbundles.colorpicker.init();
-
-        // Init new datepickers
-        kunstmaanbundles.datepicker.reInit();
+        // Reinit all modules provied by data attribute.
+        kunstmaanbundles.pagepartEditor.reInit($newItem);
 
         // Init Ajax Modals
         kunstmaanbundles.ajaxModal.resetAjaxModals();

@@ -73,11 +73,11 @@ class NodePagesConfiguration implements SearchConfigurationInterface
 
     /** @var array */
     protected $properties = [];
-    
-    /** @var integer */
+
+    /** @var int */
     protected $numberOfShards;
 
-    /** @var integer */
+    /** @var int */
     protected $numberOfReplicas;
 
     /** @var Node */
@@ -94,16 +94,16 @@ class NodePagesConfiguration implements SearchConfigurationInterface
      */
     public function __construct($container, $searchProvider, $name, $type, $numberOfShards = 1, $numberOfReplicas = 0)
     {
-        $this->container           = $container;
-        $this->indexName           = $name;
-        $this->indexType           = $type;
-        $this->searchProvider      = $searchProvider;
+        $this->container = $container;
+        $this->indexName = $name;
+        $this->indexType = $type;
+        $this->searchProvider = $searchProvider;
         $this->domainConfiguration = $this->container->get('kunstmaan_admin.domain_configuration');
-        $this->locales             = $this->domainConfiguration->getBackendLocales();
-        $this->analyzerLanguages   = $this->container->getParameter('analyzer_languages');
-        $this->em                  = $this->container->get('doctrine')->getManager();
-        $this->numberOfShards      = $numberOfShards;
-        $this->numberOfReplicas    = $numberOfReplicas;
+        $this->locales = $this->domainConfiguration->getBackendLocales();
+        $this->analyzerLanguages = $this->container->getParameter('analyzer_languages');
+        $this->em = $this->container->get('doctrine')->getManager();
+        $this->numberOfShards = $numberOfShards;
+        $this->numberOfReplicas = $numberOfReplicas;
     }
 
     /**
@@ -149,7 +149,7 @@ class NodePagesConfiguration implements SearchConfigurationInterface
                 $locale = strtolower($locale);
             }
 
-            if ( false === array_key_exists($locale, $this->analyzerLanguages) ) {
+            if (false === \array_key_exists($locale, $this->analyzerLanguages)) {
                 $notAnalyzed[] = $locale;
             }
         }
@@ -176,7 +176,7 @@ class NodePagesConfiguration implements SearchConfigurationInterface
             // Build new index
             $index = $this->searchProvider->createIndex($this->indexName . '_' . $locale);
 
-            if (array_key_exists($locale, $this->analyzerLanguages)) {
+            if (\array_key_exists($locale, $this->analyzerLanguages)) {
                 $localeAnalysis = clone $analysis;
                 $language = $this->analyzerLanguages[$locale]['analyzer'];
 
@@ -195,8 +195,8 @@ class NodePagesConfiguration implements SearchConfigurationInterface
      */
     public function populateIndex()
     {
-        $nodeRepository = $this->em->getRepository('KunstmaanNodeBundle:Node');
-        $nodes          = $nodeRepository->getAllTopNodes();
+        $nodeRepository = $this->em->getRepository(Node::class);
+        $nodes = $nodeRepository->getAllTopNodes();
 
         foreach ($nodes as $node) {
             $this->currentTopNode = $node;
@@ -236,10 +236,8 @@ class NodePagesConfiguration implements SearchConfigurationInterface
     public function createNodeDocuments(Node $node, $lang)
     {
         $nodeTranslation = $node->getNodeTranslation($lang, true);
-        if ($nodeTranslation) {
-            if ($this->indexNodeTranslation($nodeTranslation)) {
-                $this->indexChildren($node, $lang);
-            }
+        if ($nodeTranslation && $this->indexNodeTranslation($nodeTranslation)) {
+            $this->indexChildren($node, $lang);
         }
     }
 
@@ -261,7 +259,7 @@ class NodePagesConfiguration implements SearchConfigurationInterface
      * Index a node translation
      *
      * @param NodeTranslation $nodeTranslation
-     * @param bool            $add Add node immediately to index?
+     * @param bool            $add             Add node immediately to index?
      *
      * @return bool Return true if the document has been indexed
      */
@@ -269,7 +267,7 @@ class NodePagesConfiguration implements SearchConfigurationInterface
     {
         // Retrieve the public NodeVersion
         $publicNodeVersion = $nodeTranslation->getPublicNodeVersion();
-        if (is_null($publicNodeVersion)) {
+        if (\is_null($publicNodeVersion)) {
             return false;
         }
 
@@ -305,7 +303,7 @@ class NodePagesConfiguration implements SearchConfigurationInterface
      *
      * @param HasNodeInterface $page
      *
-     * @return boolean
+     * @return bool
      */
     protected function isIndexable(HasNodeInterface $page)
     {
@@ -319,7 +317,7 @@ class NodePagesConfiguration implements SearchConfigurationInterface
      */
     public function deleteNodeTranslation(NodeTranslation $nodeTranslation)
     {
-        $uid       = 'nodetranslation_' . $nodeTranslation->getId();
+        $uid = 'nodetranslation_' . $nodeTranslation->getId();
         $indexName = $this->indexName . '_' . $nodeTranslation->getLang();
         $this->searchProvider->deleteDocument($indexName, $this->indexType, $uid);
     }
@@ -342,13 +340,39 @@ class NodePagesConfiguration implements SearchConfigurationInterface
      */
     public function setAnalysis(Index $index, AnalysisFactoryInterface $analysis)
     {
-        $index->create(
-            array(
-                'number_of_shards'   => $this->numberOfShards,
-                'number_of_replicas' => $this->numberOfReplicas,
-                'analysis'           => $analysis->build()
-            )
-        );
+        $analysers = $analysis->build();
+        $args = [
+            'number_of_shards' => $this->numberOfShards,
+            'number_of_replicas' => $this->numberOfReplicas,
+            'analysis' => $analysers,
+        ];
+
+        if (class_exists(\Elastica\Mapping::class)) {
+            $args = [
+                'settings' => [
+                    'number_of_shards' => $this->numberOfShards,
+                    'number_of_replicas' => $this->numberOfReplicas,
+                    'analysis' => $analysers,
+                ],
+            ];
+
+            $ngramDiff = 1;
+            if (isset($analysers['tokenizer']) && count($analysers['tokenizer']) > 0) {
+                foreach ($analysers['tokenizer'] as $tokenizer) {
+                    if ($tokenizer['type'] === 'nGram') {
+                        $diff = $tokenizer['max_gram'] - $tokenizer['min_gram'];
+
+                        $ngramDiff = $diff > $ngramDiff ? $diff : $ngramDiff;
+                    }
+                }
+            }
+
+            if ($ngramDiff > 1) {
+                $args['settings']['max_ngram_diff'] = $ngramDiff;
+            }
+        }
+
+        $index->create($args);
     }
 
     /**
@@ -357,12 +381,16 @@ class NodePagesConfiguration implements SearchConfigurationInterface
      * @param Index  $index
      * @param string $lang
      *
-     * @return Mapping
+     * @return Mapping|\Elastica\Mapping
      */
     protected function createDefaultSearchFieldsMapping(Index $index, $lang = 'en')
     {
-        $mapping = new Mapping();
-        $mapping->setType($index->getType($this->indexType));
+        if (class_exists(\Elastica\Type\Mapping::class)) {
+            $mapping = new Mapping();
+            $mapping->setType($index->getType($this->indexType));
+        } else {
+            $mapping = new \Elastica\Mapping();
+        }
 
         $mapping->setProperties($this->properties);
 
@@ -375,10 +403,14 @@ class NodePagesConfiguration implements SearchConfigurationInterface
      * @param Index  $index
      * @param string $lang
      */
-    protected function setMapping(Index $index, $lang='en')
+    protected function setMapping(Index $index, $lang = 'en')
     {
         $mapping = $this->createDefaultSearchFieldsMapping($index, $lang);
-        $mapping->send();
+        if (class_exists(\Elastica\Mapping::class)) {
+            $mapping->send($index);
+        } else {
+            $mapping->send();
+        }
         $index->refresh();
     }
 
@@ -399,26 +431,26 @@ class NodePagesConfiguration implements SearchConfigurationInterface
         $rootNode = $this->currentTopNode;
         if (!$rootNode) {
             // Fetch main parent of current node...
-            $rootNode = $this->em->getRepository('KunstmaanNodeBundle:Node')->getRootNodeFor(
+            $rootNode = $this->em->getRepository(Node::class)->getRootNodeFor(
                 $node,
                 $nodeTranslation->getLang()
             );
         }
 
         $doc = array(
-            'root_id'             => $rootNode->getId(),
-            'node_id'             => $node->getId(),
+            'root_id' => $rootNode->getId(),
+            'node_id' => $node->getId(),
             'node_translation_id' => $nodeTranslation->getId(),
-            'node_version_id'     => $publicNodeVersion->getId(),
-            'title'               => $nodeTranslation->getTitle(),
-            'slug'                => $nodeTranslation->getFullSlug(),
-            'page_class'          => ClassLookup::getClass($page),
-            'created'             => $this->getUTCDateTime(
+            'node_version_id' => $publicNodeVersion->getId(),
+            'title' => $nodeTranslation->getTitle(),
+            'slug' => $nodeTranslation->getFullSlug(),
+            'page_class' => ClassLookup::getClass($page),
+            'created' => $this->getUTCDateTime(
                 $nodeTranslation->getCreated()
             )->format(\DateTime::ISO8601),
-            'updated'             => $this->getUTCDateTime(
+            'updated' => $this->getUTCDateTime(
                 $nodeTranslation->getUpdated()
-            )->format(\DateTime::ISO8601)
+            )->format(\DateTime::ISO8601),
         );
         if ($this->logger) {
             $this->logger->info('Indexing document : ' . implode(', ', $doc));
@@ -459,7 +491,7 @@ class NodePagesConfiguration implements SearchConfigurationInterface
      */
     protected function addPermissions(Node $node, &$doc)
     {
-        if (!is_null($this->aclProvider)) {
+        if (!\is_null($this->aclProvider)) {
             $roles = $this->getAclPermissions($node);
         } else {
             // Fallback when no ACL available / assume everything is accessible...
@@ -495,10 +527,10 @@ class NodePagesConfiguration implements SearchConfigurationInterface
 
         if ($parent) {
             $doc['parent'] = $parent->getId();
-            $ancestors     = [];
+            $ancestors = [];
             do {
                 $ancestors[] = $parent->getId();
-                $parent      = $parent->getParent();
+                $parent = $parent->getParent();
             } while ($parent);
             $doc['ancestors'] = $ancestors;
         }
@@ -510,8 +542,6 @@ class NodePagesConfiguration implements SearchConfigurationInterface
      * @param NodeTranslation  $nodeTranslation
      * @param HasNodeInterface $page
      * @param array            $doc
-     *
-     * @return null
      */
     protected function addPageContent(NodeTranslation $nodeTranslation, $page, &$doc)
     {
@@ -522,14 +552,14 @@ class NodePagesConfiguration implements SearchConfigurationInterface
                     'Indexing page "%s" / lang : %s / type : %s / id : %d / node id : %d',
                     $page->getTitle(),
                     $nodeTranslation->getLang(),
-                    get_class($page),
+                    \get_class($page),
                     $page->getId(),
                     $nodeTranslation->getNode()->getId()
                 )
             );
         }
 
-        $renderer       = $this->container->get('templating');
+        $renderer = $this->container->get('templating');
         $doc['content'] = '';
 
         if ($page instanceof SearchViewTemplateInterface) {
@@ -552,6 +582,7 @@ class NodePagesConfiguration implements SearchConfigurationInterface
      */
     protected function enterRequestScope($lang)
     {
+        $locale = null;
         $requestStack = $this->container->get('request_stack');
         // If there already is a request, get the locale from it.
         if ($requestStack->getCurrentRequest()) {
@@ -585,9 +616,9 @@ class NodePagesConfiguration implements SearchConfigurationInterface
     ) {
         $view = $page->getSearchView();
         $renderContext = new RenderContext([
-            'locale'          => $nodeTranslation->getLang(),
-            'page'            => $page,
-            'indexMode'       => true,
+            'locale' => $nodeTranslation->getLang(),
+            'page' => $page,
+            'indexMode' => true,
             'nodetranslation' => $nodeTranslation,
         ]);
 
@@ -622,15 +653,15 @@ class NodePagesConfiguration implements SearchConfigurationInterface
         EngineInterface $renderer
     ) {
         $pageparts = $this->indexablePagePartsService->getIndexablePageParts($page);
-        $view      = 'KunstmaanNodeSearchBundle:PagePart:view.html.twig';
-        $content   = $this->removeHtml(
+        $view = '@KunstmaanNodeSearch/PagePart/view.html.twig';
+        $content = $this->removeHtml(
             $renderer->render(
                 $view,
                 array(
-                    'locale'    => $nodeTranslation->getLang(),
-                    'page'      => $page,
+                    'locale' => $nodeTranslation->getLang(),
+                    'page' => $page,
                     'pageparts' => $pageparts,
-                    'indexMode' => true
+                    'indexMode' => true,
                 )
             )
         );
@@ -684,9 +715,10 @@ class NodePagesConfiguration implements SearchConfigurationInterface
         if (!trim($text)) {
             return '';
         }
-        
+
         // Remove Styles and Scripts
-        $crawler = new Crawler($text);
+        $crawler = new Crawler();
+        $crawler->addHtmlContent($text);
         $crawler->filter('style, script')->each(function (Crawler $crawler) {
             foreach ($crawler as $node) {
                 $node->parentNode->removeChild($node);
@@ -713,11 +745,12 @@ class NodePagesConfiguration implements SearchConfigurationInterface
     protected function getAclPermissions($object)
     {
         $roles = [];
+
         try {
             $objectIdentity = ObjectIdentity::fromDomainObject($object);
 
             /* @var AclInterface $acl */
-            $acl        = $this->aclProvider->findAcl($objectIdentity);
+            $acl = $this->aclProvider->findAcl($objectIdentity);
             $objectAces = $acl->getObjectAces();
 
             /* @var AuditableEntryInterface $ace */

@@ -10,8 +10,7 @@ use Symfony\Component\HttpKernel\DependencyInjection\Extension;
 /**
  * This is the class that loads and manages your bundle configuration
  *
- * To learn more see {@link
- * http://symfony.com/doc/current/cookbook/bundles/extension.html}
+ * To learn more see {@link * http://symfony.com/doc/current/cookbook/bundles/extension.html}
  */
 class KunstmaanMultiDomainExtension extends Extension
 {
@@ -36,7 +35,7 @@ class KunstmaanMultiDomainExtension extends Extension
         );
         $loader->load('services.yml');
 
-        /**
+        /*
          * We override the default slug router here. You can use a custom one by
          * setting kunstmaan_multi_domain.router.class to your own implementation.
          */
@@ -45,14 +44,11 @@ class KunstmaanMultiDomainExtension extends Extension
             $container->getParameter('kunstmaan_multi_domain.router.class')
         );
 
-        /**
+        /*
          * We override the default domain configuration service here. You can use a custom one by
-         * setting kunstmaan_multi_domain.domain_configuration.class to your own implementation.
+         * setting registering the class as a service and override the "kunstmaan_admin.domain_configuration" service alias.
          */
-        $container->setParameter(
-            'kunstmaan_admin.domain_configuration.class',
-            $container->getParameter('kunstmaan_multi_domain.domain_configuration.class')
-        );
+        $container->setAlias('kunstmaan_admin.domain_configuration', 'kunstmaan_multi_domain.domain_configuration')->setPublic(true);
     }
 
     /**
@@ -111,7 +107,7 @@ class KunstmaanMultiDomainExtension extends Extension
     {
         $localesExtra = array();
         foreach ($localeSettings as $key => $localeMapping) {
-            $localesExtra[$localeMapping['uri_locale']] = array_key_exists('extra', $localeMapping) ? $localeMapping['extra'] : array();
+            $localesExtra[$localeMapping['uri_locale']] = \array_key_exists('extra', $localeMapping) ? $localeMapping['extra'] : array();
         }
 
         return $localesExtra;

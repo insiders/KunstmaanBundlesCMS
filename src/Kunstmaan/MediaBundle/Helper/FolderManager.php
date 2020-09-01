@@ -7,11 +7,11 @@ use Kunstmaan\MediaBundle\Repository\FolderRepository;
 
 class FolderManager
 {
-    /** @var \Kunstmaan\MediaBundle\Repository\FolderRepository $repository */
+    /** @var \Kunstmaan\MediaBundle\Repository\FolderRepository */
     private $repository;
 
     /**
-     * @var \Kunstmaan\MediaBundle\Repository\FolderRepository $repository
+     * @var \Kunstmaan\MediaBundle\Repository\FolderRepository
      */
     public function __construct(FolderRepository $repository)
     {

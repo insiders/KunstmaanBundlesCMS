@@ -33,7 +33,7 @@ class PageTemplateConfiguration extends AbstractEntity
     /**
      * Get pageId
      *
-     * @return integer
+     * @return int
      */
     public function getPageId()
     {
@@ -41,7 +41,7 @@ class PageTemplateConfiguration extends AbstractEntity
     }
 
     /**
-     * @param integer $id
+     * @param int $id
      *
      * @return PageTemplateConfiguration
      */
@@ -107,6 +107,6 @@ class PageTemplateConfiguration extends AbstractEntity
      */
     public function getPage(EntityManager $em)
     {
-        return $em->getRepository($this->getPageEntityname())->find($this->getPageId());
+        return $em->getRepository($this->getPageEntityName())->find($this->getPageId());
     }
 }

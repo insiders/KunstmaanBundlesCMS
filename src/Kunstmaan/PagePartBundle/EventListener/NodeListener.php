@@ -20,7 +20,6 @@ use Kunstmaan\PagePartBundle\PageTemplate\PageTemplateConfigurationService;
  */
 class NodeListener
 {
-
     /**
      * @var EntityManagerInterface
      */
@@ -52,8 +51,7 @@ class NodeListener
         PageTemplateConfigurationReaderInterface $templateReader,
         PagePartConfigurationReaderInterface $pagePartReader,
         PageTemplateConfigurationService $pageTemplateConfiguratiorService
-    )
-    {
+    ) {
         $this->em = $em;
         $this->pagePartAdminFactory = $pagePartAdminFactory;
         $this->templateReader = $templateReader;
@@ -74,14 +72,14 @@ class NodeListener
 
             /* @var Tab $propertiesTab */
             $propertiesTab = $tabPane->getTabByTitle('kuma_node.tab.properties.title');
-            if (!is_null($propertiesTab)) {
+            if (!\is_null($propertiesTab)) {
                 $propertiesWidget = $propertiesTab->getWidget();
                 $tabPane->removeTab($propertiesTab);
-                $tabPane->addTab(new Tab("kuma_pagepart.tab.content.title", new ListWidget(array($propertiesWidget, $pageTemplateWidget))), 0);
+                $tabPane->addTab(new Tab('kuma_pagepart.tab.content.title', new ListWidget(array($propertiesWidget, $pageTemplateWidget))), 0);
             } else {
-                $tabPane->addTab(new Tab("kuma_pagepart.tab.content.title", $pageTemplateWidget), 0);
+                $tabPane->addTab(new Tab('kuma_pagepart.tab.content.title', $pageTemplateWidget), 0);
             }
-        } else if ($page instanceof HasPagePartsInterface) {
+        } elseif ($page instanceof HasPagePartsInterface) {
             /* @var HasPagePartsInterface $page */
             $pagePartAdminConfigurators = $this->pagePartReader->getPagePartAdminConfigurators($page);
 
@@ -91,7 +89,7 @@ class NodeListener
                     /* @var Tab $propertiesTab */
                     $propertiesTab = $tabPane->getTabByTitle('kuma_node.tab.properties.title');
 
-                    if (!is_null($propertiesTab)) {
+                    if (!\is_null($propertiesTab)) {
                         $propertiesWidget = $propertiesTab->getWidget();
                         $tabPane->removeTab($propertiesTab);
                         $tabPane->addTab(new Tab($pagePartAdminConfiguration->getName(), new ListWidget(array($propertiesWidget, $pagePartWidget))), 0);
@@ -99,11 +97,8 @@ class NodeListener
                         continue;
                     }
                 }
-                $tabPane->addTab(new Tab($pagePartAdminConfiguration->getName(), $pagePartWidget), count($tabPane->getTabs()));
-
-
+                $tabPane->addTab(new Tab($pagePartAdminConfiguration->getName(), $pagePartWidget), \count($tabPane->getTabs()));
             }
         }
     }
-
 }

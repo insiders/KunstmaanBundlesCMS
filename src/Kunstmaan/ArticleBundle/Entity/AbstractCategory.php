@@ -11,6 +11,16 @@ use Symfony\Component\Validator\Constraints as Assert;
 class AbstractCategory extends AbstractEntity implements Translatable
 {
     /**
+     * AbstractCategory constructor.
+     */
+    public function __construct()
+    {
+        if (\get_class($this) === AbstractCategory::class) {
+            @trigger_error(sprintf('Instantiating the "%s" class is deprecated in KunstmaanArticleBundle 5.1 and will be made abstract in KunstmaanArticleBundle 6.0. Extend your implementation from this class instead.', __CLASS__), E_USER_DEPRECATED);
+        }
+    }
+
+    /**
      * @var string
      *
      * @ORM\Column(name="name", type="string", length=255)
@@ -30,7 +40,6 @@ class AbstractCategory extends AbstractEntity implements Translatable
      * @ORM\Column(name="deleted_at", type="datetime", nullable=true)
      */
     protected $deletedAt;
-
 
     /**
      * Set name
@@ -92,4 +101,3 @@ class AbstractCategory extends AbstractEntity implements Translatable
         return $this->getName();
     }
 }
-

@@ -4,22 +4,20 @@ namespace Kunstmaan\ConfigBundle\Controller;
 
 use Doctrine\ORM\EntityManagerInterface;
 use Kunstmaan\ConfigBundle\Entity\AbstractConfig;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Symfony\Bundle\FrameworkBundle\Templating\EngineInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\Form\FormFactoryInterface;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\RouterInterface;
 use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
 use Symfony\Component\Security\Core\Exception\AccessDeniedException;
+use Twig\Environment;
 
 /**
  * Class ConfigController
- * @package Kunstmaan\ConfigBundle\Controller
- *
- * @Route(service="kunstmaan_config.controller.config")
  */
 class ConfigController
 {
@@ -29,9 +27,9 @@ class ConfigController
     private $router;
 
     /**
-     * @var EngineInterface
+     * @var EngineInterface|Environment
      */
-    private $templating;
+    private $twig;
 
     /**
      * @var AuthorizationCheckerInterface
@@ -39,49 +37,56 @@ class ConfigController
     private $authorizationChecker;
 
     /**
-     * @var EntityManagerInterface $em
+     * @var EntityManagerInterface
      */
     private $em;
 
     /**
-     * @var array $configuration
+     * @var array
      */
     private $configuration;
 
     /**
-     * @var ContainerInterface $container
-     */
-    private $container;
-
-    /**
-     * @var FormFactoryInterface $formFactory
+     * @var FormFactoryInterface
      */
     private $formFactory;
 
     /**
-     * @param RouterInterface $router
-     * @param EngineInterface $templating
+     * @param RouterInterface               $router
+     * @param EngineInterface|Environment   $twig
      * @param AuthorizationCheckerInterface $authorizationChecker
-     * @param EntityManagerInterface $em
-     * @param array $configuration
-     * @param ContainerInterface $container
-     * @param FormFactoryInterface $formFactory
+     * @param EntityManagerInterface        $em
+     * @param array                         $configuration
+     * @param ContainerInterface            $container
+     * @param FormFactoryInterface          $formFactory
      */
     public function __construct(
         RouterInterface $router,
-        EngineInterface $templating,
+        /* Environment */ $twig,
         AuthorizationCheckerInterface $authorizationChecker,
         EntityManagerInterface $em,
         array $configuration,
-        ContainerInterface $container,
-        FormFactoryInterface $formFactory
+        /* ContainerInterface $container, */
+        /* FormFactoryInterface */ $formFactory
     ) {
         $this->router = $router;
-        $this->templating = $templating;
+        $this->twig = $twig;
         $this->authorizationChecker = $authorizationChecker;
         $this->em = $em;
         $this->configuration = $configuration;
-        $this->container = $container;
+
+        if ($twig instanceof EngineInterface) {
+            @trigger_error('Passing the "@templating" service as the 2nd argument is deprecated since KunstmaanConfigBundle 5.4 and will be replaced by the Twig renderer in KunstmaanConfigBundle 6.0. Injected the "@twig" service instead.', E_USER_DEPRECATED);
+        }
+
+        if (\func_num_args() > 6) {
+            @trigger_error(sprintf('Passing the "container" as the sixth argument in "%s" is deprecated in KunstmaanConfigBundle 5.1 and will be removed in KunstmaanConfigBundle 6.0. Remove the "container" argument from your service definition.', __METHOD__), E_USER_DEPRECATED);
+
+            $this->formFactory = func_get_arg(6);
+
+            return;
+        }
+
         $this->formFactory = $formFactory;
     }
 
@@ -89,17 +94,17 @@ class ConfigController
      * Generates the site config administration form and fills it with a default value if needed.
      *
      * @param Request $request
-     * @param string $internalName
+     * @param string  $internalName
      *
-     * @return array|RedirectResponse
+     * @return Response
      */
     public function indexAction(Request $request, $internalName)
     {
         /**
-         * @var $entity AbstractConfig
+         * @var AbstractConfig
          */
         $entity = $this->getConfigEntityByInternalName($internalName);
-        $entityClass = get_class($entity);
+        $entityClass = \get_class($entity);
 
         // Check if current user has permission for the site config.
         foreach ($entity->getRoles() as $role) {
@@ -129,11 +134,8 @@ class ConfigController
             }
         }
 
-        return $this->templating->renderResponse(
-            '@KunstmaanConfig/Settings/configSettings.html.twig',
-            array(
-                'form' => $form->createView(),
-            )
+        return new Response(
+            $this->twig->render('@KunstmaanConfig/Settings/configSettings.html.twig', ['form' => $form->createView()])
         );
     }
 
@@ -144,13 +146,14 @@ class ConfigController
      * @param string $internalName
      *
      * @return AbstractConfig
+     *
      * @throws NotFoundHttpException
      */
     private function getConfigEntityByInternalName($internalName)
     {
         foreach ($this->configuration['entities'] as $class) {
             /** @var AbstractConfig $entity */
-            $entity = new $class;
+            $entity = new $class();
 
             if ($entity->getInternalName() == $internalName) {
                 return $entity;

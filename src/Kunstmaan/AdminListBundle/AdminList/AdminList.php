@@ -3,9 +3,7 @@
 namespace Kunstmaan\AdminListBundle\AdminList;
 
 use Kunstmaan\AdminListBundle\AdminList\Configurator\AdminListConfiguratorInterface;
-
 use Pagerfanta\Pagerfanta;
-
 use Symfony\Component\HttpFoundation\Request;
 
 /**
@@ -13,16 +11,15 @@ use Symfony\Component\HttpFoundation\Request;
  */
 class AdminList
 {
-
     /**
      * @var Request
      */
-    protected $request = null;
+    protected $request;
 
     /**
      * @var AdminListConfiguratorInterface
      */
-    protected $configurator = null;
+    protected $configurator;
 
     /**
      * @param AdminListConfiguratorInterface $configurator The configurator
@@ -109,10 +106,11 @@ class AdminList
      */
     public function hasSort($columnName = null)
     {
-        if (is_null($columnName)) {
-            return count($this->configurator->getSortFields()) > 0;
+        if (\is_null($columnName)) {
+            return \count($this->configurator->getSortFields()) > 0;
         }
-        return in_array($columnName, $this->configurator->getSortFields());
+
+        return \in_array($columnName, $this->configurator->getSortFields());
     }
 
     /**
@@ -200,7 +198,7 @@ class AdminList
     }
 
     /**
-     * @return string
+     * @return array
      */
     public function getExportUrl()
     {

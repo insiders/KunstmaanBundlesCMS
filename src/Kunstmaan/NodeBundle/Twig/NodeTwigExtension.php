@@ -11,15 +11,18 @@ use Kunstmaan\NodeBundle\Entity\StructureNode;
 use Kunstmaan\NodeBundle\Helper\NodeMenu;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
-use Twig_Extension;
+use Twig\Extension\AbstractExtension;
+use Twig\TwigFunction;
 
 /**
  * Extension to fetch node / translation by page in Twig templates
+ *
+ * @final since 5.4
  */
-class NodeTwigExtension extends Twig_Extension
+class NodeTwigExtension extends AbstractExtension
 {
     /**
-     * @var EntityManagerInterface $em
+     * @var EntityManagerInterface
      */
     private $em;
 
@@ -49,8 +52,7 @@ class NodeTwigExtension extends Twig_Extension
         UrlGeneratorInterface $generator,
         NodeMenu $nodeMenu,
         RequestStack $requestStack
-    )
-    {
+    ) {
         $this->em = $em;
         $this->generator = $generator;
         $this->nodeMenu = $nodeMenu;
@@ -65,46 +67,46 @@ class NodeTwigExtension extends Twig_Extension
     public function getFunctions()
     {
         return array(
-            new \Twig_SimpleFunction(
+            new TwigFunction(
                 'get_node_for', array($this, 'getNodeFor')
             ),
-            new \Twig_SimpleFunction(
+            new TwigFunction(
                 'get_node_translation_for',
                 array($this, 'getNodeTranslationFor')
             ),
-            new \Twig_SimpleFunction(
+            new TwigFunction(
                 'get_node_by_internal_name',
                 array($this, 'getNodeByInternalName')
             ),
-            new \Twig_SimpleFunction(
+            new TwigFunction(
                 'get_url_by_internal_name',
                 array($this, 'getUrlByInternalName')
             ),
-            new \Twig_SimpleFunction(
+            new TwigFunction(
                 'get_path_by_internal_name',
                 array($this, 'getPathByInternalName')
             ),
-            new \Twig_SimpleFunction(
+            new TwigFunction(
                 'get_page_by_node_translation',
                 array($this, 'getPageByNodeTranslation')
             ),
-            new \Twig_SimpleFunction(
+            new TwigFunction(
                 'get_node_menu',
                 array($this, 'getNodeMenu')
             ),
-            new \Twig_SimpleFunction(
+            new TwigFunction(
                 'is_structure_node',
                 array($this, 'isStructureNode')
             ),
-            new \Twig_SimpleFunction(
+            new TwigFunction(
                 'file_exists',
                 array($this, 'fileExists')
             ),
-            new \Twig_SimpleFunction(
+            new TwigFunction(
                 'get_node_trans_by_node_id',
                 array($this, 'getNodeTranslationByNodeId')
             ),
-            new \Twig_SimpleFunction(
+            new TwigFunction(
                 'getOverviewRoute',
                 array($this, 'getOverviewRoute')
             ),
@@ -116,11 +118,12 @@ class NodeTwigExtension extends Twig_Extension
      *
      * @param int    $nodeId
      * @param string $lang
+     *
      * @return NodeTranslation
      */
     public function getNodeTranslationByNodeId($nodeId, $lang)
     {
-        $repo = $this->em->getRepository('KunstmaanNodeBundle:NodeTranslation');
+        $repo = $this->em->getRepository(NodeTranslation::class);
 
         return $repo->getNodeTranslationByNodeIdQueryBuilder($nodeId, $lang);
     }
@@ -142,7 +145,7 @@ class NodeTwigExtension extends Twig_Extension
      */
     public function getNodeFor(PageInterface $page)
     {
-        return $this->em->getRepository('KunstmaanNodeBundle:Node')->getNodeFor($page);
+        return $this->em->getRepository(Node::class)->getNodeFor($page);
     }
 
     /**
@@ -152,7 +155,7 @@ class NodeTwigExtension extends Twig_Extension
      */
     public function getNodeTranslationFor(PageInterface $page)
     {
-        return $this->em->getRepository('KunstmaanNodeBundle:NodeTranslation')->getNodeTranslationFor($page);
+        return $this->em->getRepository(NodeTranslation::class)->getNodeTranslationFor($page);
     }
 
     /**
@@ -163,7 +166,7 @@ class NodeTwigExtension extends Twig_Extension
      */
     public function getNodeByInternalName($internalName, $locale)
     {
-        $nodes = $this->em->getRepository('KunstmaanNodeBundle:Node')
+        $nodes = $this->em->getRepository(Node::class)
             ->getNodesByInternalName($internalName, $locale);
         if (!empty($nodes)) {
             return $nodes[0];
@@ -173,10 +176,10 @@ class NodeTwigExtension extends Twig_Extension
     }
 
     /**
-     * @param string  $internalName Internal name of the node
-     * @param string  $locale       Locale
-     * @param array   $parameters   (optional) extra parameters
-     * @param boolean $relative     (optional) return relative path?
+     * @param string $internalName Internal name of the node
+     * @param string $locale       Locale
+     * @param array  $parameters   (optional) extra parameters
+     * @param bool   $relative     (optional) return relative path?
      *
      * @return string
      */
@@ -192,10 +195,10 @@ class NodeTwigExtension extends Twig_Extension
     }
 
     /**
-     * @param string  $internalName   Internal name of the node
-     * @param string  $locale         Locale
-     * @param array   $parameters     (optional) extra parameters
-     * @param boolean $schemeRelative (optional) return relative scheme?
+     * @param string $internalName   Internal name of the node
+     * @param string $locale         Locale
+     * @param array  $parameters     (optional) extra parameters
+     * @param bool   $schemeRelative (optional) return relative scheme?
      *
      * @return string
      */
@@ -249,29 +252,28 @@ class NodeTwigExtension extends Twig_Extension
     private function getRouteParametersByInternalName($internalName, $locale, $parameters = array())
     {
         $url = '';
-        $translation = $this->em->getRepository('KunstmaanNodeBundle:NodeTranslation')
+        $translation = $this->em->getRepository(NodeTranslation::class)
             ->getNodeTranslationByLanguageAndInternalName($locale, $internalName);
 
-        if (!is_null($translation)) {
+        if (!\is_null($translation)) {
             $url = $translation->getUrl();
         }
 
         return array_merge(
             array(
                 'url' => $url,
-                '_locale' => $locale
+                '_locale' => $locale,
             ),
             $parameters
         );
     }
 
-    public function getOverviewRoute($node){
-        if($node instanceof OverviewNavigationInterface){
+    public function getOverviewRoute($node)
+    {
+        if ($node instanceof OverviewNavigationInterface) {
             return $node->getOverViewRoute();
         }
 
         return null;
     }
-
-
 }
