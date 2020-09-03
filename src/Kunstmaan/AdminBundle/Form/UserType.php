@@ -74,7 +74,7 @@ class UserType extends AbstractType implements RoleDependentUserFormInterface
 
         if ($this->canEditAllFields) {
             $builder->add('enabled', CheckboxType::class, array('required' => false, 'label' => 'settings.user.enabled'));
-            $groups = $builder->add('groups', EntityType::class, array(
+            $groups = $builder->create('groups', EntityType::class, array(
                             'label' => 'settings.user.roles',
                             'class' => 'KunstmaanAdminBundle:Group',
                             'query_builder' => function (EntityRepository $er) use ($options) {
