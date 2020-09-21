@@ -26,7 +26,7 @@ use Symfony\Component\HttpFoundation\Session\SessionInterface;
  */
 class NodeTranslationListener
 {
-    /** @var FlashBagInterface */
+    /** @var SessionInterface|FlashBagInterface */
     private $flashBag;
 
     /** @var LoggerInterface */
@@ -337,11 +337,7 @@ class NodeTranslationListener
         } elseif (\count($flashes) > 0 && $this->isInRequestScope()) {
             // No translations found so we're certain we can show this message.
             $flash = current(\array_slice($flashes, -1));
-
-            if ($this->flashBag instanceof SessionInterface) {
-                $this->flashBag = $this->flashBag->getFlashBag();
-            }
-            $this->flashBag->add(FlashTypes::WARNING, $flash);
+            $this->getFlashBag()->add(FlashTypes::WARNING, $flash);
         }
 
         return true;
@@ -382,5 +378,14 @@ class NodeTranslationListener
     private function isInRequestScope()
     {
         return $this->requestStack && $this->requestStack->getCurrentRequest();
+    }
+
+    private function getFlashBag()
+    {
+        if ($this->flashBag instanceof SessionInterface) {
+            return $this->flashBag->getFlashBag();
+        }
+
+        return $this->flashBag;
     }
 }
