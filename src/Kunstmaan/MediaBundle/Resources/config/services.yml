@@ -85,7 +85,7 @@ services:
         class: '%kunstmaan_media.extension_guesser.factory.class%'
 
     kunstmaan_media.command.generatefolderslugs:
-        class: Kunstmaan\MediaBundle\Command\MigrationFolderSlugsCommand
+        class: Kunstmaan\MediaBundle\Command\MigrateFolderSlugsCommand
         calls:
             - [setContainer, ['@service_container'] ]
 
