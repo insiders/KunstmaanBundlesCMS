@@ -9,8 +9,6 @@ use Kunstmaan\NodeSearchBundle\Search\SearcherInterface;
  * Class SearcherRequestAdapter
  *
  * A Pagerfanta adapter to paginate Elastica search results.
- *
- * @package Kunstmaan\NodeSearchBundle\PagerFanta\Adapter
  */
 class SearcherRequestAdapter implements SearcherRequestAdapterInterface
 {
@@ -44,8 +42,8 @@ class SearcherRequestAdapter implements SearcherRequestAdapterInterface
      */
     public function __construct(SearcherInterface $searcher)
     {
-        $this->searcher     = $searcher;
-        $this->hits         = array();
+        $this->searcher = $searcher;
+        $this->hits = array();
         $this->aggregations = array();
     }
 
@@ -65,7 +63,7 @@ class SearcherRequestAdapter implements SearcherRequestAdapterInterface
     /**
      * Returns the number of results.
      *
-     * @return integer The number of results.
+     * @return int the number of results
      */
     public function getNbResults()
     {
@@ -75,10 +73,10 @@ class SearcherRequestAdapter implements SearcherRequestAdapterInterface
     /**
      * Returns an slice of the results.
      *
-     * @param integer $offset The offset.
-     * @param integer $length The length.
+     * @param int $offset the offset
+     * @param int $length the length
      *
-     * @return array|\Traversable The slice.
+     * @return array|\Traversable the slice
      */
     public function getSlice($offset, $length)
     {
@@ -96,7 +94,7 @@ class SearcherRequestAdapter implements SearcherRequestAdapterInterface
     protected function processResponse(ResultSet $result = null)
     {
         $this->hits = array();
-        if (is_null($result)) {
+        if (\is_null($result)) {
             return null;
         }
         $this->collectHits($result);
@@ -108,11 +106,11 @@ class SearcherRequestAdapter implements SearcherRequestAdapterInterface
      */
     protected function collectHits(ResultSet $result)
     {
-        $data       = $result->getResults();
+        $data = $result->getResults();
         foreach ($data as $item) {
-            $content            = array();
+            $content = array();
             $content['_source'] = $item->getData();
-            $highlights         = $item->getHighlights();
+            $highlights = $item->getHighlights();
             if (!empty($highlights)) {
                 $content['highlight'] = $highlights;
             }
@@ -122,6 +120,7 @@ class SearcherRequestAdapter implements SearcherRequestAdapterInterface
 
     /**
      * @param ResultSet $result
+     *
      * @return bool
      */
     protected function collectAggregations(ResultSet $result)
@@ -140,7 +139,7 @@ class SearcherRequestAdapter implements SearcherRequestAdapterInterface
      */
     private function getResponse()
     {
-        if (is_null($this->response)) {
+        if (\is_null($this->response)) {
             $this->response = $this->searcher->search();
         }
 

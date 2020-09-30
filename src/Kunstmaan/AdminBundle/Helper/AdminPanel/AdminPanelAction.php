@@ -22,7 +22,7 @@ class AdminPanelAction implements AdminPanelActionInterface
     /**
      * @var string
      */
-    private $template = 'KunstmaanAdminBundle:AdminPanel:_admin_panel_action.html.twig';
+    private $template = '@KunstmaanAdmin/AdminPanel/_admin_panel_action.html.twig';
 
     /**
      * @param array  $url      The url path and parameters
@@ -36,9 +36,9 @@ class AdminPanelAction implements AdminPanelActionInterface
         $icon = null,
         $template = null
     ) {
-        $this->url      = $url;
-        $this->icon     = $icon;
-        $this->label    = $label;
+        $this->url = $url;
+        $this->icon = $icon;
+        $this->label = $label;
         if (!empty($template)) {
             $this->template = $template;
         }

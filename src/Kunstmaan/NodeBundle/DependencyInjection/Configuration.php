@@ -14,15 +14,20 @@ use Symfony\Component\Config\Definition\ConfigurationInterface;
 class Configuration implements ConfigurationInterface
 {
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function getConfigTreeBuilder()
     {
-        $treeBuilder = new TreeBuilder();
-        $root = $treeBuilder->root('kunstmaan_node');
+        $treeBuilder = new TreeBuilder('kunstmaan_node');
+        if (method_exists($treeBuilder, 'getRootNode')) {
+            $rootNode = $treeBuilder->getRootNode();
+        } else {
+            // BC layer for symfony/config 4.1 and older
+            $rootNode = $treeBuilder->root('kunstmaan_node');
+        }
 
-        /** @var ArrayNodeDefinition $pages */
-        $root
+        /* @var ArrayNodeDefinition $pages */
+        $rootNode
             ->children()
                 ->arrayNode('pages')
                     ->prototype('array')
@@ -37,7 +42,9 @@ class Configuration implements ConfigurationInterface
                             ->arrayNode('allowed_children')
                                 ->prototype('array')
                                     ->beforeNormalization()
-                                        ->ifString()->then(function ($v) { return ["class" => $v]; })
+                                        ->ifString()->then(function ($v) {
+                                            return ['class' => $v];
+                                        })
                                     ->end()
                                     ->children()
                                         ->scalarNode('class')->isRequired()->end()
@@ -48,9 +55,12 @@ class Configuration implements ConfigurationInterface
                         ->end()
                     ->end()
                 ->end()
+                ->booleanNode('enable_permissions')->defaultTrue()->end()
                 ->scalarNode('publish_later_stepping')->defaultValue('15')->end()
                 ->scalarNode('unpublish_later_stepping')->defaultValue('15')->end()
                 ->booleanNode('show_add_homepage')->defaultTrue()->end()
+                ->booleanNode('show_duplicate_with_children')->defaultFalse()->end()
+                ->booleanNode('enable_export_page_template')->defaultFalse()->end()
                 ->arrayNode('lock')
                     ->addDefaultsIfNotSet()
                     ->canBeEnabled()

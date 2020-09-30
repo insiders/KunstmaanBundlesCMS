@@ -2,10 +2,6 @@
 
 namespace Kunstmaan\AdminBundle\Helper\Menu;
 
-use Kunstmaan\AdminBundle\Helper\Menu\MenuAdaptorInterface;
-use Kunstmaan\AdminBundle\Helper\Menu\MenuBuilder;
-use Kunstmaan\AdminBundle\Helper\Menu\MenuItem;
-
 use Symfony\Component\HttpFoundation\Request;
 
 /**
@@ -23,7 +19,7 @@ class ModulesMenuAdaptor implements MenuAdaptorInterface
      */
     public function adaptChildren(MenuBuilder $menu, array &$children, MenuItem $parent = null, Request $request = null)
     {
-        if (is_null($parent)) {
+        if (\is_null($parent)) {
             $menuItem = new TopMenuItem($menu);
             $menuItem
                 ->setRoute('KunstmaanAdminBundle_modules')
@@ -36,5 +32,4 @@ class ModulesMenuAdaptor implements MenuAdaptorInterface
             $children[] = $menuItem;
         }
     }
-
 }

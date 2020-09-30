@@ -29,9 +29,11 @@ class BooleanFilterType extends AbstractORMFilterType
             switch ($data['value']) {
                 case 'true':
                     $this->queryBuilder->andWhere($this->queryBuilder->expr()->eq($this->getAlias() . $this->columnName, 'true'));
+
                     break;
                 case 'false':
                     $this->queryBuilder->andWhere($this->queryBuilder->expr()->eq($this->getAlias() . $this->columnName, 'false'));
+
                     break;
             }
         }
@@ -42,6 +44,6 @@ class BooleanFilterType extends AbstractORMFilterType
      */
     public function getTemplate()
     {
-        return 'KunstmaanAdminListBundle:FilterType:booleanFilter.html.twig';
+        return '@KunstmaanAdminList/FilterType/booleanFilter.html.twig';
     }
 }

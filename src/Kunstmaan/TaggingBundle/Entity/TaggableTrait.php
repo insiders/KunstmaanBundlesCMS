@@ -15,6 +15,7 @@ trait TaggableTrait
      * @var Collection
      */
     private $tags;
+
     /**
      * @var \Closure
      */
@@ -27,7 +28,7 @@ trait TaggableTrait
      */
     public function getTaggableType()
     {
-        return ($this instanceof Proxy) ? get_parent_class($this) : get_class($this);
+        return ($this instanceof Proxy) ? get_parent_class($this) : \get_class($this);
     }
 
     /**
@@ -51,7 +52,7 @@ trait TaggableTrait
             $this->tags = new ArrayCollection();
 
             if ($this->lazyTagLoader) {
-                call_user_func($this->lazyTagLoader, $this);
+                \call_user_func($this->lazyTagLoader, $this);
             }
         }
 

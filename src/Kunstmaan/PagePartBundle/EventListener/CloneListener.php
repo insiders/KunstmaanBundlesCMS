@@ -5,6 +5,7 @@ namespace Kunstmaan\PagePartBundle\EventListener;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\EntityManagerInterface;
 use Kunstmaan\AdminBundle\Event\DeepCloneAndSaveEvent;
+use Kunstmaan\PagePartBundle\Entity\PagePartRef;
 use Kunstmaan\PagePartBundle\Helper\HasPagePartsInterface;
 use Kunstmaan\PagePartBundle\Helper\HasPageTemplateInterface;
 use Kunstmaan\PagePartBundle\PagePartConfigurationReader\PagePartConfigurationReaderInterface;
@@ -15,7 +16,6 @@ use Kunstmaan\PagePartBundle\PageTemplate\PageTemplateConfigurationService;
  */
 class CloneListener
 {
-
     /**
      * @var EntityManager|EntityManagerInterface
      */
@@ -35,8 +35,7 @@ class CloneListener
         EntityManagerInterface $em,
         PagePartConfigurationReaderInterface $pagePartReader,
         PageTemplateConfigurationService $pageTemplateConfiguratiorService
-    )
-    {
+    ) {
         $this->em = $em;
         $this->pagePartReader = $pagePartReader;
         $this->pageTemplateConfiguratiorService = $pageTemplateConfiguratiorService;
@@ -54,7 +53,7 @@ class CloneListener
 
             $contexts = $this->pagePartReader->getPagePartContexts($originalEntity);
             foreach ($contexts as $context) {
-                $this->em->getRepository('KunstmaanPagePartBundle:PagePartRef')->copyPageParts($this->em, $originalEntity, $clonedEntity, $context);
+                $this->em->getRepository(PagePartRef::class)->copyPageParts($this->em, $originalEntity, $clonedEntity, $context);
             }
         }
 

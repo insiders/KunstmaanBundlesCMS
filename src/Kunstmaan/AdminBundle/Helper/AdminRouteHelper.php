@@ -3,7 +3,6 @@
 namespace Kunstmaan\AdminBundle\Helper;
 
 use Kunstmaan\NodeBundle\Router\SlugRouter;
-use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
 
 /**
@@ -14,17 +13,17 @@ class AdminRouteHelper
     protected static $ADMIN_MATCH_REGEX = '/^\/(app_[a-zA-Z]+\.php\/)?([a-zA-Z_-]{2,5}\/)?%s\/(.*)/';
 
     /**
-     * @var string $adminKey
+     * @var string
      */
     protected $adminKey;
 
     /**
-     * @var RequestStack $requestStack
+     * @var RequestStack
      */
     protected $requestStack;
 
     /**
-     * @param string $adminKey
+     * @param string       $adminKey
      * @param RequestStack $requestStack
      */
     public function __construct($adminKey, RequestStack $requestStack)
@@ -42,14 +41,14 @@ class AdminRouteHelper
      */
     public function isAdminRoute($url)
     {
-        if ($this->matchesPreviewRoute($url)) {
+        if ($this->matchesPreviewRoute()) {
             return false;
         }
 
         preg_match(sprintf(self::$ADMIN_MATCH_REGEX, $this->adminKey), $url, $matches);
 
         // Check if path is part of admin area
-        if (count($matches) === 0) {
+        if (\count($matches) === 0) {
             return false;
         }
 
@@ -59,14 +58,12 @@ class AdminRouteHelper
     /**
      * Checks the current request if it's route is equal to SlugRouter::$SLUG_PREVIEW
      *
-     * @param string $url
-     *
-     * @return boolean
+     * @return bool
      */
-    protected function matchesPreviewRoute($url)
+    protected function matchesPreviewRoute()
     {
         $routeName = $this->requestStack->getCurrentRequest()->get('_route');
 
-        return $routeName == SlugRouter::$SLUG_PREVIEW;
+        return $routeName === SlugRouter::$SLUG_PREVIEW;
     }
 }

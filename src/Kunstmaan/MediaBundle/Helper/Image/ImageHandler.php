@@ -13,14 +13,13 @@ use Symfony\Component\HttpFoundation\File\File;
  */
 class ImageHandler extends FileHandler
 {
-
     protected $aviaryApiKey;
 
     /**
-     * @param int $priority
-     * @param MimeTypeGuesserFactoryInterface $mimeTypeGuesserFactory
+     * @param int                              $priority
+     * @param MimeTypeGuesserFactoryInterface  $mimeTypeGuesserFactory
      * @param ExtensionGuesserFactoryInterface $extensionGuesserFactoryInterface
-     * @param string $aviaryApiKey The aviary key
+     * @param string                           $aviaryApiKey                     The aviary key
      */
     public function __construct($priority, MimeTypeGuesserFactoryInterface $mimeTypeGuesserFactory, ExtensionGuesserFactoryInterface $extensionGuesserFactoryInterface, $aviaryApiKey)
     {
@@ -59,7 +58,7 @@ class ImageHandler extends FileHandler
      */
     public function canHandle($object)
     {
-        if (parent::canHandle($object) && ($object instanceof File || strpos($object->getContentType(), 'image') === 0)) {
+        if (parent::canHandle($object) && ($object instanceof File || strncmp($object->getContentType(), 'image', 5) === 0)) {
             return true;
         }
 
@@ -67,11 +66,11 @@ class ImageHandler extends FileHandler
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function getShowTemplate(Media $media)
     {
-        return 'KunstmaanMediaBundle:Media\Image:show.html.twig';
+        return '@KunstmaanMedia/Media/Image/show.html.twig';
     }
 
     /**
@@ -94,8 +93,11 @@ class ImageHandler extends FileHandler
 
         if ($media->getContent()) {
             $imageInfo = getimagesize($media->getContent());
-            $width = $imageInfo[0];
-            $height = $imageInfo[1];
+
+            $width = $height = null;
+            if (false !== $imageInfo) {
+                list($width, $height) = $imageInfo;
+            }
 
             $media
                 ->setMetadataValue('original_width', $width)

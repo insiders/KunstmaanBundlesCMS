@@ -27,32 +27,32 @@ abstract class AbstractDoctrineORMAdminListConfigurator extends AbstractAdminLis
     /**
      * @var Query
      */
-    private $query = null;
+    private $query;
 
     /**
      * @var Pagerfanta
      */
-    private $pagerfanta = null;
+    private $pagerfanta;
 
     /**
      * @var PermissionDefinition
      */
-    private $permissionDef = null;
+    private $permissionDef;
 
     /**
      * @var AclHelper
      */
-    protected $aclHelper = null;
+    protected $aclHelper;
 
     /**
      * AbstractDoctrineORMAdminListConfigurator constructor.
      *
-     * @param EntityManagerInterface    $em
-     * @param AclHelper|null            $aclHelper
+     * @param EntityManagerInterface $em
+     * @param AclHelper|null         $aclHelper
      */
     public function __construct(EntityManagerInterface $em, AclHelper $aclHelper = null)
     {
-        $this->em        = $em;
+        $this->em = $em;
         $this->aclHelper = $aclHelper;
     }
 
@@ -69,8 +69,8 @@ abstract class AbstractDoctrineORMAdminListConfigurator extends AbstractAdminLis
         $params = array_merge($params, $this->getExtraParameters());
 
         return array(
-            'path'   => $this->getPathByConvention($this::SUFFIX_EDIT),
-            'params' => $params
+            'path' => $this->getPathByConvention($this::SUFFIX_EDIT),
+            'params' => $params,
         );
     }
 
@@ -87,8 +87,8 @@ abstract class AbstractDoctrineORMAdminListConfigurator extends AbstractAdminLis
         $params = array_merge($params, $this->getExtraParameters());
 
         return array(
-            'path'   => $this->getPathByConvention($this::SUFFIX_DELETE),
-            'params' => $params
+            'path' => $this->getPathByConvention($this::SUFFIX_DELETE),
+            'params' => $params,
         );
     }
 
@@ -97,8 +97,8 @@ abstract class AbstractDoctrineORMAdminListConfigurator extends AbstractAdminLis
      */
     public function getPagerfanta()
     {
-        if (is_null($this->pagerfanta)) {
-            $adapter          = new DoctrineORMAdapter($this->getQuery());
+        if (\is_null($this->pagerfanta)) {
+            $adapter = new DoctrineORMAdapter($this->getQuery());
             $this->pagerfanta = new Pagerfanta($adapter);
             $this->pagerfanta->setNormalizeOutOfRangePages(true);
             $this->pagerfanta->setMaxPerPage($this->getLimit());
@@ -147,7 +147,7 @@ abstract class AbstractDoctrineORMAdminListConfigurator extends AbstractAdminLis
      */
     public function getQuery()
     {
-        if (is_null($this->query)) {
+        if (\is_null($this->query)) {
             $queryBuilder = $this->getQueryBuilder();
             $this->adaptQueryBuilder($queryBuilder);
 
@@ -164,7 +164,10 @@ abstract class AbstractDoctrineORMAdminListConfigurator extends AbstractAdminLis
             // Apply sorting
             if (!empty($this->orderBy)) {
                 $orderBy = $this->orderBy;
-                if (!strpos($orderBy, '.')) {
+                if ($this->getEntityManager()->getClassMetadata($this->getRepositoryName())->hasAssociation($this->orderBy)) {
+                    $queryBuilder->leftJoin('b.' . $orderBy, 'A' . $orderBy);
+                    $orderBy = 'A' . $orderBy . '.id';
+                } elseif (!strpos($orderBy, '.')) {
                     $orderBy = 'b.' . $orderBy;
                 }
                 $queryBuilder->orderBy($orderBy, ($this->orderDirection == 'DESC' ? 'DESC' : 'ASC'));
@@ -174,7 +177,7 @@ abstract class AbstractDoctrineORMAdminListConfigurator extends AbstractAdminLis
             $this->finishQueryBuilder($queryBuilder);
 
             // Apply ACL restrictions (if applicable)
-            if (!is_null($this->permissionDef) && !is_null($this->aclHelper)) {
+            if (!\is_null($this->permissionDef) && !\is_null($this->aclHelper)) {
                 $this->query = $this->aclHelper->apply($queryBuilder, $this->permissionDef);
             } else {
                 $this->query = $queryBuilder->getQuery();

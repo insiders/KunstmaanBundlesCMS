@@ -2,7 +2,8 @@
 
 namespace Kunstmaan\SitemapBundle\Controller;
 
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
+use Kunstmaan\SitemapBundle\Event\PreSitemapRenderEvent;
+use Symfony\Component\Routing\Annotation\Route;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Template;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Request;
@@ -16,7 +17,7 @@ class SitemapController extends Controller
      *
      * @Route("/sitemap-{locale}.{_format}", name="KunstmaanSitemapBundle_sitemap",
      *                                       requirements={"_format" = "xml"})
-     * @Template("KunstmaanSitemapBundle:Sitemap:view.xml.twig")
+     * @Template("@KunstmaanSitemap/Sitemap/view.xml.twig")
      *
      * @param $locale
      *
@@ -30,9 +31,13 @@ class SitemapController extends Controller
         $nodeMenu->setIncludeHiddenFromNav(true);
         $nodeMenu->setCurrentNode(null);
 
+        $event = new PreSitemapRenderEvent($locale);
+        $this->get('event_dispatcher')->dispatch(PreSitemapRenderEvent::NAME, $event);
+
         return array(
             'nodemenu' => $nodeMenu,
-            'locale'   => $locale,
+            'locale' => $locale,
+            'extraItems' => $event->getExtraItems(),
         );
     }
 
@@ -45,7 +50,7 @@ class SitemapController extends Controller
      *
      * @Route("/sitemap.{_format}", name="KunstmaanSitemapBundle_sitemapindex",
      *                              requirements={"_format" = "xml"})
-     * @Template("KunstmaanSitemapBundle:SitemapIndex:view.xml.twig")
+     * @Template("@KunstmaanSitemap/SitemapIndex/view.xml.twig")
      *
      * @param Request $request
      *
@@ -58,7 +63,7 @@ class SitemapController extends Controller
 
         return array(
             'locales' => $locales,
-            'host'    => $request->getSchemeAndHttpHost()
+            'host' => $request->getSchemeAndHttpHost(),
         );
     }
 }

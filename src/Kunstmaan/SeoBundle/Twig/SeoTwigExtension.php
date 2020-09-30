@@ -4,21 +4,20 @@ namespace Kunstmaan\SeoBundle\Twig;
 
 use Doctrine\ORM\EntityManager;
 use Kunstmaan\AdminBundle\Entity\AbstractEntity;
-
 use Kunstmaan\NodeBundle\Entity\AbstractPage;
-
 use Kunstmaan\SeoBundle\Entity\Seo;
-
-use Twig_Environment;
-
-use Twig_Extension;
+use Psr\Cache\CacheItemPoolInterface;
+use Twig\Environment;
+use Twig\Extension\AbstractExtension;
+use Twig\TwigFunction;
 
 /**
  * Twig extensions for Seo
+ *
+ * @final since 5.4
  */
-class SeoTwigExtension extends Twig_Extension
+class SeoTwigExtension extends AbstractExtension
 {
-
     /**
      * @var EntityManager
      */
@@ -26,6 +25,7 @@ class SeoTwigExtension extends Twig_Extension
 
     /**
      * Website title defined in your parameters
+     *
      * @var string
      */
     private $websiteTitle;
@@ -33,9 +33,15 @@ class SeoTwigExtension extends Twig_Extension
     /**
      * Saves querying the db multiple times, if you happen to use any of the defined
      * functions more than once in your templates
+     *
      * @var array
      */
     private $seoCache = [];
+
+    /**
+     * @var CacheItemPoolInterface
+     */
+    private $requestCache;
 
     /**
      * @param EntityManager $em
@@ -53,12 +59,12 @@ class SeoTwigExtension extends Twig_Extension
     public function getFunctions()
     {
         return array(
-            new \Twig_SimpleFunction('render_seo_metadata_for', array($this, 'renderSeoMetadataFor'), array('is_safe' => array('html'), 'needs_environment' => true)),
-            new \Twig_SimpleFunction('get_seo_for', array($this, 'getSeoFor')),
-            new \Twig_SimpleFunction('get_title_for', array($this, 'getTitleFor')),
-            new \Twig_SimpleFunction('get_title_for_page_or_default', array($this, 'getTitleForPageOrDefault')),
-            new \Twig_SimpleFunction('get_absolute_url', array($this, 'getAbsoluteUrl')),
-            new \Twig_SimpleFunction('get_image_dimensions', array($this, 'getImageDimensions')),
+            new TwigFunction('render_seo_metadata_for', array($this, 'renderSeoMetadataFor'), array('is_safe' => array('html'), 'needs_environment' => true)),
+            new TwigFunction('get_seo_for', array($this, 'getSeoFor')),
+            new TwigFunction('get_title_for', array($this, 'getTitleFor')),
+            new TwigFunction('get_title_for_page_or_default', array($this, 'getTitleForPageOrDefault')),
+            new TwigFunction('get_absolute_url', array($this, 'getAbsoluteUrl')),
+            new TwigFunction('get_image_dimensions', array($this, 'getImageDimensions')),
         );
     }
 
@@ -68,6 +74,7 @@ class SeoTwigExtension extends Twig_Extension
      *
      * @param string $url
      * @param string $host
+     *
      * @return string
      */
     public function getAbsoluteUrl($url, $host = null)
@@ -78,14 +85,14 @@ class SeoTwigExtension extends Twig_Extension
         if (!$validUrl === false) {
             // The url is valid
             return $url;
-        } else {
-            // Prepend with $host if $url starts with "/"
-            if ($url[0] == '/') {
-                return $url = $host.$url;
-            }
-
-            return false;
         }
+
+        // Prepend with $host if $url starts with "/"
+        if (strpos($url, '/') === 0) {
+            return $url = $host.$url;
+        }
+
+        return false;
     }
 
     /**
@@ -95,10 +102,10 @@ class SeoTwigExtension extends Twig_Extension
      */
     public function getSeoFor(AbstractPage $entity)
     {
-        $key = md5(get_class($entity).$entity->getId());
+        $key = md5(\get_class($entity).$entity->getId());
 
-        if (!array_key_exists($key, $this->seoCache)) {
-            $seo = $this->em->getRepository('KunstmaanSeoBundle:Seo')->findOrCreateFor($entity);
+        if (!\array_key_exists($key, $this->seoCache)) {
+            $seo = $this->em->getRepository(Seo::class)->findOrCreateFor($entity);
             $this->seoCache[$key] = $seo;
         }
 
@@ -108,7 +115,7 @@ class SeoTwigExtension extends Twig_Extension
     /**
      * The first value that is not null or empty will be returned.
      *
-     * @param AbstractPage $entity The entity for which you want the page title.
+     * @param AbstractPage $entity the entity for which you want the page title
      *
      * @return string The page title. Will look in the SEO meta first, then the NodeTranslation, then the page.
      */
@@ -125,13 +132,13 @@ class SeoTwigExtension extends Twig_Extension
 
     /**
      * @param AbstractPage $entity
-     * @param null|string  $default If given we'll return this text if no SEO title was found.
+     * @param null|string  $default if given we'll return this text if no SEO title was found
      *
      * @return string
      */
     public function getTitleForPageOrDefault(AbstractPage $entity = null, $default = null)
     {
-        if (is_null($entity)) {
+        if (\is_null($entity)) {
             return $default;
         }
 
@@ -147,17 +154,17 @@ class SeoTwigExtension extends Twig_Extension
     }
 
     /**
-     * @param \Twig_Environment $environment
-     * @param AbstractEntity    $entity      The entity
-     * @param mixed             $currentNode The current node
-     * @param string            $template    The template
+     * @param Environment    $environment
+     * @param AbstractEntity $entity      The entity
+     * @param mixed          $currentNode The current node
+     * @param string         $template    The template
      *
      * @return string
      */
-    public function renderSeoMetadataFor(\Twig_Environment $environment, AbstractEntity $entity, $currentNode = null, $template = 'KunstmaanSeoBundle:SeoTwigExtension:metadata.html.twig')
+    public function renderSeoMetadataFor(Environment $environment, AbstractEntity $entity, $currentNode = null, $template = '@KunstmaanSeo/SeoTwigExtension/metadata.html.twig')
     {
         $seo = $this->getSeoFor($entity);
-        $template = $environment->loadTemplate($template);
+        $template = $environment->load($template);
 
         return $template->render(
             array(
@@ -176,7 +183,7 @@ class SeoTwigExtension extends Twig_Extension
     protected function getPreferredValue(array $values)
     {
         foreach ($values as $v) {
-            if (!is_null($v) && !empty($v)) {
+            if (!\is_null($v) && !empty($v)) {
                 return $v;
             }
         }
@@ -191,22 +198,20 @@ class SeoTwigExtension extends Twig_Extension
      */
     private function getSeoTitle(AbstractPage $entity = null)
     {
-        if (is_null($entity)) {
+        if (\is_null($entity)) {
             return null;
         }
 
         $seo = $this->getSeoFor($entity);
-        if (!is_null($seo)) {
+        if (!\is_null($seo)) {
             $title = $seo->getMetaTitle();
             if (!empty($title)) {
                 return str_replace('%websitetitle%', $this->getWebsiteTitle(), $title);
             }
         }
 
-
         return null;
     }
-
 
     /**
      * Gets the Website title defined in your parameters.
@@ -235,16 +240,47 @@ class SeoTwigExtension extends Twig_Extension
     /**
      * @param $src
      *
-     * @return array|null
+     * @return array
      */
     public function getImageDimensions($src)
     {
-        try {
-            list($width, $height) = getimagesize($src);
-        } catch (\Exception $e) {
-            return null;
-        }
+        list($width, $height) = $this->getImageSize($src);
 
-        return array('width' => $width, 'height' => $height);
+        return ['width' => $width, 'height' => $height];
+    }
+
+    public function setRequestCache(CacheItemPoolInterface $cacheService)
+    {
+        $this->requestCache = $cacheService;
+    }
+
+    /**
+     * @return CacheItemPoolInterface
+     */
+    public function getRequestCache()
+    {
+        return $this->requestCache;
+    }
+
+    private function getImageSize($src)
+    {
+        try {
+            $cache = $this->getRequestCache();
+            if (null === $cache) {
+                return getimagesize($src);
+            }
+
+            $cachedImageSizes = $cache->getItem(md5($src));
+            if (!$cachedImageSizes->isHit()) {
+                $sizes = getimagesize($src);
+
+                $cachedImageSizes->set($sizes);
+                $cache->save($cachedImageSizes);
+            }
+
+            return $cachedImageSizes->get();
+        } catch (\Exception $e) {
+            return [null, null];
+        }
     }
 }

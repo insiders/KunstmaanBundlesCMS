@@ -7,6 +7,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\HttpKernel\Event\FilterResponseEvent;
 use Symfony\Component\HttpKernel\Event\GetResponseEvent;
+use Symfony\Component\HttpKernel\Event\ResponseEvent;
 use Symfony\Component\HttpKernel\HttpKernelInterface;
 
 class SessionSecurityListener
@@ -37,8 +38,8 @@ class SessionSecurityListener
     private $userAgent;
 
     /**
-     * @param bool $ipCheck
-     * @param bool $userAgentCheck
+     * @param bool            $ipCheck
+     * @param bool            $userAgentCheck
      * @param LoggerInterface $logger
      */
     public function __construct($ipCheck, $userAgentCheck, LoggerInterface $logger)
@@ -49,10 +50,14 @@ class SessionSecurityListener
     }
 
     /**
-     * @param FilterResponseEvent $event
+     * @param FilterResponseEvent|ResponseEvent $event
      */
-    public function onKernelResponse(FilterResponseEvent $event)
+    public function onKernelResponse($event)
     {
+        if (!$event instanceof FilterResponseEvent && !$event instanceof ResponseEvent) {
+            throw new \InvalidArgumentException(\sprintf('Expected instance of type %s, %s given', \class_exists(ResponseEvent::class) ? ResponseEvent::class : FilterResponseEvent::class, \is_object($event) ? \get_class($event) : \gettype($event)));
+        }
+
         if (HttpKernelInterface::MASTER_REQUEST !== $event->getRequestType()) {
             return;
         }
@@ -75,6 +80,10 @@ class SessionSecurityListener
      */
     public function onKernelRequest(GetResponseEvent $event)
     {
+        if (!$event instanceof GetResponseEvent && !$event instanceof ResponseEvent) {
+            throw new \InvalidArgumentException(\sprintf('Expected instance of type %s, %s given', \class_exists(ResponseEvent::class) ? ResponseEvent::class : GetResponseEvent::class, \is_object($event) ? \get_class($event) : \gettype($event)));
+        }
+
         if (HttpKernelInterface::MASTER_REQUEST !== $event->getRequestType()) {
             return;
         }
@@ -107,7 +116,7 @@ class SessionSecurityListener
 
     /**
      * @param SessionInterface $session
-     * @param Request $request
+     * @param Request          $request
      */
     private function invalidateSession(SessionInterface $session, Request $request)
     {
@@ -118,17 +127,18 @@ class SessionSecurityListener
 
     /**
      * @param Request $request
+     *
      * @return string
      */
     private function getIp(Request $request)
     {
         if (!$this->ip) {
             $forwarded = $request->server->get('HTTP_X_FORWARDED_FOR');
-            if (strlen($forwarded) > 0) {
+            if (\strlen($forwarded) > 0) {
                 $parts = explode(',', $forwarded);
                 $parts = array_map('trim', $parts);
                 $parts = array_filter($parts);
-                if (count($parts) > 0) {
+                if (\count($parts) > 0) {
                     $ip = $parts[0];
                 }
             }
@@ -143,6 +153,7 @@ class SessionSecurityListener
 
     /**
      * @param Request $request
+     *
      * @return array|string
      */
     private function getUserAgent(Request $request)

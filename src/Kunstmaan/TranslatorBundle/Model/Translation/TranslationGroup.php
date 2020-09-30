@@ -1,5 +1,7 @@
 <?php
+
 namespace Kunstmaan\TranslatorBundle\Model\Translation;
+
 use Kunstmaan\TranslatorBundle\Entity\Translation;
 
 /**
@@ -29,18 +31,18 @@ class TranslationGroup
     /**
      * The domain name of this group
      *
+     * @var string
      **/
     private $domain;
 
     public function __construct()
     {
-        $this->translations = new \Doctrine\Common\Collections\ArrayCollection;
+        $this->translations = new \Doctrine\Common\Collections\ArrayCollection();
     }
 
     public function hasTranslation($locale)
     {
-
-        if (count($this->translations) <= 0) {
+        if (\count($this->translations) <= 0) {
             return false;
         }
 
@@ -53,7 +55,7 @@ class TranslationGroup
 
     public function getTranslationByLocale($locale)
     {
-        if (count($this->translations) <= 0) {
+        if (\count($this->translations) <= 0) {
             return null;
         }
 
@@ -70,7 +72,7 @@ class TranslationGroup
     {
         $translation = $this->getTranslationByLocale($locale);
 
-        return is_null($translation) ? null : $translation->getText();
+        return \is_null($translation) ? null : $translation->getText();
     }
 
     public function addTranslation(Translation $translation)

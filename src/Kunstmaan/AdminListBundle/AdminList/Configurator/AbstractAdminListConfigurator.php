@@ -56,7 +56,7 @@ abstract class AbstractAdminListConfigurator implements AdminListConfiguratorInt
     /**
      * @var AbstractType
      */
-    private $type = null;
+    private $type;
 
     /**
      * @var array
@@ -66,32 +66,32 @@ abstract class AbstractAdminListConfigurator implements AdminListConfiguratorInt
     /**
      * @var string
      */
-    private $listTemplate = 'KunstmaanAdminListBundle:Default:list.html.twig';
+    private $listTemplate = '@KunstmaanAdminList/Default/list.html.twig';
 
     /**
      * @var string
      */
-    private $addTemplate = 'KunstmaanAdminListBundle:Default:add_or_edit.html.twig';
+    private $addTemplate = '@KunstmaanAdminList/Default/add_or_edit.html.twig';
 
     /**
      * @var string
      */
-    private $editTemplate = 'KunstmaanAdminListBundle:Default:add_or_edit.html.twig';
+    private $editTemplate = '@KunstmaanAdminList/Default/add_or_edit.html.twig';
 
     /**
      * @var string
      */
-    private $viewTemplate = 'KunstmaanAdminListBundle:Default:view.html.twig';
+    private $viewTemplate = '@KunstmaanAdminList/Default/view.html.twig';
 
     /**
      * @var string
      */
-    private $deleteTemplate = 'KunstmaanAdminListBundle:Default:delete.html.twig';
+    private $deleteTemplate = '@KunstmaanAdminList/Default/delete.html.twig';
 
     /**
      * @var FilterBuilder
      */
-    private $filterBuilder = null;
+    private $filterBuilder;
 
     /**
      * @var int
@@ -158,7 +158,7 @@ abstract class AbstractAdminListConfigurator implements AdminListConfiguratorInt
      */
     public function buildExportFields()
     {
-        /**
+        /*
          * This is only here to prevent a BC break!!!
          *
          * Just override this function if you want to set your own fields...
@@ -198,7 +198,7 @@ abstract class AbstractAdminListConfigurator implements AdminListConfiguratorInt
     {
         $params = array_merge($params, $this->getExtraParameters());
 
-        $friendlyName = explode("\\", $this->getEntityName());
+        $friendlyName = explode('\\', $this->getEntityName());
         $friendlyName = array_pop($friendlyName);
         $re = '/(?<=[a-z])(?=[A-Z])|(?<=[A-Z])(?=[A-Z][a-z])/';
         $a = preg_split($re, $friendlyName);
@@ -227,20 +227,27 @@ abstract class AbstractAdminListConfigurator implements AdminListConfiguratorInt
         );
     }
 
+    /**
+     * Get the view url for the given $item
+     *
+     * @param object|array $item
+     *
+     * @return array
+     */
     public function getViewUrlFor($item)
     {
-        if (is_object($item)){
+        if (\is_object($item)) {
             $id = $item->getid();
         } else {
             $id = $item['id'];
         }
-        $params = array('id' => $id);
+        $params = ['id' => $id];
         $params = array_merge($params, $this->getExtraParameters());
 
-        return array(
-            'path'   => $this->getPathByConvention($this::SUFFIX_VIEW),
-            'params' => $params
-        );
+        return [
+            'path' => $this->getPathByConvention($this::SUFFIX_VIEW),
+            'params' => $params,
+        ];
     }
 
     /**
@@ -275,10 +282,7 @@ abstract class AbstractAdminListConfigurator implements AdminListConfiguratorInt
             return $entity->getAdminType();
         }
 
-        throw new InvalidArgumentException(
-            'You need to implement the getAdminType method in '.
-            get_class($this).' or '.get_class($entity)
-        );
+        throw new InvalidArgumentException('You need to implement the getAdminType method in '. \get_class($this).' or '. \get_class($entity));
     }
 
     /**
@@ -363,11 +367,11 @@ abstract class AbstractAdminListConfigurator implements AdminListConfiguratorInt
     }
 
     /**
-     * @param string $name The field name
-     * @param string $header The header title
-     * @param string $sort Sortable column or not
-     * @param string $template The template
-     * @param FieldAlias $alias The alias
+     * @param string     $name     The field name
+     * @param string     $header   The header title
+     * @param bool       $sort     Sortable column or not
+     * @param string     $template The template
+     * @param FieldAlias $alias    The alias
      *
      * @return AbstractAdminListConfigurator
      */
@@ -379,10 +383,10 @@ abstract class AbstractAdminListConfigurator implements AdminListConfiguratorInt
     }
 
     /**
-     * @param string $name The field name
-     * @param string $header The header title
-     * @param string $template The template
-     * @param FieldAlias $alias The alias
+     * @param string     $name     The field name
+     * @param string     $header   The header title
+     * @param string     $template The template
+     * @param FieldAlias $alias    The alias
      *
      * @return AbstractAdminListConfigurator
      */
@@ -394,10 +398,10 @@ abstract class AbstractAdminListConfigurator implements AdminListConfiguratorInt
     }
 
     /**
-     * @param string $columnName The column name
-     * @param FilterTypeInterface $type The filter type
-     * @param string $filterName The name of the filter
-     * @param array $options Options
+     * @param string              $columnName The column name
+     * @param FilterTypeInterface $type       The filter type
+     * @param string              $filterName The name of the filter
+     * @param array               $options    Options
      *
      * @return AbstractAdminListConfigurator
      */
@@ -450,17 +454,17 @@ abstract class AbstractAdminListConfigurator implements AdminListConfiguratorInt
     {
         if (empty($this->exportFields)) {
             return $this->fields;
-        } else {
-            return $this->exportFields;
         }
+
+        return $this->exportFields;
     }
 
     /**
-     * @param string $label The label, only used when the template equals null
+     * @param string   $label          The label, only used when the template equals null
      * @param callable $routeGenerator The generator used to generate the url of an item, when generating the item will
      *                                 be provided
-     * @param string $icon The icon, only used when the template equals null
-     * @param string $template The template, when not specified the label is shown
+     * @param string   $icon           The icon, only used when the template equals null
+     * @param string   $template       The template, when not specified the label is shown
      *
      * @return AbstractAdminListConfigurator
      */
@@ -574,19 +578,19 @@ abstract class AbstractAdminListConfigurator implements AdminListConfiguratorInt
     }
 
     /**
-     * @param array|object $item The item
-     * @param string $columnName The column name
+     * @param array|object $item       The item
+     * @param string       $columnName The column name
      *
      * @return mixed
      */
     public function getValue($item, $columnName)
     {
-        if (is_array($item)) {
+        if (\is_array($item)) {
             if (isset($item[$columnName])) {
                 return $item[$columnName];
-            } else {
-                return '';
             }
+
+            return '';
         }
 
         $accessor = PropertyAccess::createPropertyAccessor();
@@ -601,39 +605,39 @@ abstract class AbstractAdminListConfigurator implements AdminListConfiguratorInt
     }
 
     /**
-     * @param array|object $item The item
-     * @param string $columnName The column name
+     * @param array|object $item       The item
+     * @param string       $columnName The column name
      *
      * @return string
      */
     public function getStringValue($item, $columnName)
     {
         $result = $this->getValue($item, $columnName);
-        if (is_bool($result)) {
+        if (\is_bool($result)) {
             return $result ? 'true' : 'false';
         }
-        if ($result instanceof \DateTime) {
+        if ($result instanceof \DateTimeInterface) {
             return $result->format('Y-m-d H:i:s');
-        } else {
-            if ($result instanceof PersistentCollection) {
-                $results = [];
-                /* @var Object $entry */
-                foreach ($result as $entry) {
-                    $results[] = $entry->getName();
-                }
-                if (empty($results)) {
-                    return "";
-                }
-
-                return implode(', ', $results);
-            } else {
-                if (is_array($result)) {
-                    return implode(', ', $result);
-                } else {
-                    return $result;
-                }
-            }
         }
+
+        if ($result instanceof PersistentCollection) {
+            $results = [];
+            /* @var Object $entry */
+            foreach ($result as $entry) {
+                $results[] = $entry->getName();
+            }
+            if (empty($results)) {
+                return '';
+            }
+
+            return implode(', ', $results);
+        }
+
+        if (is_array($result)) {
+            return implode(', ', $result);
+        }
+
+        return $result;
     }
 
     /**
@@ -733,7 +737,7 @@ abstract class AbstractAdminListConfigurator implements AdminListConfiguratorInt
      */
     public function getFilterBuilder()
     {
-        if (is_null($this->filterBuilder)) {
+        if (\is_null($this->filterBuilder)) {
             $this->filterBuilder = new FilterBuilder();
         }
 
@@ -767,7 +771,7 @@ abstract class AbstractAdminListConfigurator implements AdminListConfiguratorInt
         $this->page = $request->query->getInt('page', 1);
         // Allow alphanumeric, _ & . in order by parameter!
         $this->orderBy = preg_replace('/[^[a-zA-Z0-9\_\.]]/', '', $request->query->get('orderBy', ''));
-        $this->orderDirection = $request->query->getAlpha('orderDirection', '');
+        $this->orderDirection = $request->query->getAlpha('orderDirection');
 
         // there is a session and the filter param is not set
         if ($session->has($adminListName) && !$query->has('filter')) {
@@ -794,7 +798,6 @@ abstract class AbstractAdminListConfigurator implements AdminListConfiguratorInt
                 'orderDirection' => $this->orderDirection,
             )
         );
-
 
         $this->getFilterBuilder()->bindRequest($request);
     }

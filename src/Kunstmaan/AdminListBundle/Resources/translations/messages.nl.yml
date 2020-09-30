@@ -1,5 +1,6 @@
 ---
 kuma_admin_list:
+  limit: Limiet %limit%
   form:
     export_to: Exporteer naar
   edit:
@@ -13,8 +14,8 @@ kuma_admin_list:
     move_up: Verplaats omhoog
     move_down: Verplaats omlaag
 filter:
-  "true": true
-  "false": false
+  "true": "true"
+  "false": "false"
   before: voor
   after: na
   in: bevat
@@ -33,3 +34,4 @@ filter:
   notequals: is niet gelijk aan
   startswith: begint met
   endswith: eindigt met
+  empty: is leeg

@@ -35,8 +35,9 @@ class FolderRepository extends NestedTreeRepository
         $parent = $folder->getParent();
 
         $em->beginTransaction();
+
         try {
-            if (!is_null($parent)) {
+            if (!\is_null($parent)) {
                 $this->persistInOrderedTree($folder, $parent);
             } else {
                 $em->persist($folder);
@@ -45,6 +46,7 @@ class FolderRepository extends NestedTreeRepository
             $em->flush();
         } catch (\Exception $e) {
             $em->rollback();
+
             throw $e;
         }
     }
@@ -63,10 +65,9 @@ class FolderRepository extends NestedTreeRepository
         $em->flush();
     }
 
-
     /**
      * @param Folder $folder
-     * @param bool $alsoDeleteFolders
+     * @param bool   $alsoDeleteFolders
      */
     public function emptyFolder(Folder $folder, $alsoDeleteFolders = false)
     {
@@ -120,7 +121,7 @@ class FolderRepository extends NestedTreeRepository
             ->where('folder.parent is null AND folder.deleted != true')
             ->orderBy('folder.name');
 
-        if (false === is_null($limit)) {
+        if (false === \is_null($limit)) {
             $qb->setMaxResults($limit);
         }
 
@@ -131,6 +132,7 @@ class FolderRepository extends NestedTreeRepository
      * @param int $folderId
      *
      * @return object
+     *
      * @throws EntityNotFoundException
      */
     public function getFolder($folderId)
@@ -293,7 +295,7 @@ class FolderRepository extends NestedTreeRepository
         foreach ($folders as $folder) {
             // Force parent load
             $parent = $folder->getParent();
-            if (is_null($parent)) {
+            if (\is_null($parent)) {
                 $folder->setLevel(0);
                 if ($first) {
                     $this->persistAsFirstChild($folder);
@@ -324,7 +326,7 @@ class FolderRepository extends NestedTreeRepository
             ->orderBy('f.lft');
 
         // Fetch all folders except the current one and its children
-        if (!is_null($ignoreSubtree) && $ignoreSubtree->getId() !== null) {
+        if (!\is_null($ignoreSubtree) && $ignoreSubtree->getId() !== null) {
             $orX = $qb->expr()->orX();
             $orX->add('f.rgt > :right')
                 ->add('f.lft < :left');
@@ -357,7 +359,7 @@ class FolderRepository extends NestedTreeRepository
                 }
                 $previousChild = $child;
             }
-            if (is_null($previousChild)) {
+            if (\is_null($previousChild)) {
                 $this->persistAsPrevSiblingOf($folder, $children[0]);
             } else {
                 $this->persistAsNextSiblingOf($folder, $previousChild);

@@ -1,4 +1,4 @@
-{% extends '<%= bundle.name %>:Page:layout.html.twig' %}
+{% extends '<% if not isV4 %><%= bundle.name %>:<% endif %>Page<% if not isV4 %>:<% else %>/<% endif %>layout.html.twig' %}
 
 {% block content %}
     <div class="container">
@@ -7,7 +7,7 @@
             {% if nodemenu is defined %}
                 {% for topNode in nodemenu.getTopNodes() %}
                     {% for node in topNode.getChildren() %}
-                        {% include 'KunstmaanSitemapBundle:SitemapPage:entry.html.twig' with {'entry' : node} %}
+                        {% include '@KunstmaanSitemap/SitemapPage/entry.html.twig' with {'entry' : node} %}
                     {% endfor %}
                 {% endfor %}
             {% endif %}

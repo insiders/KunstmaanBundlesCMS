@@ -16,20 +16,13 @@ export const translatorBundle = {
     tasks: {}
 };
 
-translatorBundle.tasks.stylelint = createStylelintTask({src: translatorBundle.config.srcPath + 'scss/**/*.scss'});
-
 translatorBundle.tasks.cssLocal = createCssLocalTask({src: translatorBundle.config.srcPath + 'scss/*.scss', dest: translatorBundle.config.distPath + 'css'});
 
 translatorBundle.tasks.cssOptimized = createCssOptimizedTask({src: translatorBundle.config.srcPath + 'scss/*.scss', dest: translatorBundle.config.distPath + 'css'});
 
-translatorBundle.tasks.eslint = createEslintTask({
-    src: translatorBundle.config.srcPath + 'js/**/*.js',
-    failAfterError: !consoleArguments.continueAfterTestError
-});
-
 translatorBundle.tasks.scripts = createScriptsTask({
     src: [
-        translatorBundle.config.srcPath + 'vendor_bower/x-editable/dist/bootstrap3-editable/js/bootstrap-editable.min.js',
+        './node_modules/x-editable/dist/bootstrap3-editable/js/bootstrap-editable.min.js',
         translatorBundle.config.srcPath + 'js/_inline-edit.js',
         translatorBundle.config.srcPath + 'js/app.js'
     ],

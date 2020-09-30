@@ -11,13 +11,13 @@ use Elastica\Query\Term;
 use Elastica\Util;
 use Kunstmaan\AdminBundle\Entity\BaseUser;
 use Kunstmaan\AdminBundle\Helper\DomainConfigurationInterface;
+use Kunstmaan\NodeBundle\Entity\Node;
+use Kunstmaan\NodeSearchBundle\Entity\NodeSearch;
 use Kunstmaan\NodeSearchBundle\Helper\SearchBoostInterface;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 
 /**
  * Default node searcher implementation
- *
- * @package Kunstmaan\NodeSearchBundle\Search
  */
 class NodeSearcher extends AbstractElasticaSearcher
 {
@@ -58,13 +58,12 @@ class NodeSearcher extends AbstractElasticaSearcher
     }
 
     /**
-     *
      * @param EntityManager $em
      */
-     public function setEntityManager(EntityManager $em)
-     {
-         $this->em = $em;
-     }
+    public function setEntityManager(EntityManager $em)
+    {
+        $this->em = $em;
+    }
 
     /**
      * @param bool $useMatchQueryForTitle
@@ -92,10 +91,10 @@ class NodeSearcher extends AbstractElasticaSearcher
         if ($this->useMatchQueryForTitle) {
             $elasticaQueryTitle = new Match();
             $elasticaQueryTitle
-              ->setFieldQuery('title', $query)
-              ->setFieldMinimumShouldMatch('title', '80%')
-              ->setFieldBoost(2);
-
+                ->setFieldQuery('title', $query)
+                ->setFieldMinimumShouldMatch('title', '80%')
+                ->setFieldBoost('title', 2)
+            ;
         } else {
             $elasticaQueryTitle = new QueryString();
             $elasticaQueryTitle
@@ -111,14 +110,14 @@ class NodeSearcher extends AbstractElasticaSearcher
 
         $this->applySecurityFilter($elasticaQueryBool);
 
-        if (!is_null($type)) {
+        if (!\is_null($type)) {
             $elasticaQueryType = new Term();
             $elasticaQueryType->setTerm('type', $type);
             $elasticaQueryBool->addMust($elasticaQueryType);
         }
 
         $rootNode = $this->domainConfiguration->getRootNode();
-        if (!is_null($rootNode)) {
+        if (!\is_null($rootNode)) {
             $elasticaQueryRoot = new Term();
             $elasticaQueryRoot->setTerm('root_id', $rootNode->getId());
             $elasticaQueryBool->addMust($elasticaQueryRoot);
@@ -131,14 +130,14 @@ class NodeSearcher extends AbstractElasticaSearcher
         $this->query->setRescore($rescore);
         $this->query->setHighlight(
             array(
-                'pre_tags'  => array('<strong>'),
+                'pre_tags' => array('<strong>'),
                 'post_tags' => array('</strong>'),
-                'fields'    => array(
+                'fields' => array(
                     'content' => array(
-                        'fragment_size'       => 150,
-                        'number_of_fragments' => 3
-                    )
-                )
+                        'fragment_size' => 150,
+                        'number_of_fragments' => 3,
+                    ),
+                ),
             )
         );
     }
@@ -153,9 +152,7 @@ class NodeSearcher extends AbstractElasticaSearcher
     {
         $roles = $this->getCurrentUserRoles();
 
-        $elasticaQueryRoles = new Query\Terms();
-        $elasticaQueryRoles
-            ->setTerms('view_roles', $roles);
+        $elasticaQueryRoles = new Query\Terms('view_roles', $roles);
         $elasticaQueryBool->addMust($elasticaQueryRoles);
     }
 
@@ -165,7 +162,7 @@ class NodeSearcher extends AbstractElasticaSearcher
     protected function getCurrentUserRoles()
     {
         $roles = array();
-        if (!is_null($this->tokenStorage)) {
+        if (!\is_null($this->tokenStorage)) {
             $user = $this->tokenStorage->getToken()->getUser();
             if ($user instanceof BaseUser) {
                 $roles = $user->getRoles();
@@ -173,11 +170,13 @@ class NodeSearcher extends AbstractElasticaSearcher
         }
 
         // Anonymous access should always be available for both anonymous & logged in users
-        if (!in_array('IS_AUTHENTICATED_ANONYMOUSLY', $roles)) {
+        if (!\in_array('IS_AUTHENTICATED_ANONYMOUSLY', $roles, true)) {
             $roles[] = 'IS_AUTHENTICATED_ANONYMOUSLY';
         }
 
-        return $roles;
+        // Return a re-indexed array to make sure the array keys are incremental and don't skip a number. Otherwise
+        // this causes issues in ES7.
+        return array_values($roles);
     }
 
     /**
@@ -190,11 +189,11 @@ class NodeSearcher extends AbstractElasticaSearcher
         $rescoreQueryBool = new BoolQuery();
 
         //Apply page type boosts
-        $pageClasses = $this->em->getRepository('KunstmaanNodeBundle:Node')->findAllDistinctPageClasses();
-        foreach($pageClasses as $pageClass) {
+        $pageClasses = $this->em->getRepository(Node::class)->findAllDistinctPageClasses();
+        foreach ($pageClasses as $pageClass) {
             $page = new $pageClass['refEntityName']();
 
-            if($page instanceof SearchBoostInterface) {
+            if ($page instanceof SearchBoostInterface) {
                 $elasticaQueryTypeBoost = new QueryString();
                 $elasticaQueryTypeBoost
                     ->setBoost($page->getSearchBoost())
@@ -206,7 +205,7 @@ class NodeSearcher extends AbstractElasticaSearcher
         }
 
         //Apply page specific boosts
-        $nodeSearches = $this->em->getRepository('KunstmaanNodeSearchBundle:NodeSearch')->findAll();
+        $nodeSearches = $this->em->getRepository(NodeSearch::class)->findAll();
         foreach ($nodeSearches as $nodeSearch) {
             $elasticaQueryNodeId = new QueryString();
             $elasticaQueryNodeId

@@ -23,7 +23,7 @@ class GenerateLayoutCommand extends KunstmaanGenerateCommand
     protected function configure()
     {
         $this->setDescription('Generates a basic layout')
-            ->setHelp(<<<EOT
+            ->setHelp(<<<'EOT'
 The <info>kuma:generate:layout</info> command generates a basic website layout.
 
 <info>php bin/console kuma:generate:layout</info>
@@ -61,12 +61,14 @@ EOT
             $this->assistant->writeSection('Layout generation');
         }
 
-        $rootDir = $this->getApplication()->getKernel()->getRootDir().'/../';
+        $rootDir = $this->getApplication()->getKernel()->getProjectDir().'/';
         $this->createGenerator()->generate($this->bundle, $rootDir, $this->assistant->getOption('demosite'), $this->browserSyncUrl);
 
         if (!$this->isSubCommand()) {
             $this->assistant->writeSection('Layout successfully created', 'bg=green;fg=black');
         }
+
+        return 0;
     }
 
     /**
@@ -100,7 +102,7 @@ EOT
         $filesystem = $this->getContainer()->get('filesystem');
         $registry = $this->getContainer()->get('doctrine');
 
-        return new LayoutGenerator($filesystem, $registry, '/layout', $this->assistant);
+        return new LayoutGenerator($filesystem, $registry, '/layout', $this->assistant, $this->getContainer());
     }
 
     /**

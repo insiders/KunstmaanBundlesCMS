@@ -15,8 +15,9 @@ class EntityVersionLockRepository extends EntityRepository
      * Check if there is a entity lock that's not passed the threshold.
      *
      * @param LockableEntity $entity
-     * @param int $threshold
-     * @param User $userToExclude
+     * @param int            $threshold
+     * @param User           $userToExclude
+     *
      * @return EntityVersionLock[]
      */
     public function getLocksForLockableEntity(LockableEntity $entity, $threshold, User $userToExclude = null)
@@ -30,7 +31,7 @@ class EntityVersionLockRepository extends EntityRepository
             ->setParameter('date', new \DateTime(sprintf('-%s seconds', $threshold)))
         ;
 
-        if (!is_null($userToExclude)) {
+        if (!\is_null($userToExclude)) {
             $qb->andWhere('evl.owner <> :owner')
                 ->setParameter('owner', $userToExclude->getUsername())
             ;
@@ -43,7 +44,8 @@ class EntityVersionLockRepository extends EntityRepository
      * Get locks that are passed the threshold.
      *
      * @param LockableEntity $entity
-     * @param int $threshold
+     * @param int            $threshold
+     *
      * @return mixed
      */
     public function getExpiredLocks(LockableEntity $entity, $threshold)

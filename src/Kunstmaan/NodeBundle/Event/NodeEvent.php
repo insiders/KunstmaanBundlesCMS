@@ -37,13 +37,13 @@ class NodeEvent extends Event
     /**
      * @var Response
      */
-    private $response = null;
+    private $response;
 
     /**
-     * @param Node $node The node
-     * @param NodeTranslation $nodeTranslation The nodetranslation
-     * @param NodeVersion $nodeVersion The node version
-     * @param HasNodeInterface $page The object
+     * @param Node             $node            The node
+     * @param NodeTranslation  $nodeTranslation The nodetranslation
+     * @param NodeVersion      $nodeVersion     The node version
+     * @param HasNodeInterface $page            The object
      */
     public function __construct(Node $node, NodeTranslation $nodeTranslation, NodeVersion $nodeVersion, HasNodeInterface $page)
     {
@@ -143,6 +143,7 @@ class NodeEvent extends Event
 
     /**
      * @param Response $response
+     *
      * @return NodeEvent
      */
     public function setResponse(Response $response)

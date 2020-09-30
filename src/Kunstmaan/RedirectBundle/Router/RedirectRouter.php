@@ -5,8 +5,8 @@ namespace Kunstmaan\RedirectBundle\Router;
 use Doctrine\Common\Persistence\ObjectRepository;
 use Kunstmaan\AdminBundle\Helper\DomainConfigurationInterface;
 use Kunstmaan\RedirectBundle\Entity\Redirect;
-use Symfony\Bundle\FrameworkBundle\Routing\RedirectableUrlMatcher;
 use Symfony\Component\Routing\Exception\RouteNotFoundException;
+use Symfony\Component\Routing\Matcher\UrlMatcher;
 use Symfony\Component\Routing\RequestContext;
 use Symfony\Component\Routing\Route;
 use Symfony\Component\Routing\RouteCollection;
@@ -18,7 +18,7 @@ class RedirectRouter implements RouterInterface
     private $context;
 
     /** @var RouteCollection */
-    private $routeCollection = null;
+    private $routeCollection;
 
     /** @var ObjectRepository */
     private $redirectRepository;
@@ -27,7 +27,7 @@ class RedirectRouter implements RouterInterface
     private $domainConfiguration;
 
     /**
-     * @param ObjectRepository $redirectRepository
+     * @param ObjectRepository             $redirectRepository
      * @param DomainConfigurationInterface $domainConfiguration
      */
     public function __construct(ObjectRepository $redirectRepository, DomainConfigurationInterface $domainConfiguration)
@@ -52,22 +52,22 @@ class RedirectRouter implements RouterInterface
      *
      * If there is no route with the given name, the generator must throw the RouteNotFoundException.
      *
-     * @param string $name The name of the route
-     * @param mixed $parameters An array of parameters
-     * @param Boolean|string $referenceType The type of reference to be generated (one of the constants)
+     * @param string      $name          The name of the route
+     * @param mixed       $parameters    An array of parameters
+     * @param bool|string $referenceType The type of reference to be generated (one of the constants)
      *
      * @return string The generated URL
      *
      * @throws \Symfony\Component\Routing\Exception\RouteNotFoundException              If the named route doesn't exist
      * @throws \Symfony\Component\Routing\Exception\MissingMandatoryParametersException When some parameters are missing that are mandatory for the route
      * @throws \Symfony\Component\Routing\Exception\InvalidParameterException           When a parameter value for a placeholder is not correct because
-     *                                             it does not match the requirement
+     *                                                                                  it does not match the requirement
      *
      * @api
      */
     public function generate($name, $parameters = array(), $referenceType = self::ABSOLUTE_PATH)
     {
-        throw new RouteNotFoundException("You cannot generate a url from a redirect");
+        throw new RouteNotFoundException('You cannot generate a url from a redirect');
     }
 
     /**
@@ -87,10 +87,9 @@ class RedirectRouter implements RouterInterface
      */
     public function match($pathinfo)
     {
-        $urlMatcher = new RedirectableUrlMatcher($this->getRouteCollection(), $this->getContext());
-        $result = $urlMatcher->match($pathinfo);
+        $urlMatcher = new UrlMatcher($this->getRouteCollection(), $this->getContext());
 
-        return $result;
+        return $urlMatcher->match($pathinfo);
     }
 
     /**
@@ -100,7 +99,7 @@ class RedirectRouter implements RouterInterface
      */
     public function getRouteCollection()
     {
-        if (is_null($this->routeCollection)) {
+        if (\is_null($this->routeCollection)) {
             $this->routeCollection = new RouteCollection();
             $this->initRoutes();
         }
@@ -117,18 +116,16 @@ class RedirectRouter implements RouterInterface
         foreach ($redirects as $redirect) {
             // Check for wildcard routing and adjust as required
             if ($this->isWildcardRedirect($redirect)) {
-                $this->calculateWildcardDestination($redirect);
+                $route = $this->createWildcardRoute($redirect);
+            } else {
+                $route = $this->createRoute($redirect);
             }
 
             // Only add the route when the domain matches or the domain is empty
             if ($redirect->getDomain() == $domain || !$redirect->getDomain()) {
                 $this->routeCollection->add(
                     '_redirect_route_' . $redirect->getId(),
-                    new Route(rtrim($redirect->getOrigin(), '/'), array(
-                        '_controller' => 'FrameworkBundle:Redirect:urlRedirect',
-                        'path' => $redirect->getTarget(),
-                        'permanent' => $redirect->isPermanent(),
-                    ))
+                    $route
                 );
             }
         }
@@ -136,6 +133,7 @@ class RedirectRouter implements RouterInterface
 
     /**
      * @param Redirect $redirect
+     *
      * @return bool
      */
     private function isWildcardRedirect(Redirect $redirect)
@@ -145,32 +143,64 @@ class RedirectRouter implements RouterInterface
         if (substr($origin, -2) == '/*') {
             return $this->isPathInfoWildcardMatch($matchSegment);
         }
+
         return false;
     }
 
     private function isPathInfoWildcardMatch($matchSegment)
     {
         $path = $this->context->getPathInfo();
+
         return strstr($path, $matchSegment);
     }
 
     /**
      * @param Redirect $redirect
+     *
+     * @return Route
      */
-    private function calculateWildcardDestination(Redirect $redirect)
+    private function createRoute(Redirect $redirect)
+    {
+        $needsUtf8 = false;
+        foreach ([$redirect->getOrigin(), $redirect->getTarget()] as $item) {
+            if (preg_match('/[\x80-\xFF]/', $item)) {
+                $needsUtf8 = true;
+
+                break;
+            }
+        }
+
+        return new Route(
+            $redirect->getOrigin(), [
+                '_controller' => 'FrameworkBundle:Redirect:urlRedirect',
+                'path' => $redirect->getTarget(),
+                'permanent' => $redirect->isPermanent(),
+            ], [], ['utf8' => $needsUtf8]);
+    }
+
+    /**
+     * @param Redirect $redirect
+     *
+     * @return Route
+     */
+    private function createWildcardRoute(Redirect $redirect)
     {
         $origin = $redirect->getOrigin();
         $target = $redirect->getTarget();
         $url = $this->context->getPathInfo();
-
-        $redirect->setOrigin($url);
+        $needsUtf8 = preg_match('/[\x80-\xFF]/', $redirect->getTarget());
 
         $origin = substr($origin, 0, -1);
         $target = substr($target, 0, -1);
-        $url = str_replace($origin, $target, $url);
+        $pathInfo = str_replace($origin, $target, $url);
 
-        $this->context->setPathInfo($url);
-        $redirect->setTarget($url);
+        $this->context->setPathInfo($pathInfo);
+
+        return new Route($url, [
+            '_controller' => 'FrameworkBundle:Redirect:urlRedirect',
+            'path' => $url,
+            'permanent' => $redirect->isPermanent(),
+        ], [], ['utf8' => $needsUtf8]);
     }
 
     /**

@@ -1,12 +1,11 @@
 <?php
-namespace Kunstmaan\DashboardBundle\Command\Helper\Analytics;
 
+namespace Kunstmaan\DashboardBundle\Command\Helper\Analytics;
 
 use Kunstmaan\DashboardBundle\Entity\AnalyticsOverview;
 
 class UsersCommandHelper extends AbstractAnalyticsCommandHelper
 {
-
     /**
      * get data and save it for the overview
      *
@@ -22,9 +21,7 @@ class UsersCommandHelper extends AbstractAnalyticsCommandHelper
         $rows = $this->executeQuery($overview, $metrics);
 
         // new sessions
-        $newUsers = is_array($rows) && isset($rows[0][0]) ? $rows[0][0] : 0;
+        $newUsers = \is_array($rows) && isset($rows[0][0]) ? $rows[0][0] : 0;
         $overview->setNewUsers($newUsers);
     }
-
-
 }

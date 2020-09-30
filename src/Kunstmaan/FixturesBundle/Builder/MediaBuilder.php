@@ -2,7 +2,6 @@
 
 namespace Kunstmaan\FixturesBundle\Builder;
 
-
 use Doctrine\ORM\EntityManager;
 use Kunstmaan\FixturesBundle\Loader\Fixture;
 use Kunstmaan\MediaBundle\Entity\Folder;
@@ -15,6 +14,7 @@ use Symfony\Component\HttpFoundation\File\MimeType\MimeTypeGuesserInterface;
 class MediaBuilder implements BuilderInterface
 {
     private $em;
+
     private $fileHandler;
 
     /**
@@ -47,17 +47,15 @@ class MediaBuilder implements BuilderInterface
             throw new \Exception('There is no folder specified for media fixture ' . $fixture->getName());
         }
 
-        $this->folder = $this->em->getRepository('KunstmaanMediaBundle:Folder')->findOneBy(array('rel' => $properties['folder']));
+        $this->folder = $this->em->getRepository(Folder::class)->findOneBy(array('rel' => $properties['folder']));
 
         if (!$this->folder instanceof Folder) {
-            $this->folder = $this->em->getRepository('KunstmaanMediaBundle:Folder')->findOneBy(array('internalName' => $properties['folder']));
+            $this->folder = $this->em->getRepository(Folder::class)->findOneBy(array('internalName' => $properties['folder']));
         }
 
         if (!$this->folder instanceof Folder) {
             throw new \Exception('Could not find the specified folder for media fixture ' . $fixture->getName());
         }
-
-
     }
 
     public function postBuild(Fixture $fixture)

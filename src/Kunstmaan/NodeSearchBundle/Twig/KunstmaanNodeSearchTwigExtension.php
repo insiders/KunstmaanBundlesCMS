@@ -7,8 +7,14 @@ use Kunstmaan\NodeBundle\Entity\HasNodeInterface;
 use Kunstmaan\NodeBundle\Entity\Node;
 use Kunstmaan\NodeSearchBundle\Helper\IndexablePagePartsService;
 use Kunstmaan\PagePartBundle\Helper\HasPagePartsInterface;
+use Twig\Environment;
+use Twig\Extension\AbstractExtension;
+use Twig\TwigFunction;
 
-class KunstmaanNodeSearchTwigExtension extends \Twig_Extension
+/**
+ * @final since 5.4
+ */
+class KunstmaanNodeSearchTwigExtension extends AbstractExtension
 {
     /**
      * @var EntityManager
@@ -38,8 +44,8 @@ class KunstmaanNodeSearchTwigExtension extends \Twig_Extension
     public function getFunctions()
     {
         return array(
-            new \Twig_SimpleFunction('get_parent_page', array($this, 'getParentPage')),
-            new \Twig_SimpleFunction('render_indexable_pageparts', array($this, 'renderIndexablePageParts'), array('needs_environment' => true, 'needs_context' => true, 'is_safe' => array('html'))),
+            new TwigFunction('get_parent_page', array($this, 'getParentPage')),
+            new TwigFunction('render_indexable_pageparts', array($this, 'renderIndexablePageParts'), array('needs_environment' => true, 'needs_context' => true, 'is_safe' => array('html'))),
         );
     }
 
@@ -52,16 +58,15 @@ class KunstmaanNodeSearchTwigExtension extends \Twig_Extension
     public function getParentPage(HasNodeInterface $page, $locale)
     {
         /** @var Node $node */
-        $node = $this->em->getRepository('KunstmaanNodeBundle:Node')->getNodeFor($page);
+        $node = $this->em->getRepository(Node::class)->getNodeFor($page);
         $parentNode = $node->getParent();
         $nodeTranslation = $parentNode->getNodeTranslation($locale);
-        $parentPage = $nodeTranslation->getRef($this->em);
 
-        return $parentPage;
+        return $nodeTranslation->getRef($this->em);
     }
 
     /**
-     * @param \Twig_Environment     $env
+     * @param Environment           $env
      * @param array                 $twigContext The twig context
      * @param HasPagePartsInterface $page        The page
      * @param string                $contextName The pagepart context
@@ -70,19 +75,18 @@ class KunstmaanNodeSearchTwigExtension extends \Twig_Extension
      * @return string
      */
     public function renderIndexablePageParts(
-        \Twig_Environment $env,
+        Environment $env,
         array $twigContext,
         HasPagePartsInterface $page,
         $contextName = 'main',
         array $parameters = array()
-    )
-    {
-        $template = $env->loadTemplate('KunstmaanNodeSearchBundle:PagePart:view.html.twig');
+    ) {
+        $template = $env->load('@KunstmaanNodeSearch/PagePart/view.html.twig');
         $pageparts = $this->indexablePagePartsService->getIndexablePageParts($page, $contextName);
         $newTwigContext = array_merge(
             $parameters,
             array(
-                'pageparts' => $pageparts
+                'pageparts' => $pageparts,
             )
         );
         $newTwigContext = array_merge($newTwigContext, $twigContext);

@@ -15,11 +15,11 @@ class IconFontManager
     /**
      * @var IconFontLoaderInterface
      */
-    protected $defaultLoader = null;
+    protected $defaultLoader;
 
     /**
      * @param IconFontLoaderInterface $loader
-     * @param string $serviceId
+     * @param string                  $serviceId
      */
     public function addLoader(IconFontLoaderInterface $loader, $serviceId)
     {
@@ -36,6 +36,7 @@ class IconFontManager
 
     /**
      * @param string $serviceId
+     *
      * @return IconFontLoaderInterface
      */
     public function getLoader($serviceId)

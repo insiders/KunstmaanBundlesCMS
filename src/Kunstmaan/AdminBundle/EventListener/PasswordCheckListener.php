@@ -6,6 +6,7 @@ use Kunstmaan\AdminBundle\FlashMessages\FlashTypes;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Session\Session;
 use Symfony\Component\HttpKernel\Event\GetResponseEvent;
+use Symfony\Component\HttpKernel\Event\ResponseEvent;
 use Symfony\Component\Routing\RouterInterface as Router;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
@@ -49,11 +50,11 @@ class PasswordCheckListener
 
     /**
      * @param AuthorizationCheckerInterface $authorizationChecker
-     * @param TokenStorageInterface $tokenStorage
-     * @param Router $router
-     * @param Session $session
-     * @param TranslatorInterface $translator
-     * @param AdminRouteHelper $adminRouteHelper
+     * @param TokenStorageInterface         $tokenStorage
+     * @param Router                        $router
+     * @param Session                       $session
+     * @param TranslatorInterface           $translator
+     * @param AdminRouteHelper              $adminRouteHelper
      */
     public function __construct(AuthorizationCheckerInterface $authorizationChecker, TokenStorageInterface $tokenStorage, Router $router, Session $session, TranslatorInterface $translator, AdminRouteHelper $adminRouteHelper)
     {
@@ -66,19 +67,27 @@ class PasswordCheckListener
     }
 
     /**
-     * @param GetResponseEvent $event
+     * @param GetResponseEvent|ResponseEvent $event
      **/
-    public function onKernelRequest(GetResponseEvent $event)
+    public function onKernelRequest($event)
     {
+        if (!$event instanceof GetResponseEvent && !$event instanceof ResponseEvent) {
+            throw new \InvalidArgumentException(\sprintf('Expected instance of type %s, %s given', \class_exists(ResponseEvent::class) ? ResponseEvent::class : GetResponseEvent::class, \is_object($event) ? \get_class($event) : \gettype($event)));
+        }
+
         $url = $event->getRequest()->getRequestUri();
-        if ($this->tokenStorage->getToken() && $this->adminRouteHelper->isAdminRoute($url)) {
+        if (!$this->adminRouteHelper->isAdminRoute($url)) {
+            return;
+        }
+
+        if ($this->tokenStorage->getToken()) {
             $route = $event->getRequest()->get('_route');
             if ($this->authorizationChecker->isGranted('IS_AUTHENTICATED_REMEMBERED') && $route != 'fos_user_change_password') {
                 $user = $this->tokenStorage->getToken()->getUser();
                 if ($user->isPasswordChanged() === false) {
                     $response = new RedirectResponse($this->router->generate('fos_user_change_password'));
                     $this->session->getFlashBag()->add(
-                        FlashTypes::ERROR,
+                        FlashTypes::DANGER,
                         $this->translator->trans('kuma_admin.password_check.flash.error')
                     );
                     $event->setResponse($response);

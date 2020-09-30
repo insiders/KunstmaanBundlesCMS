@@ -30,7 +30,7 @@ class NodeMenuItem
     /**
      * @var NodeMenuItem[]
      */
-    private $children = null;
+    private $children;
 
     /**
      * @var NodeMenuItem
@@ -97,7 +97,7 @@ class NodeMenuItem
             return $nodeTranslation->getTitle();
         }
 
-        return "Untranslated";
+        return 'Untranslated';
     }
 
     /**
@@ -114,7 +114,7 @@ class NodeMenuItem
     }
 
     /**
-     * @return string|NULL
+     * @return string|null
      */
     public function getSlugPart()
     {
@@ -148,7 +148,7 @@ class NodeMenuItem
     }
 
     /**
-     * @return NodeMenuItem|NULL
+     * @return NodeMenuItem|null
      */
     public function getParent()
     {
@@ -171,7 +171,7 @@ class NodeMenuItem
     /**
      * @param string $class
      *
-     * @return NodeMenuItem|NULL
+     * @return NodeMenuItem|null
      */
     public function getParentOfClass($class)
     {
@@ -212,7 +212,7 @@ class NodeMenuItem
      */
     public function getChildren($includeHiddenFromNav = true)
     {
-        if (is_null($this->children)) {
+        if (\is_null($this->children)) {
             $children = $this->menu->getChildren($this->node, true);
             /* @var NodeMenuItem $child */
             foreach ($children as $child) {
@@ -221,15 +221,13 @@ class NodeMenuItem
             $this->children = $children;
         }
 
-        $children = array_filter($this->children, function (NodeMenuItem $entry) use ($includeHiddenFromNav) {
+        return array_filter($this->children, function (NodeMenuItem $entry) use ($includeHiddenFromNav) {
             if ($entry->getNode()->isHiddenFromNav() && !$includeHiddenFromNav) {
                 return false;
             }
 
             return true;
         });
-
-        return $children;
     }
 
     /**
@@ -257,6 +255,7 @@ class NodeMenuItem
 
     /**
      * Get the first child of class, this is not using the getChildrenOfClass method for performance reasons
+     *
      * @param string $class
      *
      * @return NodeMenuItem

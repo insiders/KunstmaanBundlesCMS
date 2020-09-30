@@ -21,26 +21,28 @@ abstract class AbstractArticleEntityAdminListController extends AdminListControl
     protected $configurator;
 
     /**
-     * @var EntityManager $em
+     * @var EntityManager
      */
     protected $em;
 
     /**
-     * @var string $locale
+     * @var string
      */
     protected $locale;
 
     /**
-     * @var BaseUser $user
+     * @var BaseUser
      */
     protected $user;
 
     /**
-     * @var AclHelper $aclHelper
+     * @var AclHelper
      */
     protected $aclHelper;
 
     /**
+     * NEXT_MAJOR: change method visibility from public to protected
+     *
      * @return AdminListConfiguratorInterface
      */
     public function getAdminListConfigurator(Request $request)
@@ -54,6 +56,8 @@ abstract class AbstractArticleEntityAdminListController extends AdminListControl
     }
 
     /**
+     * NEXT_MAJOR: change method visibility from public to protected
+     *
      * @return AbstractArticlePageAdminListConfigurator
      */
     abstract public function createAdminListConfigurator();

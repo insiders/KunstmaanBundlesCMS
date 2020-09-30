@@ -89,7 +89,7 @@ class NodeRepository extends NestedTreeRepository
             }
         }
 
-        if (is_null($parentId)) {
+        if (\is_null($parentId)) {
             $qb->andWhere('b.parent is NULL');
         } elseif ($parentId !== false) {
             $qb->andWhere('b.parent = :parent')
@@ -119,14 +119,14 @@ class NodeRepository extends NestedTreeRepository
     {
         /* @var NodeVersion $nodeVersion */
         $nodeVersion = $this->getEntityManager()->getRepository(
-            'KunstmaanNodeBundle:NodeVersion'
+            NodeVersion::class
         )->getNodeVersionFor(
             $hasNode
         );
-        if (!is_null($nodeVersion)) {
+        if (!\is_null($nodeVersion)) {
             /* @var NodeTranslation $nodeTranslation */
             $nodeTranslation = $nodeVersion->getNodeTranslation();
-            if (!is_null($nodeTranslation)) {
+            if (!\is_null($nodeTranslation)) {
                 return $nodeTranslation->getNode();
             }
         }
@@ -144,7 +144,7 @@ class NodeRepository extends NestedTreeRepository
     {
         /* @var NodeVersion $nodeVersion */
         $nodeVersion = $this->getEntityManager()->getRepository(
-            'KunstmaanNodeBundle:NodeVersion'
+            NodeVersion::class
         )->findOneBy(
             array('refId' => $id, 'refEntityName' => $entityName)
         );
@@ -163,23 +163,21 @@ class NodeRepository extends NestedTreeRepository
      */
     public function getNodeForSlug(Node $parentNode, $slug)
     {
-        $slugParts = explode("/", $slug);
-        $result    = null;
+        $slugParts = explode('/', $slug);
+        $result = null;
         foreach ($slugParts as $slugPart) {
             if ($parentNode) {
                 if ($r = $this->findOneBy(
                     array(
-                        'slug'          => $slugPart,
-                        'parent.parent' => $parentNode->getId()
+                        'slug' => $slugPart,
+                        'parent.parent' => $parentNode->getId(),
                     )
                 )
                 ) {
                     $result = $r;
                 }
-            } else {
-                if ($r = $this->findOneBy(array('slug' => $slugPart))) {
-                    $result = $r;
-                }
+            } elseif ($r = $this->findOneBy(['slug' => $slugPart])) {
+                $result = $r;
             }
         }
 
@@ -202,15 +200,11 @@ class NodeRepository extends NestedTreeRepository
         BaseUser $owner,
         $internalName = null
     ) {
-        $em   = $this->getEntityManager();
+        $em = $this->getEntityManager();
         $node = new Node();
         $node->setRef($hasNode);
         if (!$hasNode->getId() > 0) {
-            throw new \InvalidArgumentException(
-                "the entity of class ".
-                $node->getRefEntityName(
-                )." has no id, maybe you forgot to flush first"
-            );
+            throw new \InvalidArgumentException('the entity of class '. $node->getRefEntityName().' has no id, maybe you forgot to flush first');
         }
         $node->setDeleted(false);
         $node->setInternalName($internalName);
@@ -218,11 +212,11 @@ class NodeRepository extends NestedTreeRepository
         if ($parent) {
             /* @var NodeVersion $parentNodeVersion */
             $parentNodeVersion = $em->getRepository(
-                'KunstmaanNodeBundle:NodeVersion'
+                NodeVersion::class
             )->findOneBy(
                 array(
-                    'refId'         => $parent->getId(),
-                    'refEntityName' => ClassLookup::getClass($parent)
+                    'refId' => $parent->getId(),
+                    'refEntityName' => ClassLookup::getClass($parent),
                 )
             );
             if ($parentNodeVersion) {
@@ -237,7 +231,7 @@ class NodeRepository extends NestedTreeRepository
         $em->persist($node);
         $em->flush();
         $em->refresh($node);
-        $em->getRepository('KunstmaanNodeBundle:NodeTranslation')
+        $em->getRepository(NodeTranslation::class)
             ->createNodeTranslationFor(
                 $hasNode,
                 $lang,
@@ -271,10 +265,10 @@ class NodeRepository extends NestedTreeRepository
         $includeHiddenFromNav = false,
         Node $rootNode = null
     ) {
-        $connection           = $this->_em->getConnection();
-        $qb                   = $connection->createQueryBuilder();
+        $connection = $this->_em->getConnection();
+        $qb = $connection->createQueryBuilder();
         $databasePlatformName = $connection->getDatabasePlatform()->getName();
-        $createIfStatement    = function (
+        $createIfStatement = function (
             $expression,
             $trueValue,
             $falseValue
@@ -282,6 +276,7 @@ class NodeRepository extends NestedTreeRepository
             switch ($databasePlatformName) {
                 case 'sqlite':
                     $statement = 'CASE WHEN %s THEN %s ELSE %s END';
+
                     break;
 
                 default:
@@ -299,7 +294,6 @@ n.id, n.parent_id AS parent, t.url, t.id AS nt_id,
 n.hidden_from_nav AS hidden,
 n.ref_entity_name AS ref_entity_name
 SQL;
-
 
         $qb->select($sql)
             ->from('kuma_nodes', 'n')
@@ -324,7 +318,7 @@ SQL;
             $qb->andWhere('n.hidden_from_nav <> 0');
         }
 
-        if (!is_null($rootNode)) {
+        if (!\is_null($rootNode)) {
             $qb->andWhere('n.lft >= :left')
                 ->andWhere('n.rgt <= :right');
         }
@@ -336,7 +330,7 @@ SQL;
 
         $stmt = $this->_em->getConnection()->prepare($qb->getSQL());
         $stmt->bindValue(':lang', $lang);
-        if (!is_null($rootNode)) {
+        if (!\is_null($rootNode)) {
             $stmt->bindValue(':left', $rootNode->getLeft());
             $stmt->bindValue(':right', $rootNode->getRight());
         }
@@ -355,7 +349,7 @@ SQL;
      */
     public function getAllParents(Node $node = null, $lang = null)
     {
-        if (is_null($node)) {
+        if (\is_null($node)) {
             return array();
         }
 
@@ -399,7 +393,7 @@ SQL;
      */
     public function getRootNodeFor(Node $node = null, $lang = null)
     {
-        if (is_null($node)) {
+        if (\is_null($node)) {
             return null;
         }
 
@@ -449,9 +443,7 @@ SQL;
             ->where('b.deleted = 0')
             ->andWhere('b.parent IS NULL');
 
-        $result = $qb->getQuery()->getResult();
-
-        return $result;
+        return $qb->getQuery()->getResult();
     }
 
     /**
@@ -491,7 +483,7 @@ SQL;
             $qb->andWhere('t.online = true');
         }
 
-        if (is_null($parentId)) {
+        if (\is_null($parentId)) {
             $qb->andWhere('n.parent is NULL');
         } elseif ($parentId === false) {
             // Do nothing
@@ -510,7 +502,7 @@ SQL;
      *
      * @param string $internalName The internal name of the node
      *
-     * @return Node
+     * @return null|Node
      */
     public function getNodeByInternalName($internalName)
     {
@@ -532,8 +524,26 @@ SQL;
     {
         $qb = $this->createQueryBuilder('n')
             ->select('n.refEntityName')
+            ->where('n.deleted = 0')
             ->distinct(true);
 
         return $qb->getQuery()->getArrayResult();
+    }
+
+    public function getChildCount(Node $node, bool $direct = false, bool $includeDeleted = false): int
+    {
+        $qb = $this->getChildrenQueryBuilder($node, $direct);
+        $qb->resetDQLPart('orderBy');
+
+        $aliases = $qb->getRootAliases();
+        $alias = $aliases[0];
+
+        $qb->select('COUNT('.$alias.')');
+
+        if (false === $includeDeleted) {
+            $qb->andWhere($alias.'.deleted = 0');
+        }
+
+        return (int) $qb->getQuery()->getSingleScalarResult();
     }
 }

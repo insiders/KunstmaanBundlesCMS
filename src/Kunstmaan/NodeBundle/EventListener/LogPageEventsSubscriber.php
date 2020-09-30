@@ -26,11 +26,11 @@ class LogPageEventsSubscriber implements EventSubscriberInterface
     /**
      * @var UserInterface
      */
-    private $user = null;
+    private $user;
 
     /**
-     * @param Logger                  $logger        The logger
-     * @param TokenStorageInterface   $tokenStorage  The security token storage
+     * @param Logger                $logger       The logger
+     * @param TokenStorageInterface $tokenStorage The security token storage
      */
     public function __construct(Logger $logger, TokenStorageInterface $tokenStorage)
     {
@@ -71,7 +71,6 @@ class LogPageEventsSubscriber implements EventSubscriberInterface
             Events::POST_PERSIST => 'postPersist',
             Events::CREATE_PUBLIC_VERSION => 'onCreatePublicVersion',
             Events::CREATE_DRAFT_VERSION => 'onCreateDraftVersion',
-
         );
     }
 
@@ -80,7 +79,7 @@ class LogPageEventsSubscriber implements EventSubscriberInterface
      */
     private function getUser()
     {
-        if (is_null($this->user)) {
+        if (\is_null($this->user)) {
             $this->user = $this->tokenStorage->getToken()->getUser();
         }
 

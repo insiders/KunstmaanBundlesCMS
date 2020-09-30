@@ -1,5 +1,6 @@
 ---
 kuma_admin_list:
+  limit: Limit %limit%
   form:
     export_to: Export to
   edit:
@@ -13,8 +14,8 @@ kuma_admin_list:
     move_up: Move up
     move_down: Move down
 filter:
-  "true": true
-  "false": false
+  "true": "true"
+  "false": "false"
   before: before
   after: after
   in: contains
@@ -33,3 +34,4 @@ filter:
   notequals: not equals
   startswith: starts with
   endswith: ends with
+  empty: is empty

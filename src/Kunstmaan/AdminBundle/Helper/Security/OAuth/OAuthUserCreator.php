@@ -4,6 +4,7 @@ namespace Kunstmaan\AdminBundle\Helper\Security\OAuth;
 
 use Doctrine\ORM\EntityManagerInterface;
 use FOS\UserBundle\Model\GroupInterface;
+use Kunstmaan\AdminBundle\Entity\Group;
 use Kunstmaan\AdminBundle\Entity\User;
 
 class OAuthUserCreator implements OAuthUserCreatorInterface
@@ -37,18 +38,17 @@ class OAuthUserCreator implements OAuthUserCreatorInterface
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function getOrCreateUser($email, $googleId)
     {
         if ($this->isConfiguredDomain($email)) {
-
             $user = $this->userFinder->findUserByGoogleSignInData($email, $googleId);
 
             if (!$user instanceof $this->userClass) {
                 //User not present in database, create new one
                 /** @var User $user */
-                $user = new $this->userClass;
+                $user = new $this->userClass();
                 $user->setUsername($email);
                 $user->setEmail($email);
                 $user->setPlainPassword($googleId.$email.time());
@@ -59,7 +59,7 @@ class OAuthUserCreator implements OAuthUserCreatorInterface
 
             foreach ($this->getAccessLevels($email) as $accessLevel) {
                 /** @var GroupInterface $group */
-                $group = $this->em->getRepository('KunstmaanAdminBundle:Group')->findOneBy(['name' => $accessLevel]);
+                $group = $this->em->getRepository(Group::class)->findOneBy(['name' => $accessLevel]);
                 if (null !== $group) {
                     $user->addGroup($group);
                 }

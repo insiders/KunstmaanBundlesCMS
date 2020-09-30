@@ -48,7 +48,7 @@ class ExceptionAdminListConfigurator extends AbstractDoctrineORMAdminListConfigu
                 $listRoute,
                 'settings.exceptions.resolve_all',
                 null,
-                'KunstmaanAdminBundle:Settings:button_resolve_all.html.twig'
+                '@KunstmaanAdmin/Settings/button_resolve_all.html.twig'
             )
         );
     }
@@ -57,12 +57,12 @@ class ExceptionAdminListConfigurator extends AbstractDoctrineORMAdminListConfigu
     {
         $this->addItemAction(
             new SimpleItemAction(
-                function(Exception $row) {
+                function (Exception $row) {
                     return [
                         'path' => 'kunstmaanadminbundle_admin_exception_toggle_resolve',
                         'params' => [
-                            'id' => $row->getId()
-                        ]
+                            'id' => $row->getId(),
+                        ],
                     ];
                 },
                 null,
@@ -112,5 +112,4 @@ class ExceptionAdminListConfigurator extends AbstractDoctrineORMAdminListConfigu
     {
         return 'Exception';
     }
-
 }

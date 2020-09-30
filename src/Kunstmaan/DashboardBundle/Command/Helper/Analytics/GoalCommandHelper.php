@@ -1,4 +1,5 @@
 <?php
+
 namespace Kunstmaan\DashboardBundle\Command\Helper\Analytics;
 
 use Kunstmaan\DashboardBundle\Entity\AnalyticsGoal;
@@ -24,7 +25,7 @@ class GoalCommandHelper extends AbstractAnalyticsCommandHelper
             )
             ->items;
 
-        if (is_array($goals)) {
+        if (\is_array($goals)) {
             return $goals;
         }
 
@@ -46,16 +47,16 @@ class GoalCommandHelper extends AbstractAnalyticsCommandHelper
             $metrics[] = 'ga:goal' . ($key + 1) . 'Completions';
         }
         // Create the metric parameter string, there is a limit of 10 metrics per query, and a max of 20 goals available.
-        if (count($metrics) <= 10) {
+        if (\count($metrics) <= 10) {
             $part1 = implode(',', $metrics);
 
             return array($part1);
-        } else {
-            $part1 = implode(',', array_slice($metrics, 0, 10));
-            $part2 = implode(',', array_slice($metrics, 10, 10));
-
-            return array($part1, $part2);
         }
+
+        $part1 = implode(',', \array_slice($metrics, 0, 10));
+        $part2 = implode(',', \array_slice($metrics, 10, 10));
+
+        return array($part1, $part2);
     }
 
     /**
@@ -94,19 +95,15 @@ class GoalCommandHelper extends AbstractAnalyticsCommandHelper
         if ($timespan <= 1) {
             $extra = array('dimensions' => 'ga:date,ga:hour');
             $start = 2;
+        } elseif ($timespan <= 7) {
+            $extra = array('dimensions' => 'ga:date,ga:hour');
+            $start = 2;
+        } elseif ($timespan <= 31) {
+            $extra = array('dimensions' => 'ga:week,ga:day,ga:date');
+            $start = 3;
         } else {
-            if ($timespan <= 7) {
-                $extra = array('dimensions' => 'ga:date,ga:hour');
-                $start = 2;
-            } else {
-                if ($timespan <= 31) {
-                    $extra = array('dimensions' => 'ga:week,ga:day,ga:date');
-                    $start = 3;
-                } else {
-                    $extra = array('dimensions' => 'ga:isoYearIsoWeek');
-                    $start = 1;
-                }
-            }
+            $extra = array('dimensions' => 'ga:isoYearIsoWeek');
+            $start = 1;
         }
 
         // add segment
@@ -122,7 +119,7 @@ class GoalCommandHelper extends AbstractAnalyticsCommandHelper
 
         // Create an array with for each goal an entry to create the metric parameter.
         foreach ($goals as $key => $value) {
-            $key++;
+            ++$key;
             $goaldata[] = array('position' => $key, 'name' => $value->name);
         }
 
@@ -130,19 +127,19 @@ class GoalCommandHelper extends AbstractAnalyticsCommandHelper
 
         $rows = $this->requestGoalResults($overview, $metrics[0], $extra);
         // Execute an extra query if there are more than 10 goals to query
-        if (count($metrics) > 1) {
-            $rows2     = $this->requestGoalResults($overview, $metrics[1], $extra);
-            $rows2size = count($rows2);
-            for ($i = 0; $i < $rows2size; $i++) {
+        if (\count($metrics) > 1) {
+            $rows2 = $this->requestGoalResults($overview, $metrics[1], $extra);
+            $rows2size = \count($rows2);
+            for ($i = 0; $i < $rows2size; ++$i) {
                 // Merge the results of the extra query data with the previous query data.
-                $rows[$i] = array_merge($rows[$i], array_slice($rows2[$i], $start, count($rows2) - $start));
+                $rows[$i] = array_merge($rows[$i], \array_slice($rows2[$i], $start, \count($rows2) - $start));
             }
         }
 
         // Create a result array to be parsed and create Goal objects from
         $goalCollection = array();
-        $goaldatasize   = count($goaldata);
-        for ($i = 0; $i < $goaldatasize; $i++) {
+        $goaldatasize = \count($goaldata);
+        for ($i = 0; $i < $goaldatasize; ++$i) {
             $goalEntry = array();
             foreach ($rows as $row) {
                 // Create a timestamp for each goal visit (this depends on the timespan of the overview: split per hour, day, week, month)
@@ -156,56 +153,51 @@ class GoalCommandHelper extends AbstractAnalyticsCommandHelper
                         substr($row[0], 0, 4)
                     );
                     $timestamp = date('Y-m-d H:00', $timestamp);
+                } elseif ($timespan <= 7) {
+                    $timestamp = mktime(
+                        $row[1],
+                        0,
+                        0,
+                        substr($row[0], 4, 2),
+                        substr($row[0], 6, 2),
+                        substr($row[0], 0, 4)
+                    );
+                    $timestamp = date('Y-m-d H:00', $timestamp);
+                } elseif ($timespan <= 31) {
+                    $timestamp = mktime(
+                        0,
+                        0,
+                        0,
+                        substr($row[2], 4, 2),
+                        substr($row[2], 6, 2),
+                        substr($row[2], 0, 4)
+                    );
+                    $timestamp = date('Y-m-d H:00', $timestamp);
                 } else {
-                    if ($timespan <= 7) {
-                        $timestamp = mktime(
-                            $row[1],
-                            0,
-                            0,
-                            substr($row[0], 4, 2),
-                            substr($row[0], 6, 2),
-                            substr($row[0], 0, 4)
-                        );
-                        $timestamp = date('Y-m-d H:00', $timestamp);
-                    } else {
-                        if ($timespan <= 31) {
-                            $timestamp = mktime(
-                                0,
-                                0,
-                                0,
-                                substr($row[2], 4, 2),
-                                substr($row[2], 6, 2),
-                                substr($row[2], 0, 4)
-                            );
-                            $timestamp = date('Y-m-d H:00', $timestamp);
-                        } else {
-                            $timestamp = strtotime(substr($row[0], 0, 4) . 'W' . substr($row[0], 4, 2));
-                            $timestamp = date('Y-m-d H:00', $timestamp);
-                        }
-                    }
+                    $timestamp = strtotime(substr($row[0], 0, 4) . 'W' . substr($row[0], 4, 2));
+                    $timestamp = date('Y-m-d H:00', $timestamp);
                 }
                 $goalEntry[$timestamp] = $row[$i + $start];
             }
-            $goalCollection['goal' . $goaldata[$i]['position']]['name']     = $goaldata[$i]['name'];
+            $goalCollection['goal' . $goaldata[$i]['position']]['name'] = $goaldata[$i]['name'];
             $goalCollection['goal' . $goaldata[$i]['position']]['position'] = $goaldata[$i]['position'];
-            $goalCollection['goal' . $goaldata[$i]['position']]['visits']   = $goalEntry;
+            $goalCollection['goal' . $goaldata[$i]['position']]['visits'] = $goalEntry;
         }
 
         // Parse the goals and append them to the overview.
         $this->parseGoals($overview, $goalCollection);
     }
 
-
     /**
      * Fetch a specific goals
      *
-     * @param AnalyticsOverview $overview The overview
+     * @param AnalyticsOverview $overview       The overview
      * @param                   $goalCollection
      */
     private function parseGoals(&$overview, $goalCollection)
     {
         $timespan = $overview->getTimespan() - $overview->getStartOffset();
-        $goals    = $overview->getGoals();
+        $goals = $overview->getGoals();
         if ($goals) {
             // delete existing entries
             foreach ($goals as $goal) {
@@ -221,10 +213,10 @@ class GoalCommandHelper extends AbstractAnalyticsCommandHelper
             $goal->setName($goalEntry['name']);
             $goal->setPosition($goalEntry['position']);
 
-            $chartData   = array();
+            $chartData = array();
             $totalVisits = 0;
-            $goalVisits  = 0;
-            $i           = 0;
+            $goalVisits = 0;
+            $i = 0;
             // Fill the chartdata array
             foreach ($goalEntry['visits'] as $timestamp => $visits) {
                 $totalVisits += $visits;
@@ -232,12 +224,12 @@ class GoalCommandHelper extends AbstractAnalyticsCommandHelper
                     $goalVisits += $visits;
                     if ($i % 5 == 0) {
                         $chartData[] = array('timestamp' => $timestamp, 'conversions' => $goalVisits);
-                        $goalVisits  = 0;
+                        $goalVisits = 0;
                     }
                 } else {
                     $chartData[] = array('timestamp' => $timestamp, 'conversions' => $visits);
                 }
-                $i += 1;
+                ++$i;
             }
 
             // set the data

@@ -19,11 +19,17 @@ use Kunstmaan\UtilitiesBundle\Helper\Slugifier;
 class PageBuilder implements BuilderInterface
 {
     private $manager;
+
     private $userRepo;
+
     private $nodeRepo;
+
     private $nodeTranslationRepo;
+
     private $aclPermissionCreatorService;
+
     private $populator;
+
     private $slugifier;
 
     /**
@@ -36,12 +42,13 @@ class PageBuilder implements BuilderInterface
         ACLPermissionCreatorService $aclPermissionCreatorService,
         Populator $populator,
         Slugifier $slugifier,
-        PagesConfiguration $pagesConfiguration
+        PagesConfiguration $pagesConfiguration,
+        string $userClass
     ) {
         $this->manager = $em;
-        $this->nodeRepo = $em->getRepository('KunstmaanNodeBundle:Node');
-        $this->nodeTranslationRepo = $em->getRepository('KunstmaanNodeBundle:NodeTranslation');
-        $this->userRepo = $em->getRepository('KunstmaanAdminBundle:User');
+        $this->nodeRepo = $em->getRepository(Node::class);
+        $this->nodeTranslationRepo = $em->getRepository(NodeTranslation::class);
+        $this->userRepo = $em->getRepository($userClass);
         $this->aclPermissionCreatorService = $aclPermissionCreatorService;
         $this->populator = $populator;
         $this->slugifier = $slugifier;
@@ -183,9 +190,7 @@ class PageBuilder implements BuilderInterface
             $rootNode->setParent($parent);
 
             if (!$this->canHaveChild($parent->getRefEntityName(), get_class($page))) {
-                throw new \Exception(
-                    sprintf('A %s can\'t have a %s as child. Forgot to add in allowed_children or getPossibleChildTypes?', $parent->getRefEntityName(), get_class($page))
-                );
+                throw new \Exception(sprintf('A %s can\'t have a %s as child. Forgot to add in allowed_children or getPossibleChildTypes?', $parent->getRefEntityName(), get_class($page)));
             }
         }
 
@@ -248,6 +253,7 @@ class PageBuilder implements BuilderInterface
     /**
      * @param string $parentPageClass
      * @param string $childPageClass
+     *
      * @return bool
      */
     private function canHaveChild($parentPageClass, $childPageClass)

@@ -25,7 +25,7 @@
     {% endif %}
     {% if form_has_errors_recursive(form) %}
         <div class="alert alert-danger">
-            <strong>{{ "Error" | trans }}: </strong>{{ "The form has not been saved because there are validation errors" | trans }}
+            <strong>{{ "kuma_node.error.title" | trans }}: </strong>{{ "kuma_node.error.validation" | trans }}
             {{ form_errors(form) }}
             <button class="close" data-dismiss="alert">
                 <i class="fa fa-times"></i>
@@ -91,11 +91,17 @@
 
     {{ form_start(form, {'method': 'POST', 'action': path('KunstmaanNodeBundle_nodes_edit', { 'id': node.id, 'subaction': subaction }), 'attr': {'novalidate': 'novalidate', 'id': 'pageadminform', 'class': 'form'}}) }}
 
-        {{ knp_menu_render('sub_actions', { 'template': 'KunstmaanNodeBundle:Menu:knp_menu_actions.html.twig'}) }}
-        {{ knp_menu_render('actions', { 'template': 'KunstmaanNodeBundle:Menu:knp_menu_actions.html.twig'}) }}
-        {{ knp_menu_render('top_actions', { 'template': 'KunstmaanNodeBundle:Menu:knp_menu_top_actions.html.twig'}) }}
+        {{ knp_menu_render('sub_actions', { 'template': '@KunstmaanNode/Menu/knp_menu_actions.html.twig'}) }}
+        {{ knp_menu_render('actions', { 'template': '@KunstmaanNode/Menu/knp_menu_actions.html.twig'}) }}
+        {{ knp_menu_render('top_actions', { 'template': '@KunstmaanNode/Menu/knp_menu_top_actions.html.twig'}) }}
 
         {{ tabs_widget(tabPane) }}
+
+        <!-- Modal - Publish -->
+        {% include '@KunstmaanNode/NodeAdmin/Modals/_publish.html.twig' %}
+        <!-- Modal - Unpublish -->
+        {% include '@KunstmaanNode/NodeAdmin/Modals/_unpublish.html.twig' %}
+
     {{ form_end(form) }}
 
     {% include '@KunstmaanNode/NodeAdmin/_modals.html.twig' %}

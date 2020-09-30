@@ -22,7 +22,7 @@ abstract class AbstractPageAdminListConfigurator extends AbstractDoctrineDBALAdm
     private $em;
 
     /**
-     * @var string $locale
+     * @var string
      */
     private $locale;
 
@@ -45,9 +45,9 @@ abstract class AbstractPageAdminListConfigurator extends AbstractDoctrineDBALAdm
     public function __construct(EntityManagerInterface $em, $locale)
     {
         parent::__construct($em->getConnection());
-
         $this->em = $em;
         $this->locale = $locale;
+        $this->setListTemplate('@KunstmaanAdminList/Page/list.html.twig');
     }
 
     /**
@@ -55,8 +55,8 @@ abstract class AbstractPageAdminListConfigurator extends AbstractDoctrineDBALAdm
      */
     public function buildFields()
     {
-        $this->addField('title', 'Title', true, 'KunstmaanAdminListBundle:Page:list-title.html.twig');
-        $this->addField('online', 'Online', true, 'KunstmaanNodeBundle:Admin:online.html.twig');
+        $this->addField('title', 'Title', true, '@KunstmaanAdminList/Page/list-title.html.twig');
+        $this->addField('online', 'Online', true, '@KunstmaanNode/Admin/online.html.twig');
         $this->addField('updated', 'Updated at', true);
     }
 
@@ -82,12 +82,11 @@ abstract class AbstractPageAdminListConfigurator extends AbstractDoctrineDBALAdm
         return [
             'path' => 'KunstmaanNodeBundle_nodes_edit',
             'params' => ['id' => $item['node_id']],
-
         ];
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function getDeleteUrlFor($item)
     {
@@ -199,14 +198,6 @@ abstract class AbstractPageAdminListConfigurator extends AbstractDoctrineDBALAdm
     abstract public function getOverviewPageClass();
 
     /**
-     * @return string
-     */
-    public function getListTemplate()
-    {
-        return 'KunstmaanAdminListBundle:Page:list.html.twig';
-    }
-
-    /**
      * Returns the overviewpage.
      */
     public function getOverviewPage()
@@ -224,9 +215,7 @@ abstract class AbstractPageAdminListConfigurator extends AbstractDoctrineDBALAdm
     }
 
     /**
-     * @return
+     * @return string
      */
     abstract public function getReadableName();
-
-
 }

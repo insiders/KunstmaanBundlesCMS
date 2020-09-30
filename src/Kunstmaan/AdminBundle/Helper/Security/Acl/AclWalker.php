@@ -2,7 +2,6 @@
 
 namespace Kunstmaan\AdminBundle\Helper\Security\Acl;
 
-use Doctrine\ORM\Query;
 use Doctrine\ORM\Query\SqlWalker;
 
 /**
@@ -10,18 +9,19 @@ use Doctrine\ORM\Query\SqlWalker;
  */
 class AclWalker extends SqlWalker
 {
-
     /**
      * Walks down a FromClause AST node, thereby generating the appropriate SQL.
      *
      * @param string $fromClause
      *
-     * @return string The SQL.
+     * @return string the SQL
      */
     public function walkFromClause($fromClause)
     {
         $sql = parent::walkFromClause($fromClause);
-        $tableAlias = $this->getSQLTableAlias($this->getQuery()->getHint('acl.entityRootTableName'), $this->getQuery()->getHint('acl.entityRootTableDqlAlias'));
+        $name = $this->getQuery()->getHint('acl.entityRootTableName');
+        $alias = $this->getQuery()->getHint('acl.entityRootTableDqlAlias');
+        $tableAlias = $this->getSQLTableAlias($name, $alias);
         $extraQuery = $this->getQuery()->getHint('acl.extra.query');
 
         $tempAclView = <<<tempAclView
@@ -30,5 +30,4 @@ tempAclView;
 
         return $sql . ' ' . $tempAclView;
     }
-
 }

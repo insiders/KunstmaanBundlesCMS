@@ -11,7 +11,6 @@ use Kunstmaan\AdminBundle\Entity\AbstractEntity;
  */
 class AnalyticsConfig extends AbstractEntity
 {
-
     /**
      * @ORM\OneToMany(targetEntity="AnalyticsOverview", mappedBy="config", cascade={"persist", "remove"})
      */
@@ -27,45 +26,45 @@ class AnalyticsConfig extends AbstractEntity
      *
      * @ORM\Column(name="name", type="text", nullable=true)
      */
-    private $name = null;
+    private $name;
 
     /**
      * @var string
      *
      * @ORM\Column(name="token", type="text", nullable=true)
      */
-    private $token = null;
+    private $token;
 
     /**
      * @var string
      *
      * @ORM\Column(name="account_id", type="string", nullable=true)
      */
-    private $accountId = null;
+    private $accountId;
 
     /**
      * @var string
      *
      * @ORM\Column(name="property_id", type="string", nullable=true)
      */
-    private $propertyId = null;
+    private $propertyId;
 
     /**
      * @var string
      *
      * @ORM\Column(name="profile_id", type="string", nullable=true)
      */
-    private $profileId = null;
+    private $profileId;
 
     /**
      * @var \DateTime
      *
      * @ORM\Column(name="last_update", type="datetime", nullable=true)
      */
-    private $lastUpdate = null;
+    private $lastUpdate;
 
     /**
-     * @var boolean
+     * @var bool
      *
      * @ORM\Column(name="disable_goals", type="boolean")
      */
@@ -75,6 +74,7 @@ class AnalyticsConfig extends AbstractEntity
      * Set overviews
      *
      * @param array $overviews
+     *
      * @return AnalyticsDailyOverviews
      */
     public function setOverviews($overviews)
@@ -98,6 +98,7 @@ class AnalyticsConfig extends AbstractEntity
      * Set segments
      *
      * @param array $segments
+     *
      * @return AnalyticsDailysegments
      */
     public function setSegments($segments)
@@ -264,7 +265,7 @@ class AnalyticsConfig extends AbstractEntity
     /**
      * Get disableGoals
      *
-     * @return boolean
+     * @return bool
      */
     public function getDisableGoals()
     {
@@ -274,7 +275,7 @@ class AnalyticsConfig extends AbstractEntity
     /**
      * Set disableGoals
      *
-     * @param boolean $disableGoals
+     * @param bool $disableGoals
      *
      * @return $this
      */

@@ -2,17 +2,38 @@
 
 namespace Kunstmaan\MediaBundle\Helper\Imagine;
 
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
+
 class CacheManager extends \Liip\ImagineBundle\Imagine\Cache\CacheManager
 {
     /**
      * {@inheritdoc}
      */
-    public function generateUrl($path, $filter, array $runtimeConfig = array(), $resolver = null)
+    public function generateUrl($path, $filter, array $runtimeConfig = array(), $resolver = null, $referenceType = UrlGeneratorInterface::ABSOLUTE_URL)
     {
+        $originalPath = $path;
         $filterConf = $this->filterConfig->get($filter);
         $path = $this->changeFileExtension(ltrim($path, '/'), $filterConf['format']);
 
-        return parent::generateUrl($path, $filter, $runtimeConfig, $resolver);
+        $params = array(
+            'path' => ltrim($path, '/'),
+            'filter' => $filter,
+        );
+
+        if ($resolver) {
+            $params['resolver'] = $resolver;
+        }
+
+        if (empty($runtimeConfig)) {
+            $filterUrl = $this->router->generate('liip_imagine_filter', $params, $referenceType);
+        } else {
+            $params['filters'] = $runtimeConfig;
+            $params['hash'] = $this->signer->sign($originalPath, $runtimeConfig);
+
+            $filterUrl = $this->router->generate('liip_imagine_filter_runtime', $params, $referenceType);
+        }
+
+        return $filterUrl;
     }
 
     /**
@@ -48,6 +69,7 @@ class CacheManager extends \Liip\ImagineBundle\Imagine\Cache\CacheManager
     /**
      * @param string $path
      * @param string $format
+     *
      * @return string
      */
     private function changeFileExtension($path, $format)
@@ -57,8 +79,7 @@ class CacheManager extends \Liip\ImagineBundle\Imagine\Cache\CacheManager
         }
 
         $info = pathinfo($path);
-        $path = $info['dirname'] . DIRECTORY_SEPARATOR . $info['filename'] . '.' . $format;
 
-        return $path;
-   }
+        return $info['dirname'] . DIRECTORY_SEPARATOR . $info['filename'] . '.' . $format;
+    }
 }

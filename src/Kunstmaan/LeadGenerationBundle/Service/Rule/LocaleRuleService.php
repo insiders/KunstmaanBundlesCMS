@@ -9,7 +9,7 @@ use Symfony\Component\HttpFoundation\RequestStack;
 
 class LocaleRuleService implements RuleServiceInterface
 {
-    /** @var Request $request */
+    /** @var Request */
     private $request;
 
     /**
@@ -24,6 +24,7 @@ class LocaleRuleService implements RuleServiceInterface
 
     /**
      * @param AbstractRule $rule
+     *
      * @return array
      */
     public function getJsProperties(AbstractRule $rule)
@@ -32,5 +33,4 @@ class LocaleRuleService implements RuleServiceInterface
             'requestlocale' => $this->request->getLocale(),
         );
     }
-
 }

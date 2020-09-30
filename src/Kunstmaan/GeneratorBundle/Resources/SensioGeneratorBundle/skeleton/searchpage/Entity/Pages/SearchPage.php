@@ -11,11 +11,8 @@ use Kunstmaan\NodeSearchBundle\Entity\AbstractSearchPage;
  */
 class SearchPage extends AbstractSearchPage
 {
-    /*
-     * return string
-     */
-    public function getDefaultView()
+    public function getDefaultView(): string
     {
-        return '{{ bundle.getName() }}:Pages\SearchPage:view.html.twig';
+        return '{% if not isV4 %}{{ bundle.getName() }}:{%endif%}Pages/SearchPage{% if not isV4 %}:{% else %}/{% endif %}view.html.twig';
     }
 }

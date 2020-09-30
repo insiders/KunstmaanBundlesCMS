@@ -127,7 +127,7 @@ class FileHelper
     public function setFile(File $file)
     {
         $this->file = $file;
-        if (strlen($file->getPathname()) > 0) {
+        if (\strlen($file->getPathname()) > 0) {
             $this->media->setContent($file);
             $this->media->setContentType($file->getMimeType());
             $this->media->setUrl(
@@ -159,14 +159,15 @@ class FileHelper
 
         $url = parse_url($effectiveUrl);
         $info = pathinfo($url['path']);
-        $filename = $info['filename'] . "." . $info['extension'];
+        $filename = $info['filename'] . '.' . $info['extension'];
 
         $upload = new UploadedFile($path, $filename);
         $this->getMedia()->setContent($upload);
 
         if ($this->getMedia() === null) {
             unlink($path);
-            throw new AccessDeniedException("Can not link file");
+
+            throw new AccessDeniedException('Can not link file');
         }
     }
 

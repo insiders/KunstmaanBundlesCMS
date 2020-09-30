@@ -78,7 +78,7 @@ abstract class AbstractElasticaSearcher implements SearcherInterface
     {
         $suggestPhrase = new Suggest\Phrase('content-suggester', 'content');
         $suggestPhrase->setText($this->data);
-        $suggestPhrase->setHighlight("<strong>", "</strong>");
+        $suggestPhrase->setHighlight('<strong>', '</strong>');
         $suggestPhrase->setAnalyzer('suggestion_analyzer');
         $suggestPhrase->setConfidence(2);
         $suggestPhrase->setSize(1);
@@ -98,10 +98,12 @@ abstract class AbstractElasticaSearcher implements SearcherInterface
 
         $search = new Search($this->search->getClient());
         $search->addIndex($index);
-        $search->addType($index->getType($this->indexType));
-        $result = $search->search($this->query);
 
-        return $result;
+        if (method_exists($search, 'getType')) {
+            $search->addType($index->getType($this->indexType));
+        }
+
+        return $search->search($this->query);
     }
 
     /**
@@ -112,11 +114,11 @@ abstract class AbstractElasticaSearcher implements SearcherInterface
      */
     public function setPagination($offset, $size)
     {
-        if (is_int($offset)) {
+        if (\is_int($offset)) {
             $this->query->setFrom($offset);
         }
 
-        if (is_int($size)) {
+        if (\is_int($size)) {
             $this->query->setSize($size);
         }
 
@@ -144,22 +146,30 @@ abstract class AbstractElasticaSearcher implements SearcherInterface
     }
 
     /**
+     * @deprecated upgrade to ruflin/elastica and elasticsearch v7 and don't set an index type
+     *
      * @param string $indexType
      *
      * @return SearcherInterface
      */
     public function setIndexType($indexType)
     {
+        @trigger_error(sprintf('The "setIndexType" method in "%s" is deprecated since KunstmaanSearchBundle 5.6 and will be removed in KunstmaanSearchBundle 6.0. Upgrade to ruflin/elastica and elasticsearch v7 and don\'t set an index type.', __CLASS__), E_USER_DEPRECATED);
+
         $this->indexType = $indexType;
 
         return $this;
     }
 
     /**
+     * @deprecated upgrade to ruflin/elastica and elasticsearch v7 and don't set an index type
+     *
      * @return string
      */
     public function getIndexType()
     {
+        @trigger_error(sprintf('The "getIndexType" method in "%s" is deprecated since KunstmaanSearchBundle 5.6 and will be removed in KunstmaanSearchBundle 6.0. Upgrade to ruflin/elastica and elasticsearch v7 and don\'t set an index type.', __CLASS__), E_USER_DEPRECATED);
+
         return $this->indexType;
     }
 
@@ -177,7 +187,6 @@ abstract class AbstractElasticaSearcher implements SearcherInterface
 
     /**
      * @return mixed
-     *
      * @return SearcherInterface
      */
     public function getData()

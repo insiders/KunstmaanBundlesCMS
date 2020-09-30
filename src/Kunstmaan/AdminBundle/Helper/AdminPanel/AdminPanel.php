@@ -2,7 +2,7 @@
 
 namespace Kunstmaan\AdminBundle\Helper\AdminPanel;
 
-class AdminPanel 
+class AdminPanel
 {
     /**
      * @var AdminPanelAdaptorInterface[]
@@ -69,7 +69,7 @@ class AdminPanel
 
         if (isset($this->adaptors)) {
             krsort($this->adaptors);
-            $this->sorted = call_user_func_array('array_merge', $this->adaptors);
+            $this->sorted = array_merge(...$this->adaptors);
         }
     }
 }

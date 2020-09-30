@@ -7,6 +7,8 @@ use Exception;
 use GuzzleHttp\Client;
 use Kunstmaan\AdminBundle\Helper\VersionCheck\Exception\ParseException;
 use Symfony\Component\DependencyInjection\ContainerInterface;
+use Symfony\Component\Translation\TranslatorInterface as LegacyTranslatorInterface;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 /**
  * Version checker
@@ -39,15 +41,32 @@ class VersionChecker
     private $enabled;
 
     /**
+     * @var Client
+     */
+    private $client;
+
+    /**
+     * @var TranslatorInterface|LegacyTranslatorInterface
+     */
+    private $translator;
+
+    /**
      * Constructor
      *
      * @param ContainerInterface $container
-     * @param Cache $cache
+     * @param Cache              $cache
      */
-    public function __construct(ContainerInterface $container, Cache $cache)
+    public function __construct(ContainerInterface $container, Cache $cache, $translator)
     {
         $this->container = $container;
         $this->cache = $cache;
+
+        // NEXT_MAJOR Add "Symfony\Contracts\Translation\TranslatorInterface" typehint when sf <4.4 support is removed.
+        if (!$translator instanceof TranslatorInterface && !$translator instanceof LegacyTranslatorInterface) {
+            throw new \InvalidArgumentException(sprintf('The "$translator" parameter should be instance of "%s" or "%s"', TranslatorInterface::class, LegacyTranslatorInterface::class));
+        }
+
+        $this->translator = $translator;
 
         $this->webserviceUrl = $this->container->getParameter('version_checker.url');
         $this->cacheTimeframe = $this->container->getParameter('version_checker.timeframe');
@@ -67,7 +86,7 @@ class VersionChecker
     /**
      * Check if we recently did a version check, if not do one now.
      *
-     * @return void
+     * @throws ParseException
      */
     public function periodicallyCheck()
     {
@@ -76,7 +95,7 @@ class VersionChecker
         }
 
         $data = $this->cache->fetch('version_check');
-        if (!is_array($data)) {
+        if (!\is_array($data)) {
             $this->check();
         }
     }
@@ -84,7 +103,9 @@ class VersionChecker
     /**
      * Get the version details via webservice.
      *
-     * @return mixed A list of bundles if available.
+     * @return mixed a list of bundles if available
+     *
+     * @throws ParseException
      */
     public function check()
     {
@@ -92,17 +113,24 @@ class VersionChecker
             return;
         }
 
+        $host = $this->container->get('request_stack')->getCurrentRequest()->getHttpHost();
+        $console = realpath($this->container->get('kernel')->getProjectDir().'/bin/console');
+        $installed = filectime($console);
+        $bundles = $this->parseComposer();
+        $title = $this->container->getParameter('kunstmaan_admin.website_title');
+
         $jsonData = json_encode(array(
-            'host' => $this->container->get('request_stack')->getCurrentRequest()->getHttpHost(),
-            'installed' => filectime($this->container->get('kernel')->getRootDir().'/../bin/console'),
-            'bundles' => $this->parseComposer(),
-            'project' => $this->container->getParameter('websitetitle')
+            'host' => $host,
+            'installed' => $installed,
+            'bundles' => $bundles,
+            'project' => $this->translator->trans($title),
         ));
 
         try {
-            $client = new Client(array('connect_timeout' => 3, 'timeout' => 1));
+            $client = $this->getClient();
             $response = $client->post($this->webserviceUrl, ['body' => $jsonData]);
-            $data = json_decode($response->getBody()->getContents());
+            $contents = $response->getBody()->getContents();
+            $data = json_decode($contents);
 
             if (null === $data) {
                 return false;
@@ -119,13 +147,34 @@ class VersionChecker
     }
 
     /**
+     * @return Client
+     */
+    public function getClient()
+    {
+        if (!$this->client) {
+            $this->client = new Client(array('connect_timeout' => 3, 'timeout' => 1));
+        }
+
+        return $this->client;
+    }
+
+    /**
+     * @param Client $client
+     */
+    public function setClient($client)
+    {
+        $this->client = $client;
+    }
+
+    /**
      * Returns the absolute path to the composer.lock file.
      *
      * @return string
      */
     protected function getLockPath()
     {
-        $rootPath = dirname($this->container->get('kernel')->getRootDir());
+        $kernel = $this->container->get('kernel');
+        $rootPath = $kernel->getProjectDir();
 
         return $rootPath.'/composer.lock';
     }
@@ -134,7 +183,8 @@ class VersionChecker
      * Returns a list of composer packages.
      *
      * @return array
-     * @throws Exception\ParseException
+     *
+     * @throws ParseException
      */
     protected function getPackages()
     {
@@ -143,9 +193,7 @@ class VersionChecker
 
         $composerPath = $this->getLockPath();
         if (!file_exists($composerPath)) {
-            throw new ParseException(
-                $translator->trans('settings.version.composer_lock_not_found')
-            );
+            throw new ParseException($translator->trans('settings.version.composer_lock_not_found'));
         }
 
         $json = file_get_contents($composerPath);
@@ -155,7 +203,7 @@ class VersionChecker
             throw new ParseException($errorMessage.' (#'.json_last_error().')');
         }
 
-        if (array_key_exists('packages', $result) && is_array($result['packages'])) {
+        if (\array_key_exists('packages', $result) && \is_array($result['packages'])) {
             return $result['packages'];
         }
 
@@ -167,17 +215,18 @@ class VersionChecker
      * Parse the composer.lock file to get the currently used versions of the kunstmaan bundles.
      *
      * @return array
-     * @throws Exception\ParseException
+     *
+     * @throws ParseException
      */
     protected function parseComposer()
     {
         $bundles = array();
         foreach ($this->getPackages() as $package) {
-            if (!strncmp($package['name'], 'kunstmaan/', strlen('kunstmaan/'))) {
+            if (!strncmp($package['name'], 'kunstmaan/', \strlen('kunstmaan/'))) {
                 $bundles[] = array(
                     'name' => $package['name'],
                     'version' => $package['version'],
-                    'reference' => $package['source']['reference']
+                    'reference' => $package['source']['reference'],
                 );
             }
         }

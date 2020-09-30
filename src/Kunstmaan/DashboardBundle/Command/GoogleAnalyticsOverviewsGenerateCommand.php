@@ -1,17 +1,43 @@
 <?php
+
 namespace Kunstmaan\DashboardBundle\Command;
 
 use Doctrine\ORM\EntityManagerInterface;
+use Kunstmaan\DashboardBundle\Entity\AnalyticsConfig;
+use Kunstmaan\DashboardBundle\Entity\AnalyticsOverview;
+use Kunstmaan\DashboardBundle\Entity\AnalyticsSegment;
 use Kunstmaan\DashboardBundle\Repository\AnalyticsSegmentRepository;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
+/**
+ * @final since 5.1
+ * NEXT_MAJOR extend from `Command` and remove `$this->getContainer` usages
+ */
 class GoogleAnalyticsOverviewsGenerateCommand extends ContainerAwareCommand
 {
-    /** @var EntityManagerInterface $em */
+    /** @var EntityManagerInterface */
     private $em;
+
+    /**
+     * @param EntityManagerInterface|null $em
+     */
+    public function __construct(/* EntityManagerInterface */ $em = null)
+    {
+        parent::__construct();
+
+        if (!$em instanceof EntityManagerInterface) {
+            @trigger_error(sprintf('Passing a command name as the first argument of "%s" is deprecated since version symfony 3.4 and will be removed in symfony 4.0. If the command was registered by convention, make it a service instead. ', __METHOD__), E_USER_DEPRECATED);
+
+            $this->setName(null === $em ? 'kuma:dashboard:widget:googleanalytics:overviews:generate' : $em);
+
+            return;
+        }
+
+        $this->em = $em;
+    }
 
     protected function configure()
     {
@@ -35,22 +61,23 @@ class GoogleAnalyticsOverviewsGenerateCommand extends ContainerAwareCommand
     }
 
     /**
-     * Inits instance variables for global usage.
+     * @param InputInterface  $input
+     * @param OutputInterface $output
+     *
+     * @return int|null|void
      */
-    private function init()
-    {
-        $this->em = $this->getContainer()->get('doctrine')->getManager();
-    }
-
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $this->init();
+        if (null === $this->em) {
+            $this->em = $this->getContainer()->get('doctrine.orm.entity_manager');
+        }
 
         // get params
-        $configId  = false;
+        $configId = false;
         $segmentId = false;
+
         try {
-            $configId  = $input->getOption('config');
+            $configId = $input->getOption('config');
             $segmentId = $input->getOption('segment');
         } catch (\Exception $e) {
         }
@@ -58,21 +85,21 @@ class GoogleAnalyticsOverviewsGenerateCommand extends ContainerAwareCommand
         try {
             if ($segmentId) {
                 $this->generateOverviewsOfSegment($segmentId);
+            } elseif ($configId) {
+                $this->generateOverviewsOfConfig($configId);
             } else {
-                if ($configId) {
-                    $this->generateOverviewsOfConfig($configId);
-                } else {
-                    $this->generateAllOverviews();
-                }
+                $this->generateAllOverviews();
             }
 
             $output->writeln('<fg=green>Overviews succesfully generated</fg=green>');
+
+            return 0;
         } catch (\InvalidArgumentException $e) {
             $output->writeln('<fg=red>' . $e->getMessage() . '</fg=red>');
+
+            return 1;
         }
-
     }
-
 
     /**
      * Get all overviews of a segment
@@ -86,8 +113,8 @@ class GoogleAnalyticsOverviewsGenerateCommand extends ContainerAwareCommand
     private function generateOverviewsOfSegment($segmentId)
     {
         /** @var AnalyticsSegmentRepository $segmentRepository */
-        $segmentRepository = $this->em->getRepository('KunstmaanDashboardBundle:AnalyticsSegment');
-        $segment           = $segmentRepository->find($segmentId);
+        $segmentRepository = $this->em->getRepository(AnalyticsSegment::class);
+        $segment = $segmentRepository->find($segmentId);
 
         if (!$segment) {
             throw new \InvalidArgumentException('Unknown segment ID');
@@ -108,9 +135,9 @@ class GoogleAnalyticsOverviewsGenerateCommand extends ContainerAwareCommand
      */
     private function generateOverviewsOfConfig($configId)
     {
-        $configRepository   = $this->em->getRepository('KunstmaanDashboardBundle:AnalyticsConfig');
-        $segmentRepository  = $this->em->getRepository('KunstmaanDashboardBundle:AnalyticsSegment');
-        $overviewRepository = $this->em->getRepository('KunstmaanDashboardBundle:AnalyticsOverview');
+        $configRepository = $this->em->getRepository(AnalyticsConfig::class);
+        $segmentRepository = $this->em->getRepository(AnalyticsSegment::class);
+        $overviewRepository = $this->em->getRepository(AnalyticsOverview::class);
         // get specified config
         $config = $configRepository->find($configId);
 
@@ -119,7 +146,7 @@ class GoogleAnalyticsOverviewsGenerateCommand extends ContainerAwareCommand
         }
 
         // create default overviews for this config if none exist yet
-        if (!count($config->getOverviews())) {
+        if (!\count($config->getOverviews())) {
             $overviewRepository->addOverviews($config);
         }
 
@@ -137,14 +164,14 @@ class GoogleAnalyticsOverviewsGenerateCommand extends ContainerAwareCommand
      */
     private function generateAllOverviews()
     {
-        $configRepository   = $this->em->getRepository('KunstmaanDashboardBundle:AnalyticsConfig');
-        $overviewRepository = $this->em->getRepository('KunstmaanDashboardBundle:AnalyticsOverview');
-        $segmentRepository  = $this->em->getRepository('KunstmaanDashboardBundle:AnalyticsSegment');
-        $configs            = $configRepository->findAll();
+        $configRepository = $this->em->getRepository(AnalyticsConfig::class);
+        $overviewRepository = $this->em->getRepository(AnalyticsOverview::class);
+        $segmentRepository = $this->em->getRepository(AnalyticsSegment::class);
+        $configs = $configRepository->findAll();
 
         foreach ($configs as $config) {
             // add overviews if none exist yet
-            if (!count($configRepository->findDefaultOverviews($config))) {
+            if (!\count($configRepository->findDefaultOverviews($config))) {
                 $overviewRepository->addOverviews($config);
             }
 

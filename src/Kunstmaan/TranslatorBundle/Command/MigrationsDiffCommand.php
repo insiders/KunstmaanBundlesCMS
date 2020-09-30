@@ -1,4 +1,5 @@
 <?php
+
 namespace Kunstmaan\TranslatorBundle\Command;
 
 use Doctrine\Bundle\DoctrineBundle\Command\Proxy\DoctrineCommandHelper;
@@ -10,6 +11,10 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 /**
  * Command for generate migration classes by checking the translation flag value
+ *
+ * @final since 5.1
+ *
+ * @deprecated This class is deprecated since KunstmaanTranslatorBundle 5.2 and will be removed in 6.0.
  */
 class MigrationsDiffCommand extends DiffCommand
 {
@@ -30,6 +35,8 @@ class MigrationsDiffCommand extends DiffCommand
         $configuration = $this->getMigrationConfiguration($input, $output);
         DoctrineCommand::configureMigrations($this->getApplication()->getKernel()->getContainer(), $configuration);
 
-        parent::execute($input, $output);
+        $exitCode = parent::execute($input, $output);
+
+        return is_numeric($exitCode) ? (int) $exitCode : 0;
     }
 }

@@ -60,10 +60,21 @@ kunstmaanbundles.datepicker = (function($, window, undefined) {
             defaultDate = (elShowDefaultDate) ? _setDefaultDate(elMinDate) : defaultShowDefaultDate,
             stepping = (elStepping !== undefined) ? elStepping : defaultStepping;
 
-
         // Setup
         var $input = $el.find('input'),
-            $addon = $el.find('.input-group-addon');
+            $addon = $el.find('.input-group-addon'),
+            linkedDatepickerID = $el.data('linked-datepicker') || false;
+
+        if (format.indexOf('HH:mm') === -1) {
+            // Drop time if not necessary
+            if (minDate) {
+                minDate = minDate.clone().startOf('day'); // clone() because otherwise .startOf() mutates the original moment object
+            }
+
+            if (defaultDate) {
+                defaultDate = defaultDate.clone().startOf('day');
+            }
+        }
 
         $input.datetimepicker({
             format: format,
@@ -77,14 +88,14 @@ kunstmaanbundles.datepicker = (function($, window, undefined) {
             },
             widgetParent: $el,
             icons: {
-                time: 'fa fa-clock-o',
+                time: 'fa fa-clock',
                 date: 'fa fa-calendar',
                 up: 'fa fa-chevron-up',
                 down: 'fa fa-chevron-down',
                 previous: 'fa fa-arrow-left',
                 next: 'fa fa-arrow-right',
                 today: 'fa fa-crosshairs',
-                clear: 'fa fa-trash-o'
+                clear: 'fa fa-trash'
             },
             stepping: stepping
         });
@@ -94,8 +105,24 @@ kunstmaanbundles.datepicker = (function($, window, undefined) {
         $addon.on('click', function() {
             $input.focus();
         });
-    };
 
+        // Linked datepickers - allow future datetime only - (un)publish modal
+        if (linkedDatepickerID) {
+            // set min time only if selected date = today
+            $(document).on('dp.change', linkedDatepickerID, function(e) {
+                if (e.target.value === _today.format('DD-MM-YYYY')) {
+                    var selectedTime = window.moment($input.val(), 'HH:mm');
+
+                    // Force user to select new time, if current time isn't valid anymore
+                    selectedTime.isBefore(_today) && $input.data('DateTimePicker').show();
+
+                    $input.data('DateTimePicker').minDate(_today);
+                } else {
+                    $input.data('DateTimePicker').minDate(false);
+                }
+            });
+        }
+    };
 
     return {
         init: init,
