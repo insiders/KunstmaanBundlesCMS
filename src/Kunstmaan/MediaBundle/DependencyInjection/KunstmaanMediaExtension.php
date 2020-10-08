@@ -41,7 +41,7 @@ class KunstmaanMediaExtension extends Extension implements PrependExtensionInter
         $container->setParameter('kunstmaan_media.enable_pdf_preview', $config['enable_pdf_preview']);
         $container->setParameter('kunstmaan_media.blacklisted_extensions', $config['blacklisted_extensions']);
         $container->setParameter('kunstmaan_media.web_root', $config['web_root']);
-        $container->setParameter('kunstmaan_media.full_media_path', $config['web_root'] . '%kunstmaan_media.media_path%');
+        $container->setParameter('kunstmaan_media.full_media_path', $config['web_root'] . '%kunstmaan_media.media_path%'); // Not used, deprecate?
 
         $loader->load('services.yml');
         $loader->load('handlers.yml');
@@ -66,12 +66,12 @@ class KunstmaanMediaExtension extends Extension implements PrependExtensionInter
 
     public function prepend(ContainerBuilder $container)
     {
-        if (!$container->hasParameter('kunstmaan_media.upload_dir')) {
+        if (!$container->hasParameter('kunstmaan_media.upload_dir')) {  // Not used, deprecate?
             $container->setParameter('kunstmaan_media.upload_dir', '/uploads/media/');
         }
 
-        $twigConfig = array();
-        $twigConfig['globals']['upload_dir'] = $container->getParameter('kunstmaan_media.upload_dir');
+        $twigConfig = [];
+        $twigConfig['globals']['upload_dir'] = $container->getParameter('kunstmaan_media.upload_dir'); // Not used, deprecate?
         $twigConfig['globals']['mediabundleisactive'] = true;
         $twigConfig['globals']['mediamanager'] = '@kunstmaan_media.media_manager';
         $container->prependExtensionConfig('twig', $twigConfig);
