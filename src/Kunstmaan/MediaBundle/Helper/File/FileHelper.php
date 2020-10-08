@@ -28,12 +28,22 @@ class FileHelper
      */
     protected $path;
 
+    protected $mediaPath;
+
     /**
-     * @param Media $media
+     * @param Media  $media
+     * @param string $mediaPath
      */
-    public function __construct(Media $media)
+    public function __construct(Media $media, string $mediaPath = null)
     {
         $this->media = $media;
+
+        if ($mediaPath === null) {
+            @trigger_error(sprintf('Not passing the media path as the second argument of "%s" is deprecated since KunstmaanMediaBundle 5.7 and will be required in KunstmaanMediaBundle 6.0. Injected the required parameter in the constructor instead.', __METHOD__), E_USER_DEPRECATED);
+            $mediaPath = '/uploads/media/';
+        }
+
+        $this->mediaPath = $mediaPath;
     }
 
     /**
@@ -131,7 +141,7 @@ class FileHelper
             $this->media->setContent($file);
             $this->media->setContentType($file->getMimeType());
             $this->media->setUrl(
-                '/uploads/media/' . $this->media->getUuid() . '.' . $this->media->getContent()->getExtension()
+                $this->mediaPath . $this->media->getUuid() . '.' . $this->media->getContent()->getExtension()
             );
         }
     }

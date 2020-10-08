@@ -151,7 +151,7 @@ class FileHandler extends AbstractMediaHandler
      */
     public function getFormHelper(Media $media)
     {
-        return new FileHelper($media);
+        return new FileHelper($media, $this->mediaPath);
     }
 
     /**
