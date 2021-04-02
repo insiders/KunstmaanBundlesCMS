@@ -4,6 +4,7 @@ namespace Kunstmaan\MediaBundle\Helper\File;
 
 use Kunstmaan\MediaBundle\Entity\Media;
 use Kunstmaan\MediaBundle\Helper\Transformer\PreviewTransformerInterface;
+use Symfony\Component\HttpKernel\Kernel;
 
 /**
  * Custom handler for PDF files (display thumbnails if imagemagick is enabled and has PDF support)
@@ -27,7 +28,7 @@ class PdfHandler extends FileHandler
     {
         parent::setMediaPath($kernelRootDir);
 
-        $this->setWebPath(realpath(str_replace('/', DIRECTORY_SEPARATOR, $kernelRootDir . '/../web/')) . DIRECTORY_SEPARATOR);
+        $this->setWebPath(realpath(str_replace('/', DIRECTORY_SEPARATOR, $kernelRootDir . sprintf('/%s/', Kernel::VERSION_ID >= 40000 ? 'public' : 'web')) . DIRECTORY_SEPARATOR));
     }
 
     /**
@@ -38,9 +39,6 @@ class PdfHandler extends FileHandler
         $this->webPath = $webPath;
     }
 
-    /**
-     * @param PreviewTransformerInterface $pdfTransformer
-     */
     public function setPdfTransformer(PreviewTransformerInterface $pdfTransformer)
     {
         $this->pdfTransformer = $pdfTransformer;
@@ -70,9 +68,6 @@ class PdfHandler extends FileHandler
         return false;
     }
 
-    /**
-     * @param Media $media
-     */
     public function saveMedia(Media $media)
     {
         parent::saveMedia($media);

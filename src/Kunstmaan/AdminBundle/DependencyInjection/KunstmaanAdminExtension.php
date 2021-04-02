@@ -13,11 +13,6 @@ use Symfony\Component\DependencyInjection\Loader;
 use Symfony\Component\DependencyInjection\Reference;
 use Symfony\Component\HttpKernel\DependencyInjection\Extension;
 
-/**
- * This is the class that loads and manages your bundle configuration
- *
- * To learn more see {@link http://symfony.com/doc/current/cookbook/bundles/extension.html}
- */
 class KunstmaanAdminExtension extends Extension implements PrependExtensionInterface
 {
     /**
@@ -70,7 +65,7 @@ class KunstmaanAdminExtension extends Extension implements PrependExtensionInter
         $container->registerForAutoconfiguration(MenuAdaptorInterface::class)
             ->addTag('kunstmaan_admin.menu.adaptor');
 
-        $loader = new Loader\YamlFileLoader($container, new FileLocator(__DIR__.'/../Resources/config'));
+        $loader = new Loader\YamlFileLoader($container, new FileLocator(__DIR__ . '/../Resources/config'));
         $loader->load('services.yml');
         $loader->load('commands.yml');
 
@@ -90,11 +85,6 @@ class KunstmaanAdminExtension extends Extension implements PrependExtensionInter
 
     public function prepend(ContainerBuilder $container)
     {
-        $knpMenuConfig['twig'] = true; // set to false to disable the Twig extension and the TwigRenderer
-        $knpMenuConfig['templating'] = false; // if true, enables the helper for PHP templates
-        $knpMenuConfig['default_renderer'] = 'twig'; // The renderer to use, list is also available by default
-        $container->prependExtensionConfig('knp_menu', $knpMenuConfig);
-
         $fosUserOriginalConfig = $container->getExtensionConfig('fos_user');
         if (!isset($fosUserOriginalConfig[0]['db_driver'])) {
             $fosUserConfig['db_driver'] = 'orm'; // other valid values are 'mongodb', 'couchdb'
@@ -116,12 +106,14 @@ class KunstmaanAdminExtension extends Extension implements PrependExtensionInter
         $fosUserConfig['service']['mailer'] = 'fos_user.mailer.twig_swift';
         $container->prependExtensionConfig('fos_user', $fosUserConfig);
 
-        $twigConfig['paths'][] = ['value' => \dirname(__DIR__).'/Resources/views', 'namespace' => 'FOSUser'];
+        // Manually register the KunstmaanAdminBundle folder as a FosUser override for symfony 4.
+        if ($container->hasParameter('kernel.project_dir') && file_exists($container->getParameter('kernel.project_dir') . '/templates/bundles/KunstmaanAdminBundle')) {
+            $twigConfig['paths'][] = ['value' => '%kernel.project_dir%/templates/bundles/KunstmaanAdminBundle', 'namespace' => 'FOSUser'];
+        }
+        $twigConfig['paths'][] = ['value' => \dirname(__DIR__) . '/Resources/views', 'namespace' => 'FOSUser'];
         $container->prependExtensionConfig('twig', $twigConfig);
 
         // NEXT_MAJOR: Remove templating dependency
-        $frameworkConfig['templating']['engines'] = ['twig'];
-        $container->prependExtensionConfig('framework', $frameworkConfig);
 
         $configs = $container->getExtensionConfig($this->getAlias());
         $this->processConfiguration(new Configuration(), $configs);
@@ -140,7 +132,7 @@ class KunstmaanAdminExtension extends Extension implements PrependExtensionInter
      */
     public function getXsdValidationBasePath()
     {
-        return __DIR__.'/../Resources/config/schema';
+        return __DIR__ . '/../Resources/config/schema';
     }
 
     private function addSimpleMenuAdaptor(ContainerBuilder $container, array $menuItems)

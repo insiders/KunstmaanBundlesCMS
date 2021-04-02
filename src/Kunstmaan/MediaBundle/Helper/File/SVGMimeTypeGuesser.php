@@ -6,17 +6,19 @@ use Symfony\Component\HttpFoundation\File\Exception\AccessDeniedException;
 use Symfony\Component\HttpFoundation\File\Exception\FileNotFoundException;
 use Symfony\Component\HttpFoundation\File\MimeType\MimeTypeGuesserInterface;
 
+@trigger_error(sprintf('The "%s" class is deprecated since KunstmaanMediaBundle 5.7 and will be removed in KunstmaanMediaBundle 6.0. Use the "symfony/mime" component instead.', __CLASS__), E_USER_DEPRECATED);
+
 /**
- * SVGMimeTypeGuesser
+ * @deprecated this class is deprecated since KunstmaanMediaBundle 5.7 and will be removed in KunstmaanMediaBundle 6.0. Use the "symfony/mime" component instead.
  *
  * Simple Mime type guesser to detect SVG image files, it will test if the file is an XML file and return SVG mime type
  * if the XML contains a valid SVG namespace...
  */
 class SVGMimeTypeGuesser implements MimeTypeGuesserInterface
 {
-    private $_MIMETYPE_NAMESPACES = array(
+    private $_MIMETYPE_NAMESPACES = [
         'http://www.w3.org/2000/svg' => 'image/svg+xml',
-    );
+    ];
 
     /**
      * {@inheritdoc}

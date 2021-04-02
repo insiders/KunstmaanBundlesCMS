@@ -6,8 +6,6 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\RequestStack;
 
 /**
- * Class DomainConfiguration
- *
  * Default (single domain) configuration handling
  */
 class DomainConfiguration implements DomainConfigurationInterface
@@ -67,7 +65,7 @@ class DomainConfiguration implements DomainConfigurationInterface
      */
     public function getHosts()
     {
-        return array($this->getHost());
+        return [$this->getHost()];
     }
 
     /**
@@ -129,7 +127,7 @@ class DomainConfiguration implements DomainConfigurationInterface
      */
     public function getExtraData()
     {
-        return array();
+        return [];
     }
 
     /**
@@ -137,11 +135,11 @@ class DomainConfiguration implements DomainConfigurationInterface
      */
     public function getLocalesExtraData()
     {
-        return array();
+        return [];
     }
 
     /**
-     * @return null|\Symfony\Component\HttpFoundation\Request
+     * @return \Symfony\Component\HttpFoundation\Request|null
      */
     protected function getMasterRequest()
     {
@@ -153,7 +151,7 @@ class DomainConfiguration implements DomainConfigurationInterface
      */
     public function getFullHostConfig()
     {
-        return array();
+        return [];
     }
 
     /**

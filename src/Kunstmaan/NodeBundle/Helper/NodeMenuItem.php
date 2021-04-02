@@ -45,7 +45,7 @@ class NodeMenuItem
     /**
      * @param Node                    $node            The node
      * @param NodeTranslation         $nodeTranslation The nodetranslation
-     * @param NodeMenuItem|null|false $parent          The parent nodemenuitem
+     * @param NodeMenuItem|false|null $parent          The parent nodemenuitem
      * @param NodeMenu                $menu            The menu
      */
     public function __construct(Node $node, NodeTranslation $nodeTranslation, $parent = false, NodeMenu $menu)
@@ -161,7 +161,7 @@ class NodeMenuItem
     }
 
     /**
-     * @param NodeMenuItem|null|false $parent
+     * @param NodeMenuItem|false|null $parent
      */
     public function setParent($parent = false)
     {
@@ -196,7 +196,7 @@ class NodeMenuItem
     public function getParents()
     {
         $parent = $this->getParent();
-        $parents = array();
+        $parents = [];
         while ($parent !== null) {
             $parents[] = $parent;
             $parent = $parent->getParent();
@@ -242,7 +242,7 @@ class NodeMenuItem
             list($namespaceAlias, $simpleClassName) = explode(':', $class);
             $class = $this->em->getConfiguration()->getEntityNamespace($namespaceAlias) . '\\' . $simpleClassName;
         }
-        $result = array();
+        $result = [];
         $children = $this->getChildren();
         foreach ($children as $child) {
             if ($child->getPage() instanceof $class) {

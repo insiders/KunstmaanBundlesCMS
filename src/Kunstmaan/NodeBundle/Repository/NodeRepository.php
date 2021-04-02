@@ -74,7 +74,8 @@ class NodeRepository extends NestedTreeRepository
                 'WITH',
                 't.publicNodeVersion = v.id'
             )
-            ->where('b.deleted = 0')
+            ->where('b.deleted = :deleted')
+            ->setParameter('deleted', false)
             ->setParameter('lang', $lang)
             ->addOrderBy('t.weight', 'ASC')
             ->addOrderBy('t.title', 'ASC');
@@ -104,15 +105,13 @@ class NodeRepository extends NestedTreeRepository
 
         $query = $aclHelper->apply(
             $qb,
-            new PermissionDefinition(array($permission))
+            new PermissionDefinition([$permission])
         );
 
         return $query->getResult();
     }
 
     /**
-     * @param HasNodeInterface $hasNode
-     *
      * @return Node|null
      */
     public function getNodeFor(HasNodeInterface $hasNode)
@@ -146,7 +145,7 @@ class NodeRepository extends NestedTreeRepository
         $nodeVersion = $this->getEntityManager()->getRepository(
             NodeVersion::class
         )->findOneBy(
-            array('refId' => $id, 'refEntityName' => $entityName)
+            ['refId' => $id, 'refEntityName' => $entityName]
         );
         if ($nodeVersion) {
             return $nodeVersion->getNodeTranslation()->getNode();
@@ -168,10 +167,10 @@ class NodeRepository extends NestedTreeRepository
         foreach ($slugParts as $slugPart) {
             if ($parentNode) {
                 if ($r = $this->findOneBy(
-                    array(
+                    [
                         'slug' => $slugPart,
                         'parent.parent' => $parentNode->getId(),
-                    )
+                    ]
                 )
                 ) {
                     $result = $r;
@@ -204,7 +203,7 @@ class NodeRepository extends NestedTreeRepository
         $node = new Node();
         $node->setRef($hasNode);
         if (!$hasNode->getId() > 0) {
-            throw new \InvalidArgumentException('the entity of class '. $node->getRefEntityName().' has no id, maybe you forgot to flush first');
+            throw new \InvalidArgumentException('the entity of class ' . $node->getRefEntityName() . ' has no id, maybe you forgot to flush first');
         }
         $node->setDeleted(false);
         $node->setInternalName($internalName);
@@ -214,10 +213,10 @@ class NodeRepository extends NestedTreeRepository
             $parentNodeVersion = $em->getRepository(
                 NodeVersion::class
             )->findOneBy(
-                array(
+                [
                     'refId' => $parent->getId(),
                     'refEntityName' => ClassLookup::getClass($parent),
-                )
+                ]
             );
             if ($parentNodeVersion) {
                 $node->setParent(
@@ -268,7 +267,7 @@ class NodeRepository extends NestedTreeRepository
         $connection = $this->_em->getConnection();
         $qb = $connection->createQueryBuilder();
         $databasePlatformName = $connection->getDatabasePlatform()->getName();
-        $createIfStatement = function (
+        $createIfStatement = static function (
             $expression,
             $trueValue,
             $falseValue
@@ -276,9 +275,9 @@ class NodeRepository extends NestedTreeRepository
             switch ($databasePlatformName) {
                 case 'sqlite':
                     $statement = 'CASE WHEN %s THEN %s ELSE %s END';
-
                     break;
-
+                case 'postgresql':
+                    return sprintf('COALESCE(%s, %s)', $falseValue, $trueValue);
                 default:
                     $statement = 'IF(%s, %s, %s)';
             }
@@ -287,12 +286,12 @@ class NodeRepository extends NestedTreeRepository
         };
 
         $sql = <<<SQL
-n.id, n.parent_id AS parent, t.url, t.id AS nt_id,
-{$createIfStatement('t.weight IS NULL', 'v.weight', 't.weight')} AS weight,
-{$createIfStatement('t.title IS NULL', 'v.title', 't.title')} AS title,
-{$createIfStatement('t.online IS NULL', '0', 't.online')} AS online,
-n.hidden_from_nav AS hidden,
-n.ref_entity_name AS ref_entity_name
+            n.id, n.parent_id AS parent, t.url, t.id AS nt_id,
+            {$createIfStatement('t.weight IS NULL', 'v.weight', 't.weight')} AS weight,
+            {$createIfStatement('t.title IS NULL', 'v.title', 't.title')} AS title,
+            t.online AS online,
+            n.hidden_from_nav AS hidden,
+            n.ref_entity_name AS ref_entity_name
 SQL;
 
         $qb->select($sql)
@@ -309,13 +308,22 @@ SQL;
                 'v',
                 '(v.node_id = n.id AND v.lang <> :lang)'
             )
-            ->where('n.deleted = 0')
-            ->addGroupBy('n.id')
-            ->addOrderBy('t.weight', 'ASC')
-            ->addOrderBy('t.title', 'ASC');
+            ->where('n.deleted = false')
+            ->addGroupBy('n.id');
+
+        if ($databasePlatformName === 'postgresql') {
+            $qb->addGroupBy('t.url')
+                ->addGroupby('t.id')
+                ->addGroupby('v.weight')
+                ->addGroupBy('v.title')
+                ->distinct();
+        }
+
+        $qb->addOrderBy('weight', 'ASC')
+            ->addOrderBy('title', 'ASC');
 
         if (!$includeHiddenFromNav) {
-            $qb->andWhere('n.hidden_from_nav <> 0');
+            $qb->andWhere('n.hidden_from_nav != :hiddenFromNav');
         }
 
         if (!\is_null($rootNode)) {
@@ -323,12 +331,14 @@ SQL;
                 ->andWhere('n.rgt <= :right');
         }
 
-        $permissionDef = new PermissionDefinition(array($permission));
+        $permissionDef = new PermissionDefinition([$permission]);
         $permissionDef->setEntity('Kunstmaan\NodeBundle\Entity\Node');
         $permissionDef->setAlias('n');
         $qb = $aclNativeHelper->apply($qb, $permissionDef);
-
         $stmt = $this->_em->getConnection()->prepare($qb->getSQL());
+        if (!$includeHiddenFromNav) {
+            $stmt->bindValue(':hiddenFromNav', false);
+        }
         $stmt->bindValue(':lang', $lang);
         if (!\is_null($rootNode)) {
             $stmt->bindValue(':left', $rootNode->getLeft());
@@ -350,7 +360,7 @@ SQL;
     public function getAllParents(Node $node = null, $lang = null)
     {
         if (\is_null($node)) {
-            return array();
+            return [];
         }
 
         $qb = $this->createQueryBuilder('node');
@@ -364,7 +374,8 @@ SQL;
                 'WITH',
                 't.publicNodeVersion = v.id'
             )
-            ->where('node.deleted = 0');
+            ->where('node.deleted = :deleted')
+            ->setParameter('deleted', false);
 
         if ($lang) {
             $qb->andWhere('t.lang = :lang')
@@ -408,7 +419,8 @@ SQL;
                 'WITH',
                 't.publicNodeVersion = v.id'
             )
-            ->where('node.deleted = 0')
+            ->where('node.deleted = :deleted')
+            ->setParameter('deleted', false)
             ->andWhere('node.parent IS NULL');
 
         if ($lang) {
@@ -440,7 +452,8 @@ SQL;
                 'WITH',
                 't.publicNodeVersion = v.id'
             )
-            ->where('b.deleted = 0')
+            ->where('b.deleted = :deleted')
+            ->setParameter('deleted', false)
             ->andWhere('b.parent IS NULL');
 
         return $qb->getQuery()->getResult();
@@ -451,7 +464,7 @@ SQL;
      *
      * @param string        $internalName   The internal name of the node
      * @param string        $lang           The locale
-     * @param int|null|bool $parentId       The parent id
+     * @param int|bool|null $parentId       The parent id
      * @param bool          $includeOffline Include offline nodes
      *
      * @return Node[]
@@ -471,16 +484,17 @@ SQL;
                 'WITH',
                 't.publicNodeVersion = v.id'
             )
-            ->where('n.deleted = 0')
+            ->where('n.deleted = :deleted')
+            ->setParameter('deleted', false)
             ->andWhere('n.internalName = :internalName')
             ->setParameter('internalName', $internalName)
             ->andWhere('t.lang = :lang')
             ->setParameter('lang', $lang)
             ->addOrderBy('t.weight', 'ASC')
             ->addOrderBy('t.title', 'ASC');
-
         if (!$includeOffline) {
-            $qb->andWhere('t.online = true');
+            $qb->andWhere('t.online = :online')
+                ->setParameter('online', true);
         }
 
         if (\is_null($parentId)) {
@@ -502,13 +516,14 @@ SQL;
      *
      * @param string $internalName The internal name of the node
      *
-     * @return null|Node
+     * @return Node|null
      */
     public function getNodeByInternalName($internalName)
     {
         $qb = $this->createQueryBuilder('n')
             ->select('n')
-            ->where('n.deleted = 0')
+            ->where('n.deleted = :deleted')
+            ->setParameter('deleted', false)
             ->andWhere('n.internalName = :internalName')
             ->setParameter('internalName', $internalName);
 
@@ -524,7 +539,8 @@ SQL;
     {
         $qb = $this->createQueryBuilder('n')
             ->select('n.refEntityName')
-            ->where('n.deleted = 0')
+            ->where('n.deleted = :deleted')
+            ->setParameter('deleted', false)
             ->distinct(true);
 
         return $qb->getQuery()->getArrayResult();
@@ -538,10 +554,11 @@ SQL;
         $aliases = $qb->getRootAliases();
         $alias = $aliases[0];
 
-        $qb->select('COUNT('.$alias.')');
+        $qb->select('COUNT(' . $alias . ')');
 
         if (false === $includeDeleted) {
-            $qb->andWhere($alias.'.deleted = 0');
+            $qb->andWhere($alias . '.deleted = :deleted')
+                ->setParameter('deleted', false);
         }
 
         return (int) $qb->getQuery()->getSingleScalarResult();

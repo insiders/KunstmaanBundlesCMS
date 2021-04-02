@@ -2,13 +2,11 @@ preset: symfony
 risky: false
 
 disabled:
-    - yoda_style
     - concat_without_spaces
+    - no_superfluous_phpdoc_tags_symfony
     - phpdoc_summary
-    - const_separation
-    - method_argument_space_strict
-enabled:
-    - method_argument_space
+    - short_array_syntax
+    - yoda_style
 
 finder:
     exclude:

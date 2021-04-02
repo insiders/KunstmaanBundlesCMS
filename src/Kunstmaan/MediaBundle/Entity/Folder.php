@@ -10,7 +10,7 @@ use Kunstmaan\AdminBundle\Entity\AbstractEntity;
 use Symfony\Component\Validator\Constraints as Assert;
 
 /**
- * Class that defines a folder from the MediaBundle in the database
+ * Defines a folder from the MediaBundle in the database
  *
  * @ORM\Entity(repositoryClass="Kunstmaan\MediaBundle\Repository\FolderRepository")
  * @ORM\Table(name="kuma_folders", indexes={
@@ -145,9 +145,6 @@ class Folder extends AbstractEntity implements GedmoNode
      */
     protected $deleted;
 
-    /**
-     * constructor
-     */
     public function __construct()
     {
         $this->children = new ArrayCollection();
@@ -265,7 +262,7 @@ class Folder extends AbstractEntity implements GedmoNode
     public function getParents()
     {
         $parent = $this->getParent();
-        $parents = array();
+        $parents = [];
         while ($parent !== null) {
             $parents[] = $parent;
             $parent = $parent->getParent();
@@ -301,8 +298,6 @@ class Folder extends AbstractEntity implements GedmoNode
     /**
      * Add a child
      *
-     * @param Folder $child
-     *
      * @return Folder
      */
     public function addChild(Folder $child)
@@ -315,8 +310,6 @@ class Folder extends AbstractEntity implements GedmoNode
 
     /**
      * Add file
-     *
-     * @param Media $media
      *
      * @return Folder
      */

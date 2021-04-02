@@ -81,8 +81,6 @@ class PermissionAdmin
     protected $shellHelper;
 
     /**
-     * Constructor
-     *
      * @param EntityManager                            $em                   The EntityManager
      * @param TokenStorageInterface                    $tokenStorage         The token storage
      * @param AclProviderInterface                     $aclProvider          The ACL provider
@@ -119,7 +117,7 @@ class PermissionAdmin
     {
         $this->resource = $resource;
         $this->permissionMap = $permissionMap;
-        $this->permissions = array();
+        $this->permissions = [];
 
         // Init permissions
         try {
@@ -218,8 +216,6 @@ class PermissionAdmin
     /**
      * Handle form entry of permission changes.
      *
-     * @param Request $request
-     *
      * @return bool
      */
     public function bindRequest(Request $request)
@@ -240,7 +236,7 @@ class PermissionAdmin
             $user = $this->tokenStorage->getToken()->getUser();
             $this->createAclChangeSet($this->resource, $changes, $user);
 
-            $cmd = 'php ' . $this->kernel->getRootDir() . '/../bin/console kuma:acl:apply';
+            $cmd = 'php ' . $this->kernel->getProjectDir() . '/bin/console kuma:acl:apply';
             $cmd .= ' --env=' . $this->kernel->getEnvironment();
 
             $this->shellHelper->runInBackground($cmd);
