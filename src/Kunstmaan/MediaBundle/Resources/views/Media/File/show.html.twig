@@ -14,9 +14,9 @@
         {{ 'media.media.mediainfo.downloadlink'|trans }}:
     </dt>
     <dd>
-        {% set mediaUrl = absolute_url(asset(media.url, 'media')) %}
-        <a href="{{ mediaUrl }}" target="_blank">
-            {{ mediaUrl }}
+        {% set mediaUrl = media.url %}
+        <a href="{{ absolute_url(asset(mediaUrl)) }}" target="_blank">
+            {{ absolute_url(asset(mediaUrl)) }}
         </a>
     </dd>
 {% endblock %}

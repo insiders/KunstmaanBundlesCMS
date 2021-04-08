@@ -34,7 +34,7 @@ class ContentPageAdminType extends PageAdminType
 	    'mediatype' => 'image',
 	    'required' => false
 	));
-	$builder->add('menuDescription', TextAreaType::class, array(
+	$builder->add('menuDescription', TextareaType::class, array(
 	    'attr' => array('rows' => 3, 'cols' => 600),
 	    'required' => false
 	));
@@ -53,11 +53,7 @@ class ContentPageAdminType extends PageAdminType
         ));
     }
 
-    /**
-     * Returns the name of this type.
-     *
-     * @return string The name of this type
-     */
+
     public function getBlockPrefix()
     {
 	return 'contentpage';

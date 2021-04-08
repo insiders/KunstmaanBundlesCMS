@@ -14,6 +14,7 @@ use Kunstmaan\NodeBundle\Event\Events;
 use Kunstmaan\NodeBundle\Helper\PagesConfiguration;
 use Kunstmaan\PagePartBundle\Helper\HasPageTemplateInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use Symfony\Component\EventDispatcher\LegacyEventDispatcherProxy;
 use Symfony\Component\Routing\RouterInterface;
 use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
 
@@ -68,14 +69,7 @@ class ActionsMenuBuilder
     private $showDuplicateWithChildren;
 
     /**
-     * @param FactoryInterface              $factory
-     * @param EntityManager                 $em
-     * @param RouterInterface               $router
-     * @param EventDispatcherInterface      $dispatcher
-     * @param AuthorizationCheckerInterface $authorizationChecker
-     * @param PagesConfiguration            $pagesConfiguration
-     * @param bool                          $enableExportPageTemplate
-     * @param bool                          $showDuplicateWithChildren
+     * @param bool $enableExportPageTemplate
      */
     public function __construct(
         FactoryInterface $factory,
@@ -119,13 +113,13 @@ class ActionsMenuBuilder
             );
         }
 
-        $this->dispatcher->dispatch(
-            Events::CONFIGURE_SUB_ACTION_MENU,
+        $this->dispatch(
             new ConfigureActionMenuEvent(
                 $this->factory,
                 $menu,
                 $activeNodeVersion
-            )
+            ),
+            Events::CONFIGURE_SUB_ACTION_MENU
         );
 
         return $menu;
@@ -157,13 +151,13 @@ class ActionsMenuBuilder
         );
 
         if (null === $activeNodeVersion) {
-            $this->dispatcher->dispatch(
-                Events::CONFIGURE_ACTION_MENU,
+            $this->dispatch(
                 new ConfigureActionMenuEvent(
                     $this->factory,
                     $menu,
                     $activeNodeVersion
-                )
+                ),
+                Events::CONFIGURE_ACTION_MENU
             );
 
             return $menu;
@@ -245,7 +239,7 @@ class ActionsMenuBuilder
                         'linkAttributes' => [
                             'data-toggle' => 'modal',
                             'data-target' => '#pub',
-                            'class' => 'btn btn--raise-on-hover'.($isFirst ? ' btn-primary btn-save' : ' btn-default'),
+                            'class' => 'btn btn--raise-on-hover' . ($isFirst ? ' btn-primary btn-save' : ' btn-default'),
                         ],
                     ]
                 );
@@ -323,7 +317,7 @@ class ActionsMenuBuilder
                         [
                             'linkAttributes' => [
                                 'type' => 'submit',
-                                'class' => 'btn btn--raise-on-hover'.($isFirst ? ' btn-primary btn-save' : ' btn-default'),
+                                'class' => 'btn btn--raise-on-hover' . ($isFirst ? ' btn-primary btn-save' : ' btn-default'),
                                 'value' => 'saveasdraft',
                                 'name' => 'saveasdraft',
                             ],
@@ -433,13 +427,13 @@ class ActionsMenuBuilder
             );
         }
 
-        $this->dispatcher->dispatch(
-            Events::CONFIGURE_ACTION_MENU,
+        $this->dispatch(
             new ConfigureActionMenuEvent(
                 $this->factory,
                 $menu,
                 $activeNodeVersion
-            )
+            ),
+            Events::CONFIGURE_ACTION_MENU
         );
 
         return $menu;
@@ -505,8 +499,6 @@ class ActionsMenuBuilder
     /**
      * Set activeNodeVersion
      *
-     * @param NodeVersion $activeNodeVersion
-     *
      * @return ActionsMenuBuilder
      */
     public function setActiveNodeVersion(NodeVersion $activeNodeVersion)
@@ -532,5 +524,21 @@ class ActionsMenuBuilder
     public function setEditableNode($value)
     {
         $this->isEditableNode = $value;
+    }
+
+    /**
+     * @param object $event
+     *
+     * @return object
+     */
+    private function dispatch($event, string $eventName)
+    {
+        if (class_exists(LegacyEventDispatcherProxy::class)) {
+            $eventDispatcher = LegacyEventDispatcherProxy::decorate($this->dispatcher);
+
+            return $eventDispatcher->dispatch($event, $eventName);
+        }
+
+        return $this->dispatcher->dispatch($eventName, $event);
     }
 }

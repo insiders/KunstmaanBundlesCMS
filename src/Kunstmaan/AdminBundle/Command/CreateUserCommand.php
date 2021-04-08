@@ -4,8 +4,10 @@ namespace Kunstmaan\AdminBundle\Command;
 
 use Doctrine\ORM\EntityManagerInterface;
 use FOS\UserBundle\Model\GroupManagerInterface;
+use Kunstmaan\AdminBundle\Entity\BaseUser;
 use Kunstmaan\AdminBundle\Entity\Group;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
+use Symfony\Component\Console\Exception\InvalidArgumentException;
 use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -13,7 +15,6 @@ use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Question\ChoiceQuestion;
 use Symfony\Component\Console\Question\Question;
-use Symfony\Component\Console\Exception\InvalidArgumentException;
 
 /**
  * Symfony CLI command to create a user using bin/console kuma:user:create <username_of_the_user>
@@ -62,7 +63,7 @@ class CreateUserCommand extends ContainerAwareCommand
 
         $this->setName('kuma:user:create')
             ->setDescription('Create a user.')
-            ->setDefinition(array(
+            ->setDefinition([
                 new InputArgument('username', InputArgument::REQUIRED, 'The username'),
                 new InputArgument('email', InputArgument::REQUIRED, 'The email'),
                 new InputArgument('password', InputArgument::REQUIRED, 'The password'),
@@ -70,7 +71,7 @@ class CreateUserCommand extends ContainerAwareCommand
                 new InputOption('group', null, InputOption::VALUE_REQUIRED, 'The group(s) the user should belong to'),
                 new InputOption('super-admin', null, InputOption::VALUE_NONE, 'Set the user as super admin'),
                 new InputOption('inactive', null, InputOption::VALUE_NONE, 'Set the user as inactive'),
-            ))
+            ])
             ->setHelp(<<<'EOT'
 The <info>kuma:user:create</info> command creates a user:
 
@@ -102,11 +103,6 @@ EOT
     }
 
     /**
-     * Executes the current command.
-     *
-     * @param InputInterface  $input  The input
-     * @param OutputInterface $output The output
-     *
      * @return int
      */
     protected function execute(InputInterface $input, OutputInterface $output)
@@ -130,20 +126,24 @@ EOT
             $locale = $this->defaultLocale;
         }
         $command = $this->getApplication()->find('fos:user:create');
-        $arguments = array(
+        $arguments = [
             'command' => 'fos:user:create',
             'username' => $username,
             'email' => $email,
             'password' => $password,
             '--super-admin' => $superAdmin,
             '--inactive' => $inactive,
-        );
+        ];
 
         $input = new ArrayInput($arguments);
         $command->run($input, $output);
 
         // Fetch user that was just created
-        $user = $this->em->getRepository($this->userClassname)->findOneBy(array('username' => $username));
+        /** @var BaseUser $user */
+        $user = $this->em->getRepository($this->userClassname)->findOneBy(['username' => $username]);
+
+        $user->setCreatedBy('kuma:user:create command');
+        $this->em->flush();
 
         // Attach groups
         $groupOutput = [];

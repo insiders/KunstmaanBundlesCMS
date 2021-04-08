@@ -3,25 +3,27 @@
 namespace Kunstmaan\AdminBundle\Helper\VersionCheck;
 
 use Doctrine\Common\Cache\Cache;
+use Doctrine\Common\Cache\CacheProvider;
 use Exception;
 use GuzzleHttp\Client;
 use Kunstmaan\AdminBundle\Helper\VersionCheck\Exception\ParseException;
+use Symfony\Component\Cache\Adapter\AdapterInterface;
+use Symfony\Component\Cache\Adapter\DoctrineAdapter;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\Translation\TranslatorInterface as LegacyTranslatorInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
-/**
- * Version checker
- */
 class VersionChecker
 {
+    public const CACHE_KEY = 'version_check';
+
     /**
      * @var ContainerInterface
      */
     private $container;
 
     /**
-     * @var Cache
+     * @var AdapterInterface
      */
     private $cache;
 
@@ -51,15 +53,23 @@ class VersionChecker
     private $translator;
 
     /**
-     * Constructor
-     *
-     * @param ContainerInterface $container
-     * @param Cache              $cache
+     * @param CacheProvider|AdapterInterface $cache
      */
-    public function __construct(ContainerInterface $container, Cache $cache, $translator)
+    public function __construct(ContainerInterface $container, /* AdapterInterface */ $cache, $translator)
     {
         $this->container = $container;
+
+        if (!$cache instanceof CacheProvider && !$cache instanceof AdapterInterface) {
+            // NEXT_MAJOR Add AdapterInterface typehint for the $cache parameter
+            throw new \InvalidArgumentException(sprintf('The "$cache" parameter should extend from "%s" or implement "%s"', CacheProvider::class, AdapterInterface::class));
+        }
+
         $this->cache = $cache;
+        if ($cache instanceof CacheProvider) {
+            @trigger_error(sprintf('Passing an instance of "%s" as the second argument in "%s" is deprecated since KunstmaanAdminBundle 5.7 and an instance of "%s" will be required in KunstmaanAdminBundle 6.0.', CacheProvider::class, __METHOD__, AdapterInterface::class), E_USER_DEPRECATED);
+
+            $this->cache = new DoctrineAdapter($cache);
+        }
 
         // NEXT_MAJOR Add "Symfony\Contracts\Translation\TranslatorInterface" typehint when sf <4.4 support is removed.
         if (!$translator instanceof TranslatorInterface && !$translator instanceof LegacyTranslatorInterface) {
@@ -94,8 +104,8 @@ class VersionChecker
             return;
         }
 
-        $data = $this->cache->fetch('version_check');
-        if (!\is_array($data)) {
+        $cacheItem = $this->cache->getItem(self::CACHE_KEY);
+        if (!$cacheItem->isHit() || !\is_array($cacheItem->get())) {
             $this->check();
         }
     }
@@ -114,17 +124,17 @@ class VersionChecker
         }
 
         $host = $this->container->get('request_stack')->getCurrentRequest()->getHttpHost();
-        $console = realpath($this->container->get('kernel')->getProjectDir().'/bin/console');
+        $console = realpath($this->container->get('kernel')->getProjectDir() . '/bin/console');
         $installed = filectime($console);
         $bundles = $this->parseComposer();
         $title = $this->container->getParameter('kunstmaan_admin.website_title');
 
-        $jsonData = json_encode(array(
+        $jsonData = json_encode([
             'host' => $host,
             'installed' => $installed,
             'bundles' => $bundles,
             'project' => $this->translator->trans($title),
-        ));
+        ]);
 
         try {
             $client = $this->getClient();
@@ -137,7 +147,11 @@ class VersionChecker
             }
 
             // Save the result in the cache to make sure we don't do the check too often
-            $this->cache->save('version_check', $data, $this->cacheTimeframe);
+            $cacheItem = $this->cache->getItem(self::CACHE_KEY);
+            $cacheItem->expiresAfter($this->cacheTimeframe);
+            $cacheItem->set($data);
+
+            $this->cache->save($cacheItem);
 
             return $data;
         } catch (Exception $e) {
@@ -152,7 +166,7 @@ class VersionChecker
     public function getClient()
     {
         if (!$this->client) {
-            $this->client = new Client(array('connect_timeout' => 3, 'timeout' => 1));
+            $this->client = new Client(['connect_timeout' => 3, 'timeout' => 1]);
         }
 
         return $this->client;
@@ -176,7 +190,7 @@ class VersionChecker
         $kernel = $this->container->get('kernel');
         $rootPath = $kernel->getProjectDir();
 
-        return $rootPath.'/composer.lock';
+        return $rootPath . '/composer.lock';
     }
 
     /**
@@ -200,7 +214,7 @@ class VersionChecker
         $result = json_decode($json, true);
 
         if (json_last_error() !== JSON_ERROR_NONE) {
-            throw new ParseException($errorMessage.' (#'.json_last_error().')');
+            throw new ParseException($errorMessage . ' (#' . json_last_error() . ')');
         }
 
         if (\array_key_exists('packages', $result) && \is_array($result['packages'])) {
@@ -220,14 +234,14 @@ class VersionChecker
      */
     protected function parseComposer()
     {
-        $bundles = array();
+        $bundles = [];
         foreach ($this->getPackages() as $package) {
             if (!strncmp($package['name'], 'kunstmaan/', \strlen('kunstmaan/'))) {
-                $bundles[] = array(
+                $bundles[] = [
                     'name' => $package['name'],
                     'version' => $package['version'],
                     'reference' => $package['source']['reference'],
-                );
+                ];
             }
         }
 

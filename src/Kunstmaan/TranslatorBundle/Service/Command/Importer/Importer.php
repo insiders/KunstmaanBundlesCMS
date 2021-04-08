@@ -58,9 +58,7 @@ class Importer
     }
 
     /**
-     * @param string $file
-     * @param array  $locales
-     * @param bool   $force
+     * @param bool $force
      *
      * @return int
      *
@@ -70,9 +68,9 @@ class Importer
      */
     public function importFromSpreadsheet(string $file, array $locales, $force = false)
     {
-        $filePath = realpath(\dirname($file)).DIRECTORY_SEPARATOR;
+        $filePath = realpath(\dirname($file)) . DIRECTORY_SEPARATOR;
         $fileName = basename($file);
-        $file = $filePath.$fileName;
+        $file = $filePath . $fileName;
 
         $this->translationGroupManager->pullDBInMemory();
 
@@ -119,7 +117,7 @@ class Importer
                 $domain = $row[array_search('domain', $headers)];
                 $keyword = $row[array_search('keyword', $headers)];
                 foreach ($locales as $locale) {
-                    $this->importSingleTranslation($keyword, $row[array_search($locale, $headers)], $locale, $file, $domain, $force);
+                    $this->importSingleTranslation($keyword, $row[array_search($locale, $headers)], $locale, null, $domain, $force);
                     ++$importedTranslations;
                 }
             }
@@ -169,8 +167,7 @@ class Importer
     /**
      * Adds a loader to the translation importer.
      *
-     * @param string          $format The format of the loader
-     * @param LoaderInterface $loader
+     * @param string $format The format of the loader
      */
     public function addLoader($format, LoaderInterface $loader)
     {

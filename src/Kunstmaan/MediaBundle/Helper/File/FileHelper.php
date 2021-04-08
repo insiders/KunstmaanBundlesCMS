@@ -70,9 +70,6 @@ class FileHelper
         return $this->media->getFolder();
     }
 
-    /**
-     * @param Folder $folder
-     */
     public function setFolder(Folder $folder)
     {
         $this->media->setFolder($folder);
@@ -131,9 +128,6 @@ class FileHelper
         return $this->file;
     }
 
-    /**
-     * @param File $file
-     */
     public function setFile(File $file)
     {
         $this->file = $file;

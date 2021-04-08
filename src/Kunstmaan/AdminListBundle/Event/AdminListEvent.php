@@ -2,12 +2,12 @@
 
 namespace Kunstmaan\AdminListBundle\Event;
 
-use Symfony\Component\EventDispatcher\Event;
+use Kunstmaan\AdminBundle\Event\BcEvent;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 
-class AdminListEvent extends Event
+class AdminListEvent extends BcEvent
 {
     /**
      * @var object
@@ -30,11 +30,7 @@ class AdminListEvent extends Event
     protected $response;
 
     /**
-     * AdminListEvent constructor.
-     *
-     * @param object             $entity
-     * @param Request            $request
-     * @param FormInterface|null $form
+     * @param object $entity
      */
     public function __construct($entity, Request $request, FormInterface $form = null)
     {
@@ -77,8 +73,6 @@ class AdminListEvent extends Event
 
     /**
      * Sets a response and stops event propagation.
-     *
-     * @param Response $response
      */
     public function setResponse(Response $response)
     {

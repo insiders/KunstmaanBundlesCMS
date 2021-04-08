@@ -2,14 +2,14 @@
 
 namespace Kunstmaan\PagePartBundle\Event;
 
+use Kunstmaan\AdminBundle\Event\BcEvent;
 use Kunstmaan\PagePartBundle\Helper\PagePartInterface;
-use Symfony\Component\EventDispatcher\Event;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
  * PagePartEvent
  */
-class PagePartEvent extends Event
+class PagePartEvent extends BcEvent
 {
     /**
      * @var PagePartInterface
@@ -21,11 +21,6 @@ class PagePartEvent extends Event
      */
     private $response = null;
 
-    /**
-     * PagePartEvent constructor.
-     *
-     * @param PagePartInterface $pagePart
-     */
     public function __construct(PagePartInterface $pagePart)
     {
         $this->pagePart = $pagePart;
@@ -39,9 +34,6 @@ class PagePartEvent extends Event
         return $this->pagePart;
     }
 
-    /**
-     * @param PagePartInterface $pagePart
-     */
     public function setPagePart(PagePartInterface $pagePart)
     {
         $this->pagePart = $pagePart;
@@ -55,9 +47,6 @@ class PagePartEvent extends Event
         return $this->response;
     }
 
-    /**
-     * @param Response $response
-     */
     public function setResponse(Response $response)
     {
         $this->response = $response;

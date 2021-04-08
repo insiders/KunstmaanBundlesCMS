@@ -9,16 +9,16 @@ class CacheManager extends \Liip\ImagineBundle\Imagine\Cache\CacheManager
     /**
      * {@inheritdoc}
      */
-    public function generateUrl($path, $filter, array $runtimeConfig = array(), $resolver = null, $referenceType = UrlGeneratorInterface::ABSOLUTE_URL)
+    public function generateUrl($path, $filter, array $runtimeConfig = [], $resolver = null, $referenceType = UrlGeneratorInterface::ABSOLUTE_URL)
     {
         $originalPath = $path;
         $filterConf = $this->filterConfig->get($filter);
         $path = $this->changeFileExtension(ltrim($path, '/'), $filterConf['format']);
 
-        $params = array(
+        $params = [
             'path' => ltrim($path, '/'),
             'filter' => $filter,
-        );
+        ];
 
         if ($resolver) {
             $params['resolver'] = $resolver;
@@ -50,11 +50,11 @@ class CacheManager extends \Liip\ImagineBundle\Imagine\Cache\CacheManager
     /**
      * {@inheritdoc}
      */
-    public function getBrowserPath($path, $filter, array $runtimeConfig = array(), $resolver = null)
+    public function getBrowserPath($path, $filter, array $runtimeConfig = [], $resolver = null, $referenceType = UrlGeneratorInterface::ABSOLUTE_URL)
     {
         $infoPath = parse_url($path, PHP_URL_PATH);
         $info = pathinfo($infoPath);
-        $url = parent::getBrowserPath($path, $filter, $runtimeConfig, $resolver);
+        $url = parent::getBrowserPath($path, $filter, $runtimeConfig, $resolver, $referenceType);
         $newPath = parse_url($url, PHP_URL_PATH);
         $newInfo = pathinfo($newPath);
         if(isset($info['extension']) && isset($newInfo['extension'])){

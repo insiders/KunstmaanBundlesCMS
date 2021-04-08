@@ -2,14 +2,11 @@
 
 namespace Kunstmaan\NodeBundle\Event;
 
+use Kunstmaan\AdminBundle\Event\BcEvent;
 use Kunstmaan\NodeBundle\Helper\RenderContext;
-use Symfony\Component\EventDispatcher\Event;
 use Symfony\Component\HttpFoundation\Response;
 
-/**
- * Class SlugEvent
- */
-class SlugEvent extends Event
+class SlugEvent extends BcEvent
 {
     /**
      * @var Response
@@ -22,8 +19,7 @@ class SlugEvent extends Event
     protected $renderContext;
 
     /**
-     * @param Response      $response
-     * @param RenderContext $renderContext
+     * @param Response $response
      */
     public function __construct(Response $response = null, RenderContext $renderContext)
     {
@@ -39,9 +35,6 @@ class SlugEvent extends Event
         return $this->response;
     }
 
-    /**
-     * @param Response $response
-     */
     public function setResponse(Response $response)
     {
         $this->response = $response;
@@ -55,9 +48,6 @@ class SlugEvent extends Event
         return $this->renderContext;
     }
 
-    /**
-     * @param RenderContext $renderContext
-     */
     public function setRenderContext(RenderContext $renderContext)
     {
         $this->renderContext = $renderContext;

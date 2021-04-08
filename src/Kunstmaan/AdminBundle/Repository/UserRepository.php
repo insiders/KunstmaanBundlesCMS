@@ -21,7 +21,7 @@ class UserRepository extends EntityRepository
         if (\is_array($role)) {
             $roles = $role;
         } else {
-            $roles = array($role);
+            $roles = [$role];
         }
 
         $qb = $this->getEntityManager()->createQueryBuilder();
@@ -29,9 +29,10 @@ class UserRepository extends EntityRepository
             ->from('KunstmaanAdminBundle:User', 'u')
             ->innerJoin('u.groups', 'g')
             ->innerJoin('g.roles', 'r')
-            ->where('u.enabled=1')
+            ->where('u.enabled= :enabled')
             ->andWhere('r.role IN (:roles)')
-            ->setParameter('roles', $roles);
+            ->setParameter('roles', $roles)
+            ->setParameter('enabled', true);
 
         return $qb->getQuery()->getResult();
     }
