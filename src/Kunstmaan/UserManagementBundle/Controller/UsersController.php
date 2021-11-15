@@ -256,7 +256,7 @@ class UsersController extends BaseSettingsController
      */
     public function deleteFormAction(Request $request, $id)
     {
-        $this->denyAccessUnlessGranted('ROLE_SUPER_ADMIN');
+        $this->denyAccessUnlessGranted('ROLE_ADMIN');
 
         $submittedToken = $request->request->get('token');
         if (!$this->isCsrfTokenValid('delete-user', $submittedToken)) {
