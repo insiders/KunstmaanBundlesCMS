@@ -21,6 +21,11 @@ parameters:
     kunstmaan_admin.toolbar.collector.exception.class: 'Kunstmaan\AdminBundle\Toolbar\ExceptionDataCollector'
 
 services:
+    # Autowire aliases
+    Kunstmaan\AdminBundle\Helper\Security\Acl\AclHelper: '@kunstmaan_admin.acl.helper'
+    Kunstmaan\AdminBundle\Service\AclManager: '@kunstmaan_admin.acl.manager'
+    Kunstmaan\AdminBundle\Helper\CloneHelper: '@kunstmaan_admin.clone.helper'
+
     kunstmaan_admin.menubuilder:
         class: '%kunstmaan_admin.menubuilder.class%'
         arguments: ['@request_stack']
@@ -41,7 +46,7 @@ services:
 
     kunstmaan_admin.login.listener:
         class: '%kunstmaan_admin.login.listener.class%'
-        arguments: ['@kunstmaan_admin.logger', '@kunstmaan_admin.versionchecker', '@kunstmaan_admin.adminroute.helper']
+        arguments: ['@kunstmaan_admin.logger', '@kunstmaan_admin.versionchecker']
         tags:
             - { name: 'kernel.event_listener', event: 'security.interactive_login' }
 
@@ -171,7 +176,15 @@ services:
 
     kunstmaan_admin.versionchecker:
         class: Kunstmaan\AdminBundle\Helper\VersionCheck\VersionChecker
-        arguments: ['@service_container', '@cache.kunstmaan_versioncheck', '@translator']
+        arguments:
+            - '@cache.kunstmaan_versioncheck'
+            - '@translator'
+            - '@request_stack'
+            - '%version_checker.url%'
+            - '%version_checker.timeframe%'
+            - '%version_checker.enabled%'
+            - '%kernel.project_dir%'
+            - '%kunstmaan_admin.website_title%'
         public: true
 
     kunstmaan_admin.cache:
@@ -191,7 +204,7 @@ services:
 
     kunstmaan_admin.doctrine_mapping.listener:
         class: Kunstmaan\AdminBundle\EventListener\MappingListener
-        arguments: ['%fos_user.model.user.class%']
+        arguments: ['%kunstmaan_admin.user_class%']
         tags:
             - { name: doctrine.event_listener, event: loadClassMetadata }
 
@@ -220,10 +233,11 @@ services:
         arguments: ['@fos_user.user_manager']
         tags:
             - { name: kernel.event_listener, event: fos_user.change_password.edit.completed, method: onPasswordResettingSuccess }
+            - { name: kernel.event_listener, event: kunstmaan_admin.change_password.edit.completed, method: onPasswordResettingSuccessCMS }
 
     kunstmaan_admin.password_check.listener:
         class: '%kunstmaan_admin.password_check.listener.class%'
-        arguments: ['@security.authorization_checker', '@security.token_storage', '@router.default', '@session', '@translator', '@kunstmaan_admin.adminroute.helper']
+        arguments: ['@security.authorization_checker', '@security.token_storage', '@router.default', '@request_stack', '@translator', '@kunstmaan_admin.adminroute.helper']
         tags:
             - { name: kernel.event_listener, event: kernel.request, method: onKernelRequest, priority: 1 }
 
@@ -253,14 +267,14 @@ services:
         arguments:
             - '@doctrine.orm.entity_manager'
             - '%kunstmaan_admin.google_signin.hosted_domains%'
-            - '%fos_user.model.user.class%'
+            - '%kunstmaan_admin.user_class%'
             - '@kunstmaan_admin.oauth_user_finder'
 
     kunstmaan_admin.oauth_user_finder:
         class: Kunstmaan\AdminBundle\Helper\Security\OAuth\OAuthUserFinder
         arguments:
             - '@doctrine.orm.entity_manager'
-            - '%fos_user.model.user.class%'
+            - '%kunstmaan_admin.user_class%'
 
     kunstmaan_admin.google_signin.twig.extension:
         class: Kunstmaan\AdminBundle\Twig\GoogleSignInTwigExtension
@@ -291,6 +305,12 @@ services:
         arguments:
             - "@doctrine.orm.entity_manager"
             - "%kunstmaan_admin.admin_exception_excludes%"
+        tags:
+            - { name: kernel.event_subscriber }
+
+    Kunstmaan\AdminBundle\EventSubscriber\LoginEventSubscriber:
+        arguments:
+            - "@doctrine.orm.entity_manager"
         tags:
             - { name: kernel.event_subscriber }
 
@@ -348,3 +368,28 @@ services:
             - '%kunstmaan_admin.required_locales%'
         tags:
             - { name: twig.extension }
+
+    Kunstmaan\AdminBundle\Service\UserManager:
+        arguments:
+            - '@security.encoder_factory'
+            - '@doctrine.orm.entity_manager'
+            - '%kunstmaan_admin.user_class%'
+
+    kunstmaan_admin.user_manager:
+        public: true
+        alias: Kunstmaan\AdminBundle\Service\UserManager
+
+    Kunstmaan\AdminBundle\Service\GroupManager:
+        arguments:
+            - '@doctrine.orm.entity_manager'
+            - '%kunstmaan_admin.group_class%'
+
+    kunstmaan_admin.group_manager:
+        public: true
+        alias: Kunstmaan\AdminBundle\Service\GroupManager
+
+    Kunstmaan\AdminBundle\DependencyInjection\Routes\FosRouteLoader:
+        arguments:
+            - false # Correct value will be injected in the KunstmaanAdmin extension class
+        tags:
+            - { name: routing.route_loader }

@@ -2,7 +2,7 @@
 
 namespace Kunstmaan\MediaBundle\Form\Type;
 
-use Doctrine\Common\Persistence\ObjectManager;
+use Doctrine\Persistence\ObjectManager;
 use Kunstmaan\MediaBundle\Helper\MediaManager;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\FormType;
@@ -78,10 +78,19 @@ class MediaType extends AbstractType
                 'chooser' => 'KunstmaanMediaBundle_chooser',
                 'mediatype' => null,
                 'current_value_container' => new CurrentValueContainer(),
+                // @experimental The option below are for a feature is experimental and is a subject to change, be advised when using this feature and classes.
+                'show_image_edit_modal' => false,
+                'use_focus_point' => false,
+                'use_cropping' => false,
+                'focus_point_classes' => '',
+                'cropping_views' => '',
             ]
         );
     }
 
+    /**
+     * @return string
+     */
     public function getBlockPrefix()
     {
         return 'media';
@@ -95,5 +104,10 @@ class MediaType extends AbstractType
         $view->vars['chooser'] = $form->getConfig()->getAttribute('chooser');
         $view->vars['mediatype'] = $form->getConfig()->getAttribute('mediatype');
         $view->vars['mediamanager'] = $this->mediaManager;
+        $view->vars['show_image_edit_modal'] = $options['show_image_edit_modal'];
+        $view->vars['use_focus_point'] = $options['use_focus_point'];
+        $view->vars['use_cropping'] = $options['use_cropping'];
+        $view->vars['focus_point_classes'] = $options['focus_point_classes'];
+        $view->vars['cropping_views'] = $options['cropping_views'];
     }
 }

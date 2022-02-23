@@ -4,14 +4,21 @@ namespace Kunstmaan\SitemapBundle\Event;
 
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
+use Kunstmaan\AdminBundle\Event\BcEvent;
 use Kunstmaan\SitemapBundle\Model\SitemapIndex;
-use Symfony\Component\EventDispatcher\Event;
 
-final class PreSitemapIndexRenderEvent extends Event
+final class PreSitemapIndexRenderEvent extends BcEvent
 {
     public const NAME = 'sitemap.index.pre_render';
 
+    /**
+     * @var ArrayCollection<SitemapIndex>
+     */
     private $extraSitemaps;
+
+    /**
+     * @var array
+     */
     private $locales;
 
     public function __construct(array $locales)

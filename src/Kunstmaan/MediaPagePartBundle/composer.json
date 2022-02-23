@@ -14,9 +14,9 @@
     ],
     "minimum-stability": "dev",
     "require": {
-        "php": "^7.2",
-        "kunstmaan/pagepart-bundle": "~5.2",
-        "kunstmaan/media-bundle": "~5.2"
+        "php": "^7.2|^8.0",
+        "kunstmaan/pagepart-bundle": "^5.9|^6.0",
+        "kunstmaan/media-bundle": "^5.9|^6.0"
     },
     "require-dev": {
         "matthiasnoback/symfony-config-test": "^4.0",
@@ -29,7 +29,7 @@
     },
     "extra": {
         "branch-alias": {
-            "dev-master": "5.8-dev"
+            "dev-master": "5.10-dev"
         }
     }
 }

@@ -28,18 +28,15 @@ class FileHelper
      */
     protected $path;
 
-    protected $mediaPath;
+    /** @var string */
+    private $mediaPath;
 
-    /**
-     * @param Media  $media
-     * @param string $mediaPath
-     */
     public function __construct(Media $media, string $mediaPath = null)
     {
         $this->media = $media;
 
         if ($mediaPath === null) {
-            @trigger_error(sprintf('Not passing the media path as the second argument of "%s" is deprecated since KunstmaanMediaBundle 5.7 and will be required in KunstmaanMediaBundle 6.0. Injected the required parameter in the constructor instead.', __METHOD__), E_USER_DEPRECATED);
+            @trigger_error(sprintf('Not passing a value for the "$mediaPath" parameter of "%s" is deprecated since KunstmaanMediaBundle 5.9 and a value will be required in KunstmaanMediaBundle 6.0. Injected the required parameter in the constructor instead.', __METHOD__), E_USER_DEPRECATED);
             $mediaPath = '/uploads/media/';
         }
 

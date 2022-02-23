@@ -3,10 +3,13 @@
 namespace Kunstmaan\AdminBundle\Helper\Security\OAuth;
 
 use Doctrine\ORM\EntityManagerInterface;
-use FOS\UserBundle\Model\GroupInterface;
 use Kunstmaan\AdminBundle\Entity\Group;
+use Kunstmaan\AdminBundle\Entity\GroupInterface;
 use Kunstmaan\AdminBundle\Entity\User;
 
+/**
+ * @deprecated since KunstmaanAdminBundle 5.10 and will be removed in KunstmaanAdminBundle 6.0.
+ */
 class OAuthUserCreator implements OAuthUserCreatorInterface
 {
     /** @var EntityManagerInterface */
@@ -75,7 +78,7 @@ class OAuthUserCreator implements OAuthUserCreatorInterface
      *
      * @return string[]|null
      */
-    private function getAccessLevels($email)
+    private function getAccessLevels($email): ?array
     {
         foreach ($this->hostedDomains as $hostedDomain) {
             if (preg_match('/' . $hostedDomain['domain_name'] . '$/', $email)) {
@@ -90,10 +93,8 @@ class OAuthUserCreator implements OAuthUserCreatorInterface
      * This method returns wether a domain for the given email has been configured
      *
      * @param string $email
-     *
-     * @return bool
      */
-    private function isConfiguredDomain($email)
+    private function isConfiguredDomain($email): bool
     {
         foreach ($this->hostedDomains as $hostedDomain) {
             if (preg_match('/' . $hostedDomain['domain_name'] . '$/', $email)) {

@@ -3,7 +3,7 @@
 namespace Kunstmaan\MediaBundle\Form\Type;
 
 use Doctrine\Common\Collections\Collection;
-use Doctrine\Common\Persistence\ObjectManager;
+use Doctrine\Persistence\ObjectManager;
 use Kunstmaan\MediaBundle\Entity\Media;
 use Symfony\Component\Form\DataTransformerInterface;
 use Symfony\Component\Form\Exception\TransformationFailedException;
@@ -44,7 +44,7 @@ class IdToMediaTransformer implements DataTransformerInterface
      */
     public function transform($entity)
     {
-        if (empty($entity)) {
+        if (null === $entity) {
             return '';
         }
         if (!\is_object($entity)) {

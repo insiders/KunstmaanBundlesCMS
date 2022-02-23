@@ -2,6 +2,7 @@
 
 namespace Kunstmaan\MediaBundle\DependencyInjection;
 
+use Gedmo\DoctrineExtensions;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Definition;
@@ -38,7 +39,8 @@ class KunstmaanMediaExtension extends Extension implements PrependExtensionInter
         $container->setParameter('kunstmaan_media.enable_pdf_preview', $config['enable_pdf_preview']);
         $container->setParameter('kunstmaan_media.blacklisted_extensions', $config['blacklisted_extensions']);
         $container->setParameter('kunstmaan_media.web_root', $config['web_root']);
-        $container->setParameter('kunstmaan_media.full_media_path', $config['web_root'] . '%kunstmaan_media.media_path%'); // Not used, deprecate?
+        $container->setParameter('kunstmaan_media.full_media_path', $config['web_root'] . '%kunstmaan_media.media_path%');
+        $container->setParameter('kunstmaan_media.cropping_views', $config['cropping_views']);
 
         $loader->load('services.yml');
         $loader->load('handlers.yml');
@@ -95,13 +97,15 @@ class KunstmaanMediaExtension extends Extension implements PrependExtensionInter
 
         $container->prependExtensionConfig('stof_doctrine_extensions', $stofDoctrineExtensionsConfig);
 
+        $baseDir = version_compare(DoctrineExtensions::VERSION, '3.0.0', '>=') ? 'src' : 'lib/Gedmo';
+
         $doctrineGedmoEntityConfig = [
             'orm' => [
                 'mappings' => [
                     'gedmo_translatable' => [
                         'type' => 'annotation',
                         'prefix' => 'Gedmo\Translatable\Entity',
-                        'dir' => '%kernel.project_dir%/vendor/gedmo/doctrine-extensions/lib/Gedmo/Translatable/Entity',
+                        'dir' => '%kernel.project_dir%/vendor/gedmo/doctrine-extensions/' . $baseDir . '/Translatable/Entity',
                         'alias' => 'GedmoTranslatable',
                         'is_bundle' => false,
                     ],

@@ -102,10 +102,7 @@ class TabPane
         }
     }
 
-    /**
-     * @return string
-     */
-    private function generateIdentifier(TabInterface $tab)
+    private function generateIdentifier(TabInterface $tab): string
     {
         return $this->slugifier->slugify($tab->getTitle());
     }
@@ -119,7 +116,7 @@ class TabPane
     public function addTab(TabInterface $tab, $position = null)
     {
         $identifier = $tab->getIdentifier();
-        if (!$identifier || empty($identifier)) {
+        if (empty($identifier)) {
             $tab->setIdentifier($this->generateIdentifier($tab));
         }
 

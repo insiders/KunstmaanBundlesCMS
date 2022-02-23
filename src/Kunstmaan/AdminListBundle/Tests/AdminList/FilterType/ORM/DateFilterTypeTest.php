@@ -4,17 +4,11 @@ namespace Kunstmaan\AdminListBundle\Tests\AdminList\FilterType\ORM;
 
 use Doctrine\ORM\QueryBuilder;
 use Kunstmaan\AdminListBundle\AdminList\FilterType\ORM\DateFilterType;
-use Kunstmaan\AdminListBundle\Tests\UnitTester;
 use ReflectionClass;
 use Symfony\Component\HttpFoundation\Request;
 
 class DateFilterTypeTest extends BaseOrmFilterTest
 {
-    /**
-     * @var UnitTester
-     */
-    protected $tester;
-
     /**
      * @var DateFilterType
      */
@@ -57,10 +51,7 @@ class DateFilterTypeTest extends BaseOrmFilterTest
         $this->assertEquals($testValue, $qb->getParameter('var_date')->getValue());
     }
 
-    /**
-     * @return array
-     */
-    public static function applyDataProvider()
+    public static function applyDataProvider(): array
     {
         return [
             ['before', '<= :var_date', '20/12/2012', '2012-12-20'],

@@ -25,6 +25,7 @@ class AclWalkerTest extends TestCase
     {
         $range = new RangeVariableDeclaration('someschema', 's');
         $expr = new PathExpression('int', 'id');
+        $expr->type = PathExpression::TYPE_STATE_FIELD;
         $indexBy = new IndexBy($expr);
         $from = new FromClause([new IdentificationVariableDeclaration($range, $indexBy, [])]);
 
@@ -33,7 +34,7 @@ class AclWalkerTest extends TestCase
         $config = $this->createMock(Configuration::class);
 
         $platform = $this->createMock(AbstractPlatform::class);
-        $platform->expects($this->once())->method('appendLockHint')->willReturn($from);
+        $platform->expects($this->once())->method('appendLockHint')->willReturn('someschema s');
 
         $conn = $this->createMock(Connection::class);
         $conn->expects($this->any())->method('getDatabasePlatform')->willReturn($platform);
@@ -56,6 +57,8 @@ class AclWalkerTest extends TestCase
 
         $aclWalker = new AclWalker($query, $result, []);
         $sql = $aclWalker->walkFromClause($from);
-        $this->assertRegExp('/(JOIN \(\) ta_ ON s0_\.id = ta_.id)$/', $sql);
+
+        $expectedRegex = '/(JOIN \(\) ta_ ON s0_\.id = ta_.id)$/';
+        method_exists($this, 'assertMatchesRegularExpression') ? $this->assertMatchesRegularExpression($expectedRegex, $sql) : $this->assertRegExp($expectedRegex, $sql);
     }
 }

@@ -14,8 +14,12 @@ use Symfony\Component\Security\Core\Exception\AuthenticationException;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Security\Core\User\UserProviderInterface;
 use Symfony\Component\Security\Guard\AbstractGuardAuthenticator;
-use Symfony\Component\Translation\TranslatorInterface;
+use Symfony\Component\Translation\TranslatorInterface as LegacyTranslatorInterface;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
+/**
+ * @deprecated since KunstmaanAdminBundle 5.10 and will be removed in KunstmaanAdminBundle 6.0.
+ */
 class OAuthAuthenticator extends AbstractGuardAuthenticator
 {
     /** @var RouterInterface */
@@ -24,7 +28,7 @@ class OAuthAuthenticator extends AbstractGuardAuthenticator
     /** @var SessionInterface */
     private $session;
 
-    /** @var TranslatorInterface */
+    /** @var TranslatorInterface|LegacyTranslatorInterface */
     private $translator;
 
     /** @var OAuthUserCreator */
@@ -36,8 +40,12 @@ class OAuthAuthenticator extends AbstractGuardAuthenticator
     /** @var string */
     private $clientSecret;
 
-    public function __construct(RouterInterface $router, SessionInterface $session, TranslatorInterface $translator, OAuthUserCreatorInterface $oAuthUserCreator, $clientId, $clientSecret)
+    public function __construct(RouterInterface $router, SessionInterface $session, /* TranslatorInterface */ $translator, OAuthUserCreatorInterface $oAuthUserCreator, $clientId, $clientSecret)
     {
+        if (null !== $translator && (!$translator instanceof LegacyTranslatorInterface && !$translator instanceof TranslatorInterface)) {
+            throw new \InvalidArgumentException(sprintf('Argument 3 passed to "%s" must be of the type "%s" or "%s", "%s" given', __METHOD__, LegacyTranslatorInterface::class, TranslatorInterface::class, get_class($translator)));
+        }
+
         $this->router = $router;
         $this->session = $session;
         $this->translator = $translator;
@@ -74,7 +82,7 @@ class OAuthAuthenticator extends AbstractGuardAuthenticator
      */
     public function start(Request $request, AuthenticationException $authException = null)
     {
-        return new RedirectResponse($this->router->generate('fos_user_security_login'));
+        return new RedirectResponse($this->router->generate('kunstmaan_admin_login'));
     }
 
     /**
@@ -173,7 +181,7 @@ class OAuthAuthenticator extends AbstractGuardAuthenticator
     {
         $this->session->getFlashBag()->add(FlashTypes::DANGER, $this->translator->trans('errors.oauth.invalid'));
 
-        return new RedirectResponse($this->router->generate('fos_user_security_login'));
+        return new RedirectResponse($this->router->generate('kunstmaan_admin_login'));
     }
 
     /**

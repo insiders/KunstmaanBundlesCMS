@@ -17,6 +17,7 @@ use Kunstmaan\AdminListBundle\Event\AdminListEvents;
 use Kunstmaan\AdminListBundle\Service\EntityVersionLockService;
 use Kunstmaan\NodeBundle\Entity\HasNodeInterface;
 use Kunstmaan\NodeBundle\Entity\NodeTranslation;
+use Kunstmaan\UtilitiesBundle\Helper\SlugifierInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\EventDispatcher\LegacyEventDispatcherProxy;
 use Symfony\Component\HttpFoundation\RedirectResponse;
@@ -26,12 +27,15 @@ use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\PropertyAccess\PropertyAccess;
 
+/**
+ * @deprecated sinc KunstmaanAdminListBundle 5.9 and will be removed in KunstmaanAdminListBundle 6.0. Extend from "Kunstmaan\AdminListBundle\Controller\AbstractAdminListController" instead.
+ */
 abstract class AdminListController extends Controller
 {
     /**
      * You can override this method to return the correct entity manager when using multiple databases ...
      *
-     * @return \Doctrine\Common\Persistence\ObjectManager|object
+     * @return \Doctrine\Persistence\ObjectManager|object
      */
     protected function getEntityManager()
     {
@@ -88,14 +92,14 @@ abstract class AdminListController extends Controller
      * Creates and processes the form to add a new Entity
      *
      * @param AbstractAdminListConfigurator $configurator The adminlist configurator
-     * @param string                        $type         The type to add
+     * @param string|null                   $type         The type to add
      * @param Request|null                  $request
      *
      * @throws AccessDeniedHttpException
      *
      * @return Response
      */
-    protected function doAddAction(AbstractAdminListConfigurator $configurator, $type = null, Request $request)
+    protected function doAddAction(AbstractAdminListConfigurator $configurator, $type, Request $request)
     {
         if (!$configurator->canAdd()) {
             throw $this->createAccessDeniedException('You do not have sufficient rights to access this page.');
@@ -103,7 +107,7 @@ abstract class AdminListController extends Controller
 
         /* @var EntityManager $em */
         $em = $this->getEntityManager();
-        $entityName = isset($type) ? $type : $configurator->getRepositoryName();
+        $entityName = $type ?? $configurator->getRepositoryName();
 
         $classMetaData = $em->getClassMetadata($entityName);
         // Creates a new instance of the mapped class, without invoking the constructor.
@@ -347,6 +351,21 @@ abstract class AdminListController extends Controller
      */
     protected function doDeleteAction(AbstractAdminListConfigurator $configurator, $entityId, Request $request)
     {
+        /** @var SlugifierInterface $slugifier */
+        $slugifier = $this->container->get('kunstmaan_utilities.slugifier');
+        $csrfId = 'delete-' . $slugifier->slugify($configurator->getEntityName());
+
+        $hasToken = $request->request->has('token');
+        if (!$hasToken) {
+            @trigger_error(sprintf('Not passing as csrf token with id "%s" in field "token" is deprecated in KunstmaanAdminListBundle 5.10 and will be required in KunstmaanAdminListBundle 6.0. If you override the adminlist delete action template make sure to post a csrf token.', $csrfId), E_USER_DEPRECATED);
+        }
+
+        if ($hasToken && !$this->isCsrfTokenValid($csrfId, $request->request->get('token'))) {
+            $indexUrl = $configurator->getIndexUrl();
+
+            return new RedirectResponse($this->generateUrl($indexUrl['path'], $indexUrl['params'] ?? []));
+        }
+
         /* @var $em EntityManager */
         $em = $this->getEntityManager();
         $helper = $em->getRepository($configurator->getRepositoryName())->findOneById($entityId);
@@ -553,10 +572,8 @@ abstract class AdminListController extends Controller
 
     /**
      * @param object $event
-     *
-     * @return object
      */
-    private function dispatch($event, string $eventName)
+    private function dispatch($event, string $eventName): object
     {
         $eventDispatcher = $this->container->get('event_dispatcher');
         if (class_exists(LegacyEventDispatcherProxy::class)) {

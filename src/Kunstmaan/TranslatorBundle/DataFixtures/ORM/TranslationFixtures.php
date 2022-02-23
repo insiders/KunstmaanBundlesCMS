@@ -4,9 +4,10 @@ namespace Kunstmaan\TranslatorBundle\DataFixtures\ORM;
 
 use Doctrine\Common\DataFixtures\AbstractFixture;
 use Doctrine\Common\DataFixtures\OrderedFixtureInterface;
-use Doctrine\Common\Persistence\ObjectManager;
+use Doctrine\Persistence\ObjectManager;
 use Kunstmaan\TranslatorBundle\Entity\Translation as Entity;
 use Kunstmaan\TranslatorBundle\Model\Translation as Model;
+use Kunstmaan\TranslatorBundle\Repository\TranslationRepository;
 
 /**
  * Fixture for creation the basic translations
@@ -14,7 +15,7 @@ use Kunstmaan\TranslatorBundle\Model\Translation as Model;
 class TranslationFixtures extends AbstractFixture implements OrderedFixtureInterface
 {
     /**
-     * @var Kunstmaan\TranslatorBundle\Repository\TranslationRepository
+     * @var TranslationRepository
      */
     protected $repo;
 
