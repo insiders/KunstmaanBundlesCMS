@@ -279,6 +279,7 @@ class NodeMenu
      */
     public function getCurrent()
     {
+        $this->init();
         $breadCrumb = $this->getBreadCrumb();
         if (\count($breadCrumb) > 0) {
             return $breadCrumb[\count($breadCrumb) - 1];
