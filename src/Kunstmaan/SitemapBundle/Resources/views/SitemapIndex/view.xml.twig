@@ -9,6 +9,9 @@
         {% for sitemap in extraSitemaps %}
             <sitemap>
                 <loc>{{ sitemap.url }}</loc>
+                {% if sitemap.lastModified %}
+                <lastmod>{{ sitemap.lastModified|date('Y-m-d') }}</lastmod>
+                {% endif %}
             </sitemap>
         {% endfor %}
     {% endif %}

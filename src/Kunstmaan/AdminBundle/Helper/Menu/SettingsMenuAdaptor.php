@@ -10,23 +10,23 @@ use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
  */
 class SettingsMenuAdaptor implements MenuAdaptorInterface
 {
-    /**
-     * @var AuthorizationCheckerInterface
-     */
+    /** @var AuthorizationCheckerInterface */
     private $authorizationChecker;
 
-    /**
-     * @var bool
-     */
+    /** @var bool */
     private $isEnabledVersionChecker;
+
+    /** @var bool */
+    private $exceptionLoggingEnabled;
 
     /**
      * @param bool $isEnabledVersionChecker
      */
-    public function __construct(AuthorizationCheckerInterface $authorizationChecker, $isEnabledVersionChecker)
+    public function __construct(AuthorizationCheckerInterface $authorizationChecker, $isEnabledVersionChecker, bool $exceptionLoggingEnabled = true)
     {
         $this->authorizationChecker = $authorizationChecker;
         $this->isEnabledVersionChecker = (bool) $isEnabledVersionChecker;
+        $this->exceptionLoggingEnabled = $exceptionLoggingEnabled;
     }
 
     public function adaptChildren(MenuBuilder $menu, array &$children, MenuItem $parent = null, Request $request = null)
@@ -59,9 +59,10 @@ class SettingsMenuAdaptor implements MenuAdaptorInterface
                 $children[] = $menuItem;
             }
 
-            if ($this->authorizationChecker->isGranted('ROLE_SUPER_ADMIN')) {
+            if ($this->exceptionLoggingEnabled) {
                 $menuItem = new MenuItem($menu);
-                $menuItem->setRoute('kunstmaanadminbundle_admin_exception')
+                $menuItem
+                    ->setRoute('kunstmaanadminbundle_admin_exception')
                     ->setLabel('settings.exceptions.title')
                     ->setUniqueId('exceptions')
                     ->setParent($parent);

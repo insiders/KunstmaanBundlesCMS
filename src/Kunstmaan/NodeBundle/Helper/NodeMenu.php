@@ -3,6 +3,7 @@
 namespace Kunstmaan\NodeBundle\Helper;
 
 use Doctrine\ORM\EntityManagerInterface;
+use Kunstmaan\AdminBundle\Entity\BaseUser;
 use Kunstmaan\AdminBundle\Helper\DomainConfigurationInterface;
 use Kunstmaan\AdminBundle\Helper\Security\Acl\AclHelper;
 use Kunstmaan\AdminBundle\Helper\Security\Acl\Permission\PermissionMap;
@@ -240,32 +241,33 @@ class NodeMenu
      */
     public function getBreadCrumb()
     {
-        $this->init();
-        if (!\is_array($this->breadCrumb)) {
-            $this->breadCrumb = [];
+        if (\is_array($this->breadCrumb)) {
+            return $this->breadCrumb;
+        }
 
-            /* @var NodeRepository $repo */
-            $repo = $this->em->getRepository(Node::class);
+        $this->breadCrumb = [];
 
-            // Generate breadcrumb MenuItems - fetch *all* languages so you can link translations if needed
-            $parentNodes = $repo->getAllParents($this->currentNode);
-            $parentNodeMenuItem = null;
-            /* @var Node $parentNode */
-            foreach ($parentNodes as $parentNode) {
-                $nodeTranslation = $parentNode->getNodeTranslation(
-                    $this->locale,
-                    $this->includeOffline
+        /* @var NodeRepository $repo */
+        $repo = $this->em->getRepository(Node::class);
+
+        // Generate breadcrumb MenuItems - fetch *all* languages so you can link translations if needed
+        $parentNodes = $repo->getAllParents($this->currentNode);
+        $parentNodeMenuItem = null;
+        /* @var Node $parentNode */
+        foreach ($parentNodes as $parentNode) {
+            $nodeTranslation = $parentNode->getNodeTranslation(
+                $this->locale,
+                $this->includeOffline
+            );
+            if (!\is_null($nodeTranslation)) {
+                $nodeMenuItem = new NodeMenuItem(
+                    $parentNode,
+                    $nodeTranslation,
+                    $parentNodeMenuItem,
+                    $this
                 );
-                if (!\is_null($nodeTranslation)) {
-                    $nodeMenuItem = new NodeMenuItem(
-                        $parentNode,
-                        $nodeTranslation,
-                        $parentNodeMenuItem,
-                        $this
-                    );
-                    $this->breadCrumb[] = $nodeMenuItem;
-                    $parentNodeMenuItem = $nodeMenuItem;
-                }
+                $this->breadCrumb[] = $nodeMenuItem;
+                $parentNodeMenuItem = $nodeMenuItem;
             }
         }
 

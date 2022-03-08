@@ -3,16 +3,10 @@
 namespace Kunstmaan\AdminListBundle\Tests\AdminList\FilterType\ORM;
 
 use Kunstmaan\AdminListBundle\AdminList\FilterType\ORM\BooleanFilterType;
-use Kunstmaan\AdminListBundle\Tests\UnitTester;
 use Symfony\Component\HttpFoundation\Request;
 
 class BooleanFilterTypeTest extends BaseOrmFilterTest
 {
-    /**
-     * @var UnitTester
-     */
-    protected $tester;
-
     /**
      * @var BooleanFilterType
      */
@@ -50,10 +44,7 @@ class BooleanFilterTypeTest extends BaseOrmFilterTest
         $this->assertEquals("SELECT b FROM Entity b WHERE b.boolean = $value", $qb->getDQL());
     }
 
-    /**
-     * @return array
-     */
-    public static function applyDataProvider()
+    public static function applyDataProvider(): array
     {
         return [
             ['true'],

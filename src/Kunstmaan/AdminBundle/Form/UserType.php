@@ -118,6 +118,9 @@ class UserType extends AbstractType implements RoleDependentUserFormInterface
         }
     }
 
+    /**
+     * @return string
+     */
     public function getBlockPrefix()
     {
         return 'user';

@@ -1,6 +1,6 @@
 <?php
 
-namespace Kunstmaan\AdminBundle\Tests\Helper\Security\Oauth;
+namespace Kunstmaan\AdminBundle\Tests\Helper\Security\OAuth;
 
 use DateTime;
 use Doctrine\ORM\EntityManager;
@@ -22,10 +22,7 @@ class OAuthUserFinderTest extends TestCase
      */
     private $em;
 
-    /**
-     * @return MockObject
-     */
-    private function getEm()
+    private function getEm(): MockObject
     {
         if (!isset($this->em)) {
             $this->em = $this->createMock(EntityManager::class);

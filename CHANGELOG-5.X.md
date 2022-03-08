@@ -1,5 +1,113 @@
 # Changelog
 
+## 5.10.2 / 2022-01-28
+
+* [AdminBundle] Only apply login subscriber to users of cms admin [#3069](https://github.com/Kunstmaan/KunstmaanBundlesCMS/pull/3069) ([@acrobat](https://github.com/acrobat))
+* [GeneratorBundle] Fix php8 incompatibility in article generator repository [#3057](https://github.com/Kunstmaan/KunstmaanBundlesCMS/pull/3057) ([@acrobat](https://github.com/acrobat))
+* [Dashboardbundle] Make ConfigHelper service lazy to avoid constructor queries [#3056](https://github.com/Kunstmaan/KunstmaanBundlesCMS/pull/3056) ([@acrobat](https://github.com/acrobat))
+* [AdminBundle] Fix test incompatibility with doctrine/orm 2.11.0 [#3047](https://github.com/Kunstmaan/KunstmaanBundlesCMS/pull/3047) ([@acrobat](https://github.com/acrobat))
+
+## 5.10.1 / 2022-01-10
+
+* [NodeBundle] Improve performance of NodeMenu class [#3046](https://github.com/Kunstmaan/KunstmaanBundlesCMS/pull/3046) ([@acrobat](https://github.com/acrobat))
+* [AllBundles] Escape user input to avoid xss issues [#3038](https://github.com/Kunstmaan/KunstmaanBundlesCMS/pull/3038) ([@acrobat](https://github.com/acrobat))
+* [AllBundles] Upgrade phpstan to stable release [#3037](https://github.com/Kunstmaan/KunstmaanBundlesCMS/pull/3037) ([@acrobat](https://github.com/acrobat))
+
+## 5.10.0 / 2021-11-8
+
+* [AllBundles] Update adminlist-bundle version constraint to allow only ^5.9 [#3024](https://github.com/Kunstmaan/KunstmaanBundlesCMS/pull/3024) ([@acrobat](https://github.com/acrobat))
+* [AllBundles] Bump minimum symfony versions to avoid versions with security issues [#3020](https://github.com/Kunstmaan/KunstmaanBundlesCMS/pull/3020) ([@acrobat](https://github.com/acrobat))
+* [MediaBundle] Fix incorrect csrf check fallback routes [#3016](https://github.com/Kunstmaan/KunstmaanBundlesCMS/pull/3016) ([@acrobat](https://github.com/acrobat))
+* [NodeBundle] Add docblock return types for node iterator class [#3010](https://github.com/Kunstmaan/KunstmaanBundlesCMS/pull/3010) ([@acrobat](https://github.com/acrobat))
+* [AllBundles] Fixed undefined class warnings in typehints [#3004](https://github.com/Kunstmaan/KunstmaanBundlesCMS/pull/3004) ([@acrobat](https://github.com/acrobat))
+* [AllBundle] Improve tests [#3003](https://github.com/Kunstmaan/KunstmaanBundlesCMS/pull/3003) ([@acrobat](https://github.com/acrobat))
+* [AllBundles] Add csrf protection to multiple routes [#3002](https://github.com/Kunstmaan/KunstmaanBundlesCMS/pull/3002) ([@acrobat](https://github.com/acrobat))
+* [NodeBundle] Set correct typehints on methods and properties [#3000](https://github.com/Kunstmaan/KunstmaanBundlesCMS/pull/3000) ([@acrobat](https://github.com/acrobat))
+* [MultiDomainBundle] Deprecate session argument in HostOverrideListener [#2996](https://github.com/Kunstmaan/KunstmaanBundlesCMS/pull/2996) ([@acrobat](https://github.com/acrobat))
+* [NodeBundle] Use psr3 logger methods to be compatible with monolog 2.0 [#2988](https://github.com/Kunstmaan/KunstmaanBundlesCMS/pull/2988) ([@acrobat](https://github.com/acrobat))
+* [ArticleBundle] Don't set html5 option on date fields when using custom js datepicker [#2987](https://github.com/Kunstmaan/KunstmaanBundlesCMS/pull/2987) ([@acrobat](https://github.com/acrobat))
+* [NodeBundle] Helper should return flashbag class [#2983](https://github.com/Kunstmaan/KunstmaanBundlesCMS/pull/2983) ([@acrobat](https://github.com/acrobat))
+* [AllBundles] Deprecations to prepare symfony 5 code changes [#2977](https://github.com/Kunstmaan/KunstmaanBundlesCMS/pull/2977) ([@acrobat](https://github.com/acrobat))
+* [AllBundles] Open up version constraints for v6 [#2976](https://github.com/Kunstmaan/KunstmaanBundlesCMS/pull/2976) ([@acrobat](https://github.com/acrobat))
+* [NodeBundle] Bump symfony-cmf/router-bundle and remove compiler pass [#2972](https://github.com/Kunstmaan/KunstmaanBundlesCMS/pull/2972) ([@acrobat](https://github.com/acrobat))
+* [SitemapBundle] Add pre render event for adding sitemap indexes [#2905](https://github.com/Kunstmaan/KunstmaanBundlesCMS/pull/2905) ([@dannyvw](https://github.com/dannyvw))
+
+## 5.9.3 / 2022-01-28
+
+* [AdminBundle] Only apply login subscriber to users of cms admin [#3069](https://github.com/Kunstmaan/KunstmaanBundlesCMS/pull/3069) ([@acrobat](https://github.com/acrobat))
+* [GeneratorBundle] Fix php8 incompatibility in article generator repository [#3057](https://github.com/Kunstmaan/KunstmaanBundlesCMS/pull/3057) ([@acrobat](https://github.com/acrobat))
+* [Dashboardbundle] Make ConfigHelper service lazy to avoid constructor queries [#3056](https://github.com/Kunstmaan/KunstmaanBundlesCMS/pull/3056) ([@acrobat](https://github.com/acrobat))
+* [AdminBundle] Fix test incompatibility with doctrine/orm 2.11.0 [#3047](https://github.com/Kunstmaan/KunstmaanBundlesCMS/pull/3047) ([@acrobat](https://github.com/acrobat))
+
+## 5.9.2 / 2022-01-10
+
+* [NodeBundle] Improve performance of NodeMenu class [#3046](https://github.com/Kunstmaan/KunstmaanBundlesCMS/pull/3046) ([@acrobat](https://github.com/acrobat))
+* [AllBundles] Escape user input to avoid xss issues [#3038](https://github.com/Kunstmaan/KunstmaanBundlesCMS/pull/3038) ([@acrobat](https://github.com/acrobat))
+* [AllBundles] Upgrade phpstan to stable release [#3037](https://github.com/Kunstmaan/KunstmaanBundlesCMS/pull/3037) ([@acrobat](https://github.com/acrobat))
+
+## 5.9.1 / 2021-10-14
+
+* [AdminBundle] fix routeloading for sf3 [#2980](https://github.com/Kunstmaan/KunstmaanBundlesCMS/pull/2980) ([@Numkil](https://github.com/Numkil))
+
+## 5.9.0 / 2021-10-07
+
+* [AllBundles] Sf5 event forward compatibilty [#2968](https://github.com/Kunstmaan/KunstmaanBundlesCMS/pull/2968) ([@acrobat](https://github.com/acrobat))
+* [AllBundles] Extra sf5 forward compatibility [#2965](https://github.com/Kunstmaan/KunstmaanBundlesCMS/pull/2965) ([@acrobat](https://github.com/acrobat))
+* [AllBundles] Extra service aliases [#2957](https://github.com/Kunstmaan/KunstmaanBundlesCMS/pull/2957) ([@acrobat](https://github.com/acrobat))
+* [SearchBundle] Remove Sherlock elastic provider docs [#2956](https://github.com/Kunstmaan/KunstmaanBundlesCMS/pull/2956) ([@tarjei](https://github.com/tarjei))
+* [AdminBundle] Add autowire alias [#2954](https://github.com/Kunstmaan/KunstmaanBundlesCMS/pull/2954) ([@acrobat](https://github.com/acrobat))
+* [AdminListBundle] Improve new AbstractAdminList servicesubscriber setup [#2953](https://github.com/Kunstmaan/KunstmaanBundlesCMS/pull/2953) ([@acrobat](https://github.com/acrobat))
+* [NodeBundle] Improve slug action deprecation and compatibility with old setup [#2950](https://github.com/Kunstmaan/KunstmaanBundlesCMS/pull/2950) ([@acrobat](https://github.com/acrobat))
+* [NodeBundle] Deprecate SlugActionInterface and replace it by PageRender setup [#2949](https://github.com/Kunstmaan/KunstmaanBundlesCMS/pull/2949) ([@acrobat](https://github.com/acrobat))
+* [AllBundles] Symfony 5 forward compatiblity fixes [#2947](https://github.com/Kunstmaan/KunstmaanBundlesCMS/pull/2947) ([@acrobat](https://github.com/acrobat))
+* [AllBundles] Migration path for controller extending deprecated controller class [#2946](https://github.com/Kunstmaan/KunstmaanBundlesCMS/pull/2946) ([@acrobat](https://github.com/acrobat))
+* [AdminBundle] Fix User incompatibility after new authentication changes [#2945](https://github.com/Kunstmaan/KunstmaanBundlesCMS/pull/2945) ([@acrobat](https://github.com/acrobat))
+* [AllBundles] Add return type declarations and improve docblocks [#2944](https://github.com/Kunstmaan/KunstmaanBundlesCMS/pull/2944) ([@acrobat](https://github.com/acrobat))
+* [AllBundles] Fix incorrect namespaces in test classes [#2943](https://github.com/Kunstmaan/KunstmaanBundlesCMS/pull/2943) ([@acrobat](https://github.com/acrobat))
+* [AdminBundle] New authentication bugfixes and improvements [#2940](https://github.com/Kunstmaan/KunstmaanBundlesCMS/pull/2940) ([@acrobat](https://github.com/acrobat))
+* [AdminBundle] Finish version checker deprecations [#2912](https://github.com/Kunstmaan/KunstmaanBundlesCMS/pull/2912) ([@acrobat](https://github.com/acrobat))
+* [TranslatorBundle] Remove forced import from admin interface [#2911](https://github.com/Kunstmaan/KunstmaanBundlesCMS/pull/2911) ([@acrobat](https://github.com/acrobat))
+* [AdminBundle] Fix remaining usages of deprecated admin_exception_excludes config [#2909](https://github.com/Kunstmaan/KunstmaanBundlesCMS/pull/2909) ([@acrobat](https://github.com/acrobat))
+* [NodeSearchBundle] Add missing deprecation for change in searcher lookup [#2908](https://github.com/Kunstmaan/KunstmaanBundlesCMS/pull/2908) ([@acrobat](https://github.com/acrobat))
+* [AdminBundle] Fix redirect loop for installation without new authentication setup [#2907](https://github.com/Kunstmaan/KunstmaanBundlesCMS/pull/2907) ([@acrobat](https://github.com/acrobat))
+* [AllBundles] Allow and test against php 8 [#2906](https://github.com/Kunstmaan/KunstmaanBundlesCMS/pull/2906) ([@acrobat](https://github.com/acrobat))
+* [AllBundles] Fix branch alias of separate packages [#2902](https://github.com/Kunstmaan/KunstmaanBundlesCMS/pull/2902) ([@acrobat](https://github.com/acrobat))
+* [AllBundle] Replace abanoned faker package [#2901](https://github.com/Kunstmaan/KunstmaanBundlesCMS/pull/2901) ([@acrobat](https://github.com/acrobat))
+* [AllBundles] Fix phpstan errors for checks added in 0.12.92 [#2900](https://github.com/Kunstmaan/KunstmaanBundlesCMS/pull/2900) ([@acrobat](https://github.com/acrobat))
+* [AllBundles] Fix doctrine common deprecations and resolve doctrine bundle v2 incompatibility [#2899](https://github.com/Kunstmaan/KunstmaanBundlesCMS/pull/2899) ([@acrobat](https://github.com/acrobat))
+* [AllBundles] Bump gedmo/doctrine-extensions to prepare for php8 support [#2897](https://github.com/Kunstmaan/KunstmaanBundlesCMS/pull/2897) ([@acrobat](https://github.com/acrobat))
+* [TranslatorBundle] Increase max length for translation domain [#2895](https://github.com/Kunstmaan/KunstmaanBundlesCMS/pull/2895) ([@dannyvw](https://github.com/dannyvw))
+* [AdminBundle] New login styling [#2888](https://github.com/Kunstmaan/KunstmaanBundlesCMS/pull/2888) ([@dbeerten](https://github.com/dbeerten))
+* [DashboardBundle] Deprecate remaining container usages in command [#2877](https://github.com/Kunstmaan/KunstmaanBundlesCMS/pull/2877) ([@acrobat](https://github.com/acrobat))
+* [AllBundles] Forward compatibility fixes for symfony 5 [#2876](https://github.com/Kunstmaan/KunstmaanBundlesCMS/pull/2876) ([@acrobat](https://github.com/acrobat))
+* [AdminlistBundle] Deprecate setter methods in EntityVersionLockService [#2866](https://github.com/Kunstmaan/KunstmaanBundlesCMS/pull/2866) ([@acrobat](https://github.com/acrobat))
+* [GeneratorBundle] Switch to new doctrine inflector api [#2865](https://github.com/Kunstmaan/KunstmaanBundlesCMS/pull/2865) ([@acrobat](https://github.com/acrobat))
+* [GeneratorBundle] Deprecate generate bundle and entity commands [#2864](https://github.com/Kunstmaan/KunstmaanBundlesCMS/pull/2864) ([@acrobat](https://github.com/acrobat))
+* [Dashboardbundle] Rework dashboard command calls [#2863](https://github.com/Kunstmaan/KunstmaanBundlesCMS/pull/2863) ([@acrobat](https://github.com/acrobat))
+* [NodeSearchBundle] Deprecate direct instantiation of the abstractSearchPage [#2862](https://github.com/Kunstmaan/KunstmaanBundlesCMS/pull/2862) ([@acrobat](https://github.com/acrobat))
+* [AllBundles] Mark event classes final [#2861](https://github.com/Kunstmaan/KunstmaanBundlesCMS/pull/2861) ([@acrobat](https://github.com/acrobat))
+* [UserManagementBundle] Move user adminlist configurator class override to config [#2860](https://github.com/Kunstmaan/KunstmaanBundlesCMS/pull/2860) ([@acrobat](https://github.com/acrobat))
+* [RedirectBundle] Move redirect entity class override to config [#2859](https://github.com/Kunstmaan/KunstmaanBundlesCMS/pull/2859) ([@acrobat](https://github.com/acrobat))
+* [AdminBundle] Add config option to disabled exception logging module [#2857](https://github.com/Kunstmaan/KunstmaanBundlesCMS/pull/2857) ([@acrobat](https://github.com/acrobat))
+* [AllBundles] Bump minimum stof/doctrine-extensions-bundle version [#2855](https://github.com/Kunstmaan/KunstmaanBundlesCMS/pull/2855) ([@acrobat](https://github.com/acrobat))
+* [MediaBundle] Use parameter instead of hardcoded media path [#2782](https://github.com/Kunstmaan/KunstmaanBundlesCMS/pull/2782) ([@dannyvw](https://github.com/dannyvw))
+* [AdminListBundle] Change pagerfanta dependencies to require the minimum needed packages [#2773](https://github.com/Kunstmaan/KunstmaanBundlesCMS/pull/2773) ([@acrobat](https://github.com/acrobat))
+* [AdminBundle] Deprecate FosUserBundle [#2737](https://github.com/Kunstmaan/KunstmaanBundlesCMS/pull/2737) ([@Numkil](https://github.com/Numkil))
+
+## 5.8.1 / 2021-10-07
+
+* [AdminBundle] Fix symfony LdapUser incompatibility [#2973](https://github.com/Kunstmaan/KunstmaanBundlesCMS/pull/2973) ([@acrobat](https://github.com/acrobat))
+* [AdminBundle] Fix incorrect class mock in AclWalker test [#2960](https://github.com/Kunstmaan/KunstmaanBundlesCMS/pull/2960) ([@acrobat](https://github.com/acrobat))
+* [MediaBundle] fix broken view for urlchooser [#2931](https://github.com/Kunstmaan/KunstmaanBundlesCMS/pull/2931) ([@Numkil](https://github.com/Numkil))
+* [AdminBundle] Fix symfony/security-acl 3.2 test errors [#2910](https://github.com/Kunstmaan/KunstmaanBundlesCMS/pull/2910) ([@acrobat](https://github.com/acrobat))
+* [AllBundles] Backport phpstan 0.12.92 fixes [#2904](https://github.com/Kunstmaan/KunstmaanBundlesCMS/pull/2904) ([@acrobat](https://github.com/acrobat))
+* [SeoBundle] Don't render empty og:title [#2894](https://github.com/Kunstmaan/KunstmaanBundlesCMS/pull/2894) ([@dannyvw](https://github.com/dannyvw))
+* [AllBundles] Update sortablejs back to 1.8.1 [#2892](https://github.com/Kunstmaan/KunstmaanBundlesCMS/pull/2892) ([@dannyvw](https://github.com/dannyvw))
+* [MediaBundle] Use oembed url for vimeo thumbnail [#2891](https://github.com/Kunstmaan/KunstmaanBundlesCMS/pull/2891) ([@dannyvw](https://github.com/dannyvw))
+* [FormBundle] Add length validation to form fields [#2875](https://github.com/Kunstmaan/KunstmaanBundlesCMS/pull/2875) ([@dannyvw](https://github.com/dannyvw))
+* [RedirectBundle] Fix broken wildcard redirects [#2856](https://github.com/Kunstmaan/KunstmaanBundlesCMS/pull/2856) ([@acrobat](https://github.com/acrobat))
+* [MultiDomainBundle] Fix keying of host configurations [#2848](https://github.com/Kunstmaan/KunstmaanBundlesCMS/pull/2848) ([@waaghals](https://github.com/waaghals))
+
 ## 5.8.0 / 2021-03-17
 
 * [AllBundles] added postgres support [#2849](https://github.com/Kunstmaan/KunstmaanBundlesCMS/pull/2849) ([@IntegraConsult](https://github.com/IntegraConsult))
@@ -12,6 +120,20 @@
 * [NodeSearchBundle] Allow include offline option get_parent twig function. [#2800](https://github.com/Kunstmaan/KunstmaanBundlesCMS/pull/2800) ([@Numkil](https://github.com/Numkil))
 * [GeneratorBundle] exit build if a build task throws an error [#2794](https://github.com/Kunstmaan/KunstmaanBundlesCMS/pull/2794) ([@dbeerten](https://github.com/dbeerten))
 * [AdminBundle] Force dropdown to remain open after selection [#2792](https://github.com/Kunstmaan/KunstmaanBundlesCMS/pull/2792) ([@dannyvw](https://github.com/dannyvw))
+
+## 5.7.3 / 2021-10-07
+
+* [AdminBundle] Fix symfony LdapUser incompatibility [#2973](https://github.com/Kunstmaan/KunstmaanBundlesCMS/pull/2973) ([@acrobat](https://github.com/acrobat))
+* [AdminBundle] Fix incorrect class mock in AclWalker test [#2960](https://github.com/Kunstmaan/KunstmaanBundlesCMS/pull/2960) ([@acrobat](https://github.com/acrobat))
+* [MediaBundle] fix broken view for urlchooser [#2931](https://github.com/Kunstmaan/KunstmaanBundlesCMS/pull/2931) ([@Numkil](https://github.com/Numkil))
+* [AdminBundle] Fix symfony/security-acl 3.2 test errors [#2910](https://github.com/Kunstmaan/KunstmaanBundlesCMS/pull/2910) ([@acrobat](https://github.com/acrobat))
+* [AllBundles] Backport phpstan 0.12.92 fixes [#2904](https://github.com/Kunstmaan/KunstmaanBundlesCMS/pull/2904) ([@acrobat](https://github.com/acrobat))
+* [SeoBundle] Don't render empty og:title [#2894](https://github.com/Kunstmaan/KunstmaanBundlesCMS/pull/2894) ([@dannyvw](https://github.com/dannyvw))
+* [AllBundles] Update sortablejs back to 1.8.1 [#2892](https://github.com/Kunstmaan/KunstmaanBundlesCMS/pull/2892) ([@dannyvw](https://github.com/dannyvw))
+* [MediaBundle] Use oembed url for vimeo thumbnail [#2891](https://github.com/Kunstmaan/KunstmaanBundlesCMS/pull/2891) ([@dannyvw](https://github.com/dannyvw))
+* [FormBundle] Add length validation to form fields [#2875](https://github.com/Kunstmaan/KunstmaanBundlesCMS/pull/2875) ([@dannyvw](https://github.com/dannyvw))
+* [RedirectBundle] Fix broken wildcard redirects [#2856](https://github.com/Kunstmaan/KunstmaanBundlesCMS/pull/2856) ([@acrobat](https://github.com/acrobat))
+* [MultiDomainBundle] Fix keying of host configurations [#2848](https://github.com/Kunstmaan/KunstmaanBundlesCMS/pull/2848) ([@waaghals](https://github.com/waaghals))
 
 ## 5.7.2 / 2021-03-17
 
@@ -82,6 +204,20 @@
 * [MediaBundle][UserManagementBundle] Improve csrf protection in several calls [#2681](https://github.com/Kunstmaan/KunstmaanBundlesCMS/pull/2681) ([@Numkil](https://github.com/Numkil)) 
 * [AdminBundle, MediaBundle] replace deprecated integer as errorcode in constraints [#2672](https://github.com/Kunstmaan/KunstmaanBundlesCMS/pull/2672) ([@Numkil](https://github.com/Numkil)) 
 * [MediaBundle] Refactor deprecated mimetypeguesser from symfony [#2668](https://github.com/Kunstmaan/KunstmaanBundlesCMS/pull/2668) ([@Numkil](https://github.com/Numkil)) 
+
+## 5.6.6 / 2021-10-07
+
+* [AdminBundle] Fix symfony LdapUser incompatibility [#2973](https://github.com/Kunstmaan/KunstmaanBundlesCMS/pull/2973) ([@acrobat](https://github.com/acrobat))
+* [AdminBundle] Fix incorrect class mock in AclWalker test [#2960](https://github.com/Kunstmaan/KunstmaanBundlesCMS/pull/2960) ([@acrobat](https://github.com/acrobat))
+* [MediaBundle] fix broken view for urlchooser [#2931](https://github.com/Kunstmaan/KunstmaanBundlesCMS/pull/2931) ([@Numkil](https://github.com/Numkil))
+* [AdminBundle] Fix symfony/security-acl 3.2 test errors [#2910](https://github.com/Kunstmaan/KunstmaanBundlesCMS/pull/2910) ([@acrobat](https://github.com/acrobat))
+* [AllBundles] Backport phpstan 0.12.92 fixes [#2904](https://github.com/Kunstmaan/KunstmaanBundlesCMS/pull/2904) ([@acrobat](https://github.com/acrobat))
+* [SeoBundle] Don't render empty og:title [#2894](https://github.com/Kunstmaan/KunstmaanBundlesCMS/pull/2894) ([@dannyvw](https://github.com/dannyvw))
+* [AllBundles] Update sortablejs back to 1.8.1 [#2892](https://github.com/Kunstmaan/KunstmaanBundlesCMS/pull/2892) ([@dannyvw](https://github.com/dannyvw))
+* [MediaBundle] Use oembed url for vimeo thumbnail [#2891](https://github.com/Kunstmaan/KunstmaanBundlesCMS/pull/2891) ([@dannyvw](https://github.com/dannyvw))
+* [FormBundle] Add length validation to form fields [#2875](https://github.com/Kunstmaan/KunstmaanBundlesCMS/pull/2875) ([@dannyvw](https://github.com/dannyvw))
+* [RedirectBundle] Fix broken wildcard redirects [#2856](https://github.com/Kunstmaan/KunstmaanBundlesCMS/pull/2856) ([@acrobat](https://github.com/acrobat))
+* [MultiDomainBundle] Fix keying of host configurations [#2848](https://github.com/Kunstmaan/KunstmaanBundlesCMS/pull/2848) ([@waaghals](https://github.com/waaghals))
 
 ## 5.6.5 / 2021-03-17
 

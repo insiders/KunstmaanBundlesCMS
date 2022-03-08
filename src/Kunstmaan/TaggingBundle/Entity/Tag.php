@@ -108,7 +108,7 @@ class Tag extends BaseTag implements Translatable
     /**
      * Get createdAt
      *
-     * @return datetime
+     * @return \DateTime
      */
     public function getCreatedAt()
     {
@@ -160,6 +160,9 @@ class Tag extends BaseTag implements Translatable
         return TagAdminType::class;
     }
 
+    /**
+     * @return string
+     */
     public function __toString()
     {
         return $this->getName();

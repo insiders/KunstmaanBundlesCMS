@@ -17,7 +17,7 @@ class WebPathResolver extends \Liip\ImagineBundle\Imagine\Cache\Resolver\WebPath
      * @param string $webRootDir
      * @param string $cachePrefix
      */
-    public function __construct(Filesystem $filesystem, RequestContext $requestContext, $webRootDir, $cachePrefix = 'media/cache', FilterConfiguration $filterConfig)
+    public function __construct(Filesystem $filesystem, RequestContext $requestContext, $webRootDir, $cachePrefix, FilterConfiguration $filterConfig)
     {
         parent::__construct($filesystem, $requestContext, $webRootDir, $cachePrefix);
 
@@ -46,6 +46,8 @@ class WebPathResolver extends \Liip\ImagineBundle\Imagine\Cache\Resolver\WebPath
 
     /**
      * {@inheritdoc}
+     *
+     * @return string
      */
     public function resolve($path, $filter)
     {
