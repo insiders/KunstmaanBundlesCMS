@@ -2,50 +2,55 @@
 
 namespace Kunstmaan\MediaBundle\Command;
 
-use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\EntityManagerInterface;
 use Gedmo\Translatable\Entity\Translation;
 use Kunstmaan\MediaBundle\Entity\Folder;
-use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
+use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
-class MigrateFolderSlugsCommand extends ContainerAwareCommand
+class MigrateFolderSlugsCommand extends Command
 {
-    /** @var EntityManager $em */
-    protected $em;
+    private EntityManagerInterface $entityManager;
+
+    public function __construct(EntityManagerInterface $entityManager)
+    {
+        parent::__construct();
+        $this->entityManager = $entityManager;
+    }
 
     public function execute(InputInterface $input, OutputInterface $output)
     {
         //Force slug (re)gen by appending a space to the name which will force the slug generation.
         //Then reset the name
-        /* @var $em EntityManager */
-        $em = $this->getContainer()->get('doctrine.orm.entity_manager');
-        $repo = $em->getRepository(Folder::class);
-        $translationRepo = $em->getRepository(Translation::class);
+        $repo = $this->entityManager->getRepository(Folder::class);
+        $translationRepo = $this->entityManager->getRepository(Translation::class);
         $entities = $repo->findAll();
         foreach ($entities as $entity) {
             $entity->setName($entity->getName() . ' ');
-            $em->persist($entity);
-            $em->flush();
+            $this->entityManager->persist($entity);
+            $this->entityManager->flush();
             $translations = $translationRepo->findTranslations($entity);
             foreach ($translations as $locale => $fields) {
                 if (isset($fields['name'])) {
                     $entity->setTranslatableLocale($locale);
                     $entity->setName($fields['name']);
-                    $em->persist($entity);
-                    $em->flush();
+                    $this->entityManager->persist($entity);
+                    $this->entityManager->flush();
                 }
             }
         }
-        $em->flush();
+        $this->entityManager->flush();
 
         foreach ($entities as $entity) {
             $entity->setName(trim($entity->getName()));
-            $em->persist($entity);
+            $this->entityManager->persist($entity);
         }
-        $em->flush();
+        $this->entityManager->flush();
 
         $output->writeln('<info>All slugs have been generated.</info>');
+
+        return 0;
     }
 
     protected function configure()

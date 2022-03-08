@@ -4,18 +4,15 @@ namespace Kunstmaan\AdminBundle\Entity;
 
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
-use FOS\UserBundle\Model\GroupInterface;
 use Kunstmaan\AdminBundle\Validator\Constraints\PasswordRestrictions;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
+use Symfony\Component\Security\Core\User\EquatableInterface;
 use Symfony\Component\Security\Core\User\UserInterface as BaseUserInterface;
 use Symfony\Component\Validator\Constraints\Email;
 use Symfony\Component\Validator\Constraints\NotBlank;
 use Symfony\Component\Validator\Mapping\ClassMetadata;
 
-/**
- * NEXT_MAJOR implement EquatableInterface
- */
-abstract class BaseUser implements UserInterface
+abstract class BaseUser implements UserInterface, EquatableInterface
 {
     /**
      * @ORM\Id
@@ -30,15 +27,6 @@ abstract class BaseUser implements UserInterface
      * @ORM\Column(type="string", length=180, unique=true)
      */
     protected $username;
-
-    /**
-     * Next Major: Remove attribute
-     *
-     * @var string
-     *
-     * @ORM\Column(type="string", length=180, unique=true, name="username_canonical")
-     */
-    protected $usernameCanonical;
 
     /**
      * The doctrine metadata is set dynamically in Kunstmaan\AdminBundle\EventListener\MappingListener
@@ -66,15 +54,6 @@ abstract class BaseUser implements UserInterface
      * @ORM\Column(type="string", length=180, unique=true)
      */
     protected $email;
-
-    /**
-     * Next Major: Remove attribute
-     *
-     * @var string
-     *
-     * @ORM\Column(type="string", length=180, unique=true, name="email_canonical")
-     */
-    protected $emailCanonical;
 
     /**
      * @var string
@@ -132,14 +111,6 @@ abstract class BaseUser implements UserInterface
      * @ORM\Column(name="created_by", type="string", nullable=true)
      */
     protected $createdBy;
-
-    /**
-     * Next Major: Remove attribute
-     *
-     * @var \DateTime|null
-     * @ORM\Column(name="password_requested_at", type="datetime", nullable=true)
-     */
-    protected $passwordRequestedAt;
 
     public function __construct()
     {
@@ -539,54 +510,6 @@ abstract class BaseUser implements UserInterface
     }
 
     /**
-     * @deprecated since KunstmaanAdminBundle 5.9
-     */
-    public function getUsernameCanonical()
-    {
-        // NEXT_MAJOR remove method
-        @trigger_error(sprintf('Using method %s from class %s is deprecated since KunstmaanAdminBundle 5.9 and will be removed in KunstmaanAdminBundle 6.0.', __METHOD__, BaseUser::class), E_USER_DEPRECATED);
-
-        return $this->usernameCanonical;
-    }
-
-    /**
-     * @deprecated since KunstmaanAdminBundle 5.9
-     */
-    public function setUsernameCanonical($usernameCanonical)
-    {
-        // NEXT_MAJOR remove method
-        @trigger_error(sprintf('Using method %s from class %s is deprecated since KunstmaanAdminBundle 5.9 and will be removed in KunstmaanAdminBundle 6.0.', __METHOD__, BaseUser::class), E_USER_DEPRECATED);
-
-        $this->usernameCanonical = $usernameCanonical;
-
-        return $this;
-    }
-
-    /**
-     * @deprecated since KunstmaanAdminBundle 5.9
-     */
-    public function getEmailCanonical()
-    {
-        // NEXT_MAJOR remove method
-        @trigger_error(sprintf('Using method %s from class %s is deprecated since KunstmaanAdminBundle 5.9 and will be removed in KunstmaanAdminBundle 6.0.', __METHOD__, BaseUser::class), E_USER_DEPRECATED);
-
-        return $this->emailCanonical;
-    }
-
-    /**
-     * @deprecated since KunstmaanAdminBundle 5.9
-     */
-    public function setEmailCanonical($emailCanonical)
-    {
-        // NEXT_MAJOR remove method
-        @trigger_error(sprintf('Using method %s from class %s is deprecated since KunstmaanAdminBundle 5.9 and will be removed in KunstmaanAdminBundle 6.0.', __METHOD__, BaseUser::class), E_USER_DEPRECATED);
-
-        $this->emailCanonical = $emailCanonical;
-
-        return $this;
-    }
-
-    /**
      * @return bool
      */
     public function isSuperAdmin()
@@ -630,20 +553,6 @@ abstract class BaseUser implements UserInterface
         return $this;
     }
 
-    /**
-     * @return static
-     */
-    public function setPasswordRequestedAt(\DateTime $date = null)
-    {
-        $this->passwordRequestedAt = $date;
-
-        //TODO: check if this propery is usefull?
-        // NEXT_MAJOR remove method
-        @trigger_error(sprintf('Using method %s from class %s is deprecated since KunstmaanAdminBundle 5.9 and will be removed in KunstmaanAdminBundle 6.0.', __METHOD__, BaseUser::class), E_USER_DEPRECATED);
-
-        return $this;
-    }
-
     public function getLastLogin()
     {
         return $this->lastLogin;
@@ -672,49 +581,6 @@ abstract class BaseUser implements UserInterface
     public function setCreatedBy(string $createdBy): void
     {
         $this->createdBy = $createdBy;
-    }
-
-    /**
-     * NEXT_MAJOR remove method
-     *
-     * @deprecated since KunstmaanAdminBundle 5.9 and will be removed in KunstmaanAdminBundle 6.0.
-     */
-    public function isAccountNonExpired()
-    {
-        return true;
-    }
-
-    /**
-     * NEXT_MAJOR remove method
-     *
-     * @deprecated since KunstmaanAdminBundle 5.9 and will be removed in KunstmaanAdminBundle 6.0.
-     */
-    public function isCredentialsNonExpired()
-    {
-        return true;
-    }
-
-    /**
-     * NEXT_MAJOR remove method
-     *
-     * Gets the timestamp that the user requested a password reset.
-     *
-     * @return \DateTime|null
-     */
-    public function getPasswordRequestedAt()
-    {
-        return $this->passwordRequestedAt;
-    }
-
-    /**
-     * NEXT_MAJOR remove method
-     *
-     * @deprecated since KunstmaanAdminBundle 5.9 and will be removed in KunstmaanAdminBundle 6.0.
-     */
-    public function isPasswordRequestNonExpired($ttl)
-    {
-        return $this->getPasswordRequestedAt() instanceof \DateTime &&
-               $this->getPasswordRequestedAt()->getTimestamp() + $ttl > time();
     }
 
     /**
