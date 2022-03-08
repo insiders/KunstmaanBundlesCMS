@@ -5,7 +5,7 @@ namespace Kunstmaan\AdminBundle\Form;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\QueryBuilder;
-use FOS\UserBundle\Model\GroupInterface;
+use Kunstmaan\AdminBundle\Entity\GroupInterface;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
@@ -15,6 +15,7 @@ use Symfony\Component\Form\Extension\Core\Type\PasswordType;
 use Symfony\Component\Form\Extension\Core\Type\RepeatedType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
+use Symfony\Component\Form\FormEvent;
 use Symfony\Component\Form\FormEvents;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
@@ -98,13 +99,13 @@ class UserType extends AbstractType implements RoleDependentUserFormInterface
                         }
                         foreach ($groups as $group) {
                             if ($group instanceof GroupInterface && $group->hasRole('ROLE_SUPER_ADMIN')) {
-                                \array_push($existingSuperGroups, $group);
+                                $existingSuperGroups[] = $group;
                             }
                         }
                     });
 
                 $groups->addEventListener(FormEvents::SUBMIT,
-                    function (\Symfony\Component\Form\FormEvent $event) use (&$existingSuperGroups) {
+                    function (FormEvent $event) use (&$existingSuperGroups) {
                         $groups = $event->getData();
                         if ($groups instanceof Collection) {
                             foreach ($existingSuperGroups as $superGroup) {
