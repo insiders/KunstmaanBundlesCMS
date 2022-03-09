@@ -2,7 +2,6 @@
 
 namespace Kunstmaan\FormBundle\DependencyInjection;
 
-use Kunstmaan\MediaBundle\Utils\SymfonyVersion;
 use Symfony\Component\Config\Definition\Builder\TreeBuilder;
 use Symfony\Component\Config\Definition\ConfigurationInterface;
 
@@ -22,7 +21,7 @@ class Configuration implements ConfigurationInterface
             ->children()
                 ->booleanNode('deletable_formsubmissions')->defaultFalse()->end()
                 ->scalarNode('web_root')
-                    ->defaultValue(SymfonyVersion::getRootWebPath())
+                    ->defaultValue('%kernel.project_dir%/public')
                     ->cannotBeEmpty()
                 ->end()
             ->end()
