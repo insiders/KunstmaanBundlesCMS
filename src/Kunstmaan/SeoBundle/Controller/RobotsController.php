@@ -4,12 +4,11 @@ namespace Kunstmaan\SeoBundle\Controller;
 
 use Kunstmaan\SeoBundle\Event\RobotsEvent;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Template;
-use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 
-final class RobotsController extends Controller
+final class RobotsController
 {
     private $dispatcher;
 
@@ -20,7 +19,7 @@ final class RobotsController extends Controller
 
     /**
      * @Route(path="/robots.txt", name="KunstmaanSeoBundle_robots", defaults={"_format": "txt"})
-     * @Template(template="@KunstmaanSeo/Admin/Robots/index.html.twig")
+     * @Template("@KunstmaanSeo/Admin/Robots/index.html.twig")
      *
      * @return array
      */

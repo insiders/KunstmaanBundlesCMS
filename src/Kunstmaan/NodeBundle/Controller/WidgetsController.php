@@ -9,13 +9,24 @@ use Kunstmaan\AdminBundle\Helper\Security\Acl\Permission\PermissionMap;
 use Kunstmaan\NodeBundle\Entity\Node;
 use Kunstmaan\NodeBundle\Entity\StructureNode;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Template;
-use Symfony\Bundle\FrameworkBundle\Controller\Controller;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 
-final class WidgetsController extends Controller
+final class WidgetsController extends AbstractController
 {
+    /** @var DomainConfigurationInterface */
+    private $domainConfiguration;
+    /** @var EntityManagerInterface */
+    private $em;
+
+    public function __construct(DomainConfigurationInterface $domainConfiguration, EntityManagerInterface $em)
+    {
+        $this->domainConfiguration = $domainConfiguration;
+        $this->em = $em;
+    }
+
     /**
      * @Route("/ckselecturl", name="KunstmaanNodeBundle_ckselecturl")
      * @Template("@KunstmaanNode/Widgets/selectLink.html.twig")
@@ -57,23 +68,19 @@ final class WidgetsController extends Controller
      */
     public function selectNodesLazy(Request $request)
     {
-        /* @var EntityManagerInterface $em */
-        $em = $this->getDoctrine()->getManager();
         $locale = $request->getLocale();
         $id = $request->query->get('id');
         $depth = $this->getParameter('kunstmaan_node.url_chooser.lazy_increment');
 
         if (!$id || $id == '#') {
-            $domainConfig = $this->get('kunstmaan_admin.domain_configuration');
-
-            if ($domainConfig->isMultiDomainHost()) {
-                $switchedHost = $domainConfig->getHostSwitched();
-                $rootItems = [$domainConfig->getRootNode($switchedHost['host'])];
+            if ($this->domainConfiguration->isMultiDomainHost()) {
+                $switchedHost = $this->domainConfiguration->getHostSwitched();
+                $rootItems = [$this->domainConfiguration->getRootNode($switchedHost['host'])];
             } else {
-                $rootItems = $em->getRepository(Node::class)->getAllTopNodes();
+                $rootItems = $this->em->getRepository(Node::class)->getAllTopNodes();
             }
         } else {
-            $rootNode = $em->getRepository(Node::class)->find($id);
+            $rootNode = $this->em->getRepository(Node::class)->find($id);
             $rootItems = $this->getChildren($locale, $rootNode);
         }
 
@@ -141,11 +148,9 @@ final class WidgetsController extends Controller
      */
     protected function nodesToArray($locale, $rootNodes, $depth = 2)
     {
-        /** @var DomainConfigurationInterface $domainconfig */
-        $domainconfig = $this->get('kunstmaan_admin.domain_configuration');
-        $isMultiDomain = $domainconfig->isMultiDomainHost();
-        $switchedHost = $domainconfig->getHostSwitched();
-        $switched = null !== $switchedHost && array_key_exists('host', $switchedHost) && $domainconfig->getHost() === $switchedHost['host'];
+        $isMultiDomain = $this->domainConfiguration->isMultiDomainHost();
+        $switchedHost = $this->domainConfiguration->getHostSwitched();
+        $switched = null !== $switchedHost && array_key_exists('host', $switchedHost) && $this->domainConfiguration->getHost() === $switchedHost['host'];
 
         $results = [];
 
