@@ -5,6 +5,7 @@ namespace Kunstmaan\NodeBundle\Controller;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\EntityManagerInterface;
 use Kunstmaan\AdminBundle\Helper\DomainConfigurationInterface;
+use Kunstmaan\AdminBundle\Helper\Security\Acl\AclHelper;
 use Kunstmaan\AdminBundle\Helper\Security\Acl\Permission\PermissionMap;
 use Kunstmaan\NodeBundle\Entity\Node;
 use Kunstmaan\NodeBundle\Entity\StructureNode;
@@ -20,11 +21,14 @@ final class WidgetsController extends AbstractController
     private $domainConfiguration;
     /** @var EntityManagerInterface */
     private $em;
+    /** @var AclHelper */
+    private $aclHelper;
 
-    public function __construct(DomainConfigurationInterface $domainConfiguration, EntityManagerInterface $em)
+    public function __construct(DomainConfigurationInterface $domainConfiguration, EntityManagerInterface $em, AclHelper $aclHelper)
     {
         $this->domainConfiguration = $domainConfiguration;
         $this->em = $em;
+        $this->aclHelper = $aclHelper;
     }
 
     /**
@@ -203,13 +207,11 @@ final class WidgetsController extends AbstractController
         $em = $this->getDoctrine()->getManager();
         $nodeRepository = $em->getRepository(Node::class);
 
-        $aclHelper = $this->container->get('kunstmaan_admin.acl.helper');
-
         return $nodeRepository->getChildNodes(
             $rootNode->getId(),
             $locale,
             PermissionMap::PERMISSION_VIEW,
-            $aclHelper,
+            $this->aclHelper,
             true,
             true,
             $rootNode
