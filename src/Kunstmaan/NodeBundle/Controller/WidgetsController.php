@@ -204,8 +204,7 @@ final class WidgetsController extends AbstractController
 
     private function getChildren(string $locale, Node $rootNode)
     {
-        $em = $this->getDoctrine()->getManager();
-        $nodeRepository = $em->getRepository(Node::class);
+        $nodeRepository = $this->em->getRepository(Node::class);
 
         return $nodeRepository->getChildNodes(
             $rootNode->getId(),
