@@ -19,6 +19,9 @@ class MigrateFolderSlugsCommand extends Command
         $this->entityManager = $entityManager;
     }
 
+    /**
+     * @return int
+     */
     public function execute(InputInterface $input, OutputInterface $output)
     {
         //Force slug (re)gen by appending a space to the name which will force the slug generation.
