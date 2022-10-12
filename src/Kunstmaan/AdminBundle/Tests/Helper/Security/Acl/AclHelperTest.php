@@ -2,9 +2,8 @@
 
 namespace Kunstmaan\AdminBundle\Tests\Helper\Security\Acl;
 
-use Doctrine\DBAL\Connection;
-use Doctrine\DBAL\Driver\Statement;
-use Doctrine\DBAL\Platforms\MySqlPlatform;
+use Doctrine\DBAL\Platforms\MySQL57Platform;
+use Doctrine\DBAL\Result;
 use Doctrine\ORM\Configuration;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\Mapping\ClassMetadata;
@@ -18,6 +17,7 @@ use Kunstmaan\AdminBundle\Helper\Security\Acl\AclHelper;
 use Kunstmaan\AdminBundle\Helper\Security\Acl\Permission\MaskBuilder;
 use Kunstmaan\AdminBundle\Helper\Security\Acl\Permission\PermissionDefinition;
 use PHPUnit\Framework\TestCase;
+use Symfony\Bundle\SecurityBundle\Security\FirewallConfig;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Role\RoleHierarchy;
@@ -61,7 +61,6 @@ class AclHelperTest extends TestCase
             ->disableOriginalConstructor()
             ->getMock();
 
-        /* @var $conn Connection */
         $conn = $this->getMockBuilder('Doctrine\DBAL\Connection')
             ->disableOriginalConstructor()
             ->getMock();
@@ -72,14 +71,11 @@ class AclHelperTest extends TestCase
 
         $conn->expects($this->any())
             ->method('getDatabasePlatform')
-            ->willReturn(new MySqlPlatform());
-
-        /* @var $stmt Statement */
-        $stmt = $this->createMock(Statement::class);
+            ->willReturn(new MySQL57Platform());
 
         $conn->expects($this->any())
             ->method('executeQuery')
-            ->will($this->returnValue($stmt));
+            ->will($this->returnValue($this->createMock(Result::class)));
 
         $this->em->expects($this->any())
             ->method('getConnection')
@@ -167,7 +163,7 @@ class AclHelperTest extends TestCase
             ->method('getUser')
             ->will($this->returnValue($user));
 
-        [$rolesMethodName, $roles, $reachableRolesMethodName, $allRoles,] = $this->getRoleMockData();
+        [$rolesMethodName, $roles, $reachableRolesMethodName, $allRoles] = $this->getRoleMockData();
 
         $this->token->expects($this->once())
             ->method($rolesMethodName)
@@ -216,7 +212,7 @@ class AclHelperTest extends TestCase
             ->method('getRootAliases')
             ->will($this->returnValue(['n']));
 
-        [$rolesMethodName, $roles, $reachableRolesMethodName, $allRoles,] = $this->getRoleMockData(true);
+        [$rolesMethodName, $roles, $reachableRolesMethodName, $allRoles] = $this->getRoleMockData(true);
 
         $this->token->expects($this->once())
             ->method($rolesMethodName)
@@ -229,7 +225,7 @@ class AclHelperTest extends TestCase
 
         $this->token->expects($this->any())
             ->method('getUser')
-            ->will($this->returnValue('anon.'));
+            ->will($this->returnValue(method_exists(FirewallConfig::class, 'getAuthenticators') ? null : 'anon.'));
 
         $permissionDef = new PermissionDefinition(['view'], 'Kunstmaan\NodeBundle\Entity\Node');
 
@@ -247,7 +243,7 @@ class AclHelperTest extends TestCase
 
     public function testGetAllowedEntityIds()
     {
-        [$rolesMethodName, $roles, $reachableRolesMethodName, $allRoles,] = $this->getRoleMockData();
+        [$rolesMethodName, $roles, $reachableRolesMethodName, $allRoles] = $this->getRoleMockData();
 
         $this->token->expects($this->once())
             ->method($rolesMethodName)
@@ -257,9 +253,6 @@ class AclHelperTest extends TestCase
             ->method($reachableRolesMethodName)
             ->with($roles)
             ->will($this->returnValue($allRoles));
-
-        $user = $this->getMockBuilder(UserInterface::class)
-            ->getMock();
 
         $user = new User();
         $user->setUsername('MyUser');
@@ -282,11 +275,12 @@ class AclHelperTest extends TestCase
             ->will($this->returnValue($rows));
 
         $this->em->expects($this->any())
-            ->method('newHydrator') // was ->method('getHydrator')
+            ->method('newHydrator')
             ->will($this->returnValue($hydrator));
 
         /* @var $query NativeQuery */
         $query = new NativeQuery($this->em);
+        $query->setSQL('SELECT * FROM table');
         $query->setResultSetMapping(new Query\ResultSetMapping());
 
         $this->em->expects($this->once())

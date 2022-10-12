@@ -31,15 +31,12 @@ final class CipherCommand extends Command
         $this->cipher = $cipher;
     }
 
-    protected function configure()
+    protected function configure(): void
     {
         $this->setName('kuma:cipher')->setDescription('Cipher utilities commands.');
     }
 
-    /**
-     * @return int
-     */
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $helper = $this->getHelper('question');
 
@@ -71,9 +68,9 @@ final class CipherCommand extends Command
                 break;
             case 2:
             case 3:
-            $fs = new Filesystem();
+                $fs = new Filesystem();
 
-            $question = new Question('Please enter the input file path: ');
+                $question = new Question('Please enter the input file path: ');
                 $question->setValidator(function ($value) use ($fs) {
                     if (trim($value) === '') {
                         throw new \Exception('The input file path cannot be empty');

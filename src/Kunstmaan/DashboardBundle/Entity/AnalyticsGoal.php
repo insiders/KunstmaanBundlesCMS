@@ -4,19 +4,22 @@ namespace Kunstmaan\DashboardBundle\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 use Kunstmaan\AdminBundle\Entity\AbstractEntity;
+use Kunstmaan\DashboardBundle\Repository\AnalyticsGoalRepository;
 
 /**
- * AnalyticsGoal
- *
  * @ORM\Table(name="kuma_analytics_goal")
  * @ORM\Entity(repositoryClass="Kunstmaan\DashboardBundle\Repository\AnalyticsGoalRepository")
  */
+#[ORM\Table(name: 'kuma_analytics_goal')]
+#[ORM\Entity(repositoryClass: AnalyticsGoalRepository::class)]
 class AnalyticsGoal extends AbstractEntity
 {
     /**
      * @ORM\ManyToOne(targetEntity="AnalyticsOverview", inversedBy="goals")
      * @ORM\JoinColumn(name="overview_id", referencedColumnName="id")
      */
+    #[ORM\ManyToOne(targetEntity: AnalyticsOverview::class, inversedBy: 'goals')]
+    #[ORM\JoinColumn(name: 'overview_id', referencedColumnName: 'id')]
     private $overview;
 
     /**
@@ -24,6 +27,7 @@ class AnalyticsGoal extends AbstractEntity
      *
      * @ORM\Column(name="position", type="integer")
      */
+    #[ORM\Column(name: 'position', type: 'integer')]
     private $position;
 
     /**
@@ -31,6 +35,7 @@ class AnalyticsGoal extends AbstractEntity
      *
      * @ORM\Column(name="name", type="string", length=255)
      */
+    #[ORM\Column(name: 'name', type: 'string', length: 255)]
     private $name;
 
     /**
@@ -38,6 +43,7 @@ class AnalyticsGoal extends AbstractEntity
      *
      * @ORM\Column(name="visits", type="integer")
      */
+    #[ORM\Column(name: 'visits', type: 'integer')]
     private $visits;
 
     /**
@@ -45,6 +51,7 @@ class AnalyticsGoal extends AbstractEntity
      *
      * @ORM\Column(name="chart_data", type="text")
      */
+    #[ORM\Column(name: 'chart_data', type: 'text')]
     private $chartData = '';
 
     /**

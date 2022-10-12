@@ -2,93 +2,86 @@
 
 namespace {{ namespace }}\Entity\Pages;
 
+use {{ namespace }}\Form\Pages\ContentPageAdminType;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Kunstmaan\MediaBundle\Entity\Media;
 use Kunstmaan\NodeBundle\Entity\AbstractPage;
 use Kunstmaan\NodeSearchBundle\Helper\SearchTypeInterface;
 use Kunstmaan\PagePartBundle\Helper\HasPageTemplateInterface;
-use Symfony\Component\Form\AbstractType;
-use {{ namespace }}\Form\Pages\ContentPageAdminType;
 
+{% if canUseEntityAttributes %}
+#[ORM\Entity()]
+#[ORM\Table(name: '{{ prefix }}content_pages')]
+{% else %}
 /**
- * ContentPage
- *
  * @ORM\Entity()
  * @ORM\Table(name="{{ prefix }}content_pages")
  */
+{% endif %}
 class ContentPage extends AbstractPage implements HasPageTemplateInterface, SearchTypeInterface
 {
 {% if demosite %}
     /**
-     * @var \Kunstmaan\MediaBundle\Entity\Media
+     * @var Media|null
+{% if canUseEntityAttributes == false %}
      *
      * @ORM\ManyToOne(targetEntity="Kunstmaan\MediaBundle\Entity\Media")
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="menu_image_id", referencedColumnName="id")
      * })
+{% endif %}
      */
+{% if canUseEntityAttributes %}
+    #[ORM\ManyToOne(targetEntity: Media::class)]
+{% endif %}
     private $menuImage;
 
     /**
-     * @var string
+     * @var string|null
+{% if canUseEntityAttributes == false %}
      *
      * @ORM\Column(name="menu_description", type="text", nullable=true)
+{% endif %}
      */
+{% if canUseEntityAttributes %}
+    #[ORM\Column(name: 'menu_description', type: Types::TEXT, nullable: true)]
+{% endif %}
     private $menuDescription;
 {% endif %}
-    /**
-     * Returns the default backend form type for this page
-     *
-     * @return string
-     */
-    public function getDefaultAdminType()
+
+    public function getDefaultAdminType(): string
     {
         return ContentPageAdminType::class;
     }
 
-    /**
-     * @return array
-     */
-    public function getPossibleChildTypes()
+    public function getPossibleChildTypes(): array
     {
-        return array (
-            array(
-                'name'  => 'ContentPage',
-                'class' => '{{ namespace }}\Entity\Pages\ContentPage'
-            ),
-        );
+        return [
+            [
+                'name' => 'ContentPage',
+                'class' => '{{ namespace }}\Entity\Pages\ContentPage',
+            ],
+        ];
     }
 
 {% if demosite %}
-    /**
-     * @param \Kunstmaan\MediaBundle\Entity\Media $icon
-     */
-    public function setMenuImage($image)
+    public function setMenuImage(?Media $image): void
     {
         $this->menuImage = $image;
     }
 
-    /**
-     * @return \Kunstmaan\MediaBundle\Entity\Media
-     */
-    public function getMenuImage()
+    public function getMenuImage(): ?Media
     {
         return $this->menuImage;
     }
 
-    /**
-     * @return string
-     */
-    public function getMenuDescription()
+    public function getMenuDescription(): ?string
     {
         return $this->menuDescription;
     }
 
-    /**
-     * @param string $description
-     *
-     * @return ContentPage
-     */
-    public function setMenuDescription($description)
+    public function setMenuDescription(?string $description): ContentPage
     {
         $this->menuDescription = $description;
 
@@ -96,35 +89,23 @@ class ContentPage extends AbstractPage implements HasPageTemplateInterface, Sear
     }
 {% endif %}
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getSearchType()
+    public function getSearchType(): string
     {
         return 'Page';
     }
 
-    /**
-     * @return string[]
-     */
-    public function getPagePartAdminConfigurations()
+    public function getPagePartAdminConfigurations(): array
     {
-        return array('{% if not isV4 %}{{ bundle.getName() }}:{%endif%}main');
+        return ['main'];
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getPageTemplates()
+    public function getPageTemplates(): array
     {
-        return array('{% if not isV4 %}{{ bundle.getName() }}:{%endif%}contentpage'{% if demosite %}, '{% if not isV4 %}{{ bundle.getName() }}:{%endif%}contentpage{% if isV4 %}_{% else %}-{% endif %}with{% if isV4 %}_{% else %}-{% endif %}submenu'{% endif %});
+        return ['contentpage'{% if demosite %}, 'contentpage_with_submenu'{% endif %}];
     }
 
-    /**
-     * @return string
-     */
-    public function getDefaultView()
+    public function getDefaultView(): string
     {
-        return '{% if not isV4 %}{{ bundle.getName() }}:{%endif%}Pages/ContentPage{% if not isV4 %}:{% else %}/{% endif %}view.html.twig';
+        return 'Pages/ContentPage/view.html.twig';
     }
 }

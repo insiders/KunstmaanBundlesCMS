@@ -14,7 +14,6 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Question\ConfirmationQuestion;
 use Symfony\Component\Console\Question\Question;
 use Symfony\Component\HttpKernel\Bundle\Bundle;
-use Symfony\Component\HttpKernel\Kernel;
 
 /**
  * Generates a KunstmaanAdminList
@@ -60,9 +59,9 @@ EOT
      * @param InputInterface  $input  An InputInterface instance
      * @param OutputInterface $output An OutputInterface instance
      *
-     * @throws \RuntimeException
-     *
      * @return int|void|null
+     *
+     * @throws \RuntimeException
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
@@ -71,34 +70,17 @@ EOT
         GeneratorUtils::ensureOptionsProvided($input, ['entity']);
 
         $entity = EntityValidator::validate($input->getOption('entity'));
-        if (Kernel::VERSION_ID < 40000) {
-            list($bundle, $entity) = $this->parseShortcutNotation($entity);
+        $entityClass = $entity;
+        $em = $this->getContainer()->get('doctrine')->getManager();
 
-            $entityClass = $this->getContainer()->get('doctrine')->getAliasNamespace($bundle) . '\\' . $entity;
-            $metadata = $this->getEntityMetadata($entityClass)[0];
-            $bundle = $this->getContainer()->get('kernel')->getBundle($bundle);
-        } else {
-            $entityClass = $entity;
-            $em = $this->getContainer()->get('doctrine')->getManager();
-
-            $metadata = $em->getClassMetadata($entityClass);
-            $bundle = new Sf4AppBundle($this->getContainer()->getParameter('kernel.project_dir'));
-        }
+        $metadata = $em->getClassMetadata($entityClass);
+        $bundle = new Sf4AppBundle($this->getContainer()->getParameter('kernel.project_dir'));
 
         $questionHelper->writeSection($output, 'AdminList Generation');
 
         $generator = $this->getGenerator($this->getApplication()->getKernel()->getBundle('KunstmaanGeneratorBundle'));
         $generator->setQuestion($questionHelper);
         $generator->generate($bundle, $entityClass, $metadata, $output, $input->getOption('sortfield'));
-
-        if (Kernel::VERSION_ID >= 40000) {
-            return;
-        }
-
-        $parts = explode('\\', $entity);
-        $entityClass = array_pop($parts);
-
-        $this->updateRouting($questionHelper, $input, $output, $bundle, $entityClass);
 
         return 0;
     }
@@ -125,11 +107,7 @@ EOT
             );
         }
 
-        if (Kernel::VERSION_ID < 40000) {
-            $message = 'You must use the shortcut notation like <comment>AcmeBlogBundle:Post</comment>.';
-        } else {
-            $message = 'You must use the FQCN like <comment>\App\Entity\Post</comment>.';
-        }
+        $message = 'You must use the FQCN like <comment>\App\Entity\Post</comment>.';
 
         if (is_null($entity)) {
             $output->writeln(
@@ -142,11 +120,7 @@ EOT
                 ]
             );
 
-            if (Kernel::VERSION_ID < 40000) {
-                $message = 'The entity shortcut name';
-            } else {
-                $message = 'The entity FQCN';
-            }
+            $message = 'The entity FQCN';
 
             $question = new Question($questionHelper->getQuestion($message, $entity), $entity);
             $question->setValidator(['\Kunstmaan\GeneratorBundle\Helper\EntityValidator', 'validate']);

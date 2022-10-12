@@ -5,107 +5,107 @@ namespace {{ namespace }}\Entity\PageParts;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
 
+{% if canUseEntityAttributes %}
+#[ORM\Entity]
+#[ORM\Table(name: '{{ prefix }}{{ underscoreName }}s')]
+{% else %}
 /**
- * {{ pagepart }}
- *
- * @ORM\Table(name="{{ prefix }}{{ underscoreName }}s")
  * @ORM\Entity
+ * @ORM\Table(name="{{ prefix }}{{ underscoreName }}s")
  */
+{% endif %}
 class {{ pagepart }} extends AbstractPagePart
 {
     /**
+     * @var string|null
+{% if canUseEntityAttributes == false %}
+     *
      * @ORM\Column(name="url", type="string", nullable=true)
+{% if canUseAttributes == false %}
      * @Assert\NotBlank()
+{% endif %}
+{% endif %}
      */
+{% if canUseAttributes %}
+    #[Assert\NotBlank]
+{% endif %}
+{% if canUseEntityAttributes %}
+    #[ORM\Column(name: 'url', type: 'string', nullable: true)]
+{% endif %}
     private $url;
 
     /**
+     * @var string|null
+{% if canUseEntityAttributes == false %}
+     *
      * @ORM\Column(name="text", type="string", nullable=true)
+{% if canUseAttributes == false %}
      * @Assert\NotBlank()
+{% endif %}
+{% endif %}
      */
+{% if canUseAttributes %}
+    #[Assert\NotBlank]
+{% endif %}
+{% if canUseEntityAttributes %}
+    #[ORM\Column(name: 'text', type: 'string', nullable: true)]
+{% endif %}
     private $text;
 
     /**
-     * @ORM\Column(name="open_in_new_window", type="boolean", nullable=true)
-     */
-    private $openInNewWindow;
-
-    /**
-     * @param string $url
+     * @var bool
+{% if canUseEntityAttributes == false %}
      *
-     * @return {{ pagepart }}
+     * @ORM\Column(name="open_in_new_window", type="boolean", nullable=true)
+{% endif %}
      */
-    public function setUrl($url)
+{% if canUseEntityAttributes %}
+    #[ORM\Column(name: 'open_in_new_window', type: 'boolean', nullable: true)]
+{% endif %}
+    private $openInNewWindow = false;
+
+    public function setUrl(?string $url): LinkPagePart
     {
         $this->url = $url;
 
         return $this;
     }
 
-    /**
-     * @return string
-     */
-    public function getUrl()
+    public function getUrl(): ?string
     {
         return $this->url;
     }
 
-    /**
-     * @return boolean
-     */
-    public function getOpenInNewWindow()
+    public function getOpenInNewWindow(): bool
     {
         return $this->openInNewWindow;
     }
 
-    /**
-     * @param boolean $openInNewWindow
-     *
-     * @return {{ pagepart }}
-     */
-    public function setOpenInNewWindow($openInNewWindow)
+    public function setOpenInNewWindow(bool $openInNewWindow): LinkPagePart
     {
         $this->openInNewWindow = $openInNewWindow;
 
         return $this;
     }
 
-    /**
-     * @param string $text
-     *
-     * @return {{ pagepart }}
-     */
-    public function setText($text)
+    public function setText(?string $text): LinkPagePart
     {
         $this->text = $text;
 
         return $this;
     }
 
-    /**
-     * @return string
-     */
-    public function getText()
+    public function getText(): ?string
     {
         return $this->text;
     }
 
-    /**
-     * Get the twig view.
-     *
-     * @return string
-     */
-    public function getDefaultView()
+    public function getDefaultView(): string
     {
-        return '{% if not isV4 %}{{ bundle }}:{%endif%}PageParts/{{ pagepart }}{% if not isV4 %}:{% else %}/{% endif %}view.html.twig';
+        return 'PageParts/{{ pagepart }}/view.html.twig';
     }
 
-    /**
-     * Get the admin form type.
-     *
-     * @return string
-     */
-    public function getDefaultAdminType()
+    public function getDefaultAdminType(): string
     {
         return {{ adminType }}::class;
     }

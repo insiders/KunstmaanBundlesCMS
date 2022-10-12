@@ -7,12 +7,12 @@ use Kunstmaan\PagePartBundle\Helper\HasPagePartsInterface;
 use Kunstmaan\PagePartBundle\Helper\PagePartInterface;
 use Kunstmaan\PagePartBundle\PagePartAdmin\PagePartAdmin;
 use Kunstmaan\PagePartBundle\PagePartConfigurationReader\PagePartConfigurationReaderInterface;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Template;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\Form\Extension\Core\Type\FormType;
 use Symfony\Component\Form\FormFactory;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
 final class PagePartAdminController extends AbstractController
@@ -36,16 +36,13 @@ final class PagePartAdminController extends AbstractController
 
     /**
      * @Route("/newPagePart", name="KunstmaanPagePartBundle_admin_newpagepart")
-     * @Template("@KunstmaanPagePart/PagePartAdminTwigExtension/pagepart.html.twig")
-     *
-     * @return array
      */
-    public function newPagePartAction(Request $request)
+    public function newPagePartAction(Request $request): Response
     {
-        $pageId = $request->get('pageid');
-        $pageClassName = $request->get('pageclassname');
-        $context = $request->get('context');
-        $pagePartClass = $request->get('type');
+        $pageId = $request->query->get('pageid');
+        $pageClassName = $request->query->get('pageclassname');
+        $context = $request->query->get('context');
+        $pagePartClass = $request->query->get('type');
 
         /** @var HasPagePartsInterface $page */
         $page = $this->em->getRepository($pageClassName)->find($pageId);
@@ -88,7 +85,7 @@ final class PagePartAdminController extends AbstractController
         $formview = $form->createView();
         $extended = $this->getParameter('kunstmaan_page_part.extended');
 
-        return [
+        return $this->render('@KunstmaanPagePart/PagePartAdminTwigExtension/pagepart.html.twig', [
             'id' => $id,
             'form' => $formview,
             'pagepart' => $pagePart,
@@ -96,6 +93,6 @@ final class PagePartAdminController extends AbstractController
             'page' => $pagePartAdmin->getPage(),
             'editmode' => true,
             'extended' => $extended,
-        ];
+        ]);
     }
 }

@@ -13,6 +13,8 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 
 /**
  * HTML5 range type field
+ *
+ * @deprecated since KunstmaanAdminBundle 6.2 and will be removed in KunstmaanAdminBundle 7.0. Use "Symfony\Component\Form\Extension\Core\Type\RangeType" instead.
  */
 class RangeType extends AbstractType
 {

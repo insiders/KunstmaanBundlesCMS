@@ -62,6 +62,28 @@ class NodeTranslationRepository extends EntityRepository
     }
 
     /**
+     * Get min children weight
+     *
+     * @param Node   $parentNode
+     * @param string $lang       (optional) Only return min weight for the
+     *                           given language
+     *
+     * @return int
+     */
+    public function getMinChildrenWeight(Node $parentNode = null, $lang = null)
+    {
+        $minWeight = $this->getNodeTranslationsQueryBuilder($lang)
+            ->select('min(nt.weight)')
+            ->andWhere('n.parent = :parentNode')
+            ->setParameter('parentNode', $parentNode)
+            ->resetDQLPart('orderBy')
+            ->getQuery()
+            ->getSingleScalarResult();
+
+        return (int) $minWeight;
+    }
+
+    /**
      * QueryBuilder to fetch node translations (ignoring nodes that have been
      * deleted)
      *
@@ -385,9 +407,9 @@ class NodeTranslationRepository extends EntityRepository
      * @param Node             $node    The node
      * @param BaseUser         $owner   The user
      *
-     * @throws \InvalidArgumentException
-     *
      * @return NodeTranslation
+     *
+     * @throws \InvalidArgumentException
      */
     public function createNodeTranslationFor(
         HasNodeInterface $hasNode,
@@ -436,9 +458,9 @@ class NodeTranslationRepository extends EntityRepository
      * @param Node             $node    The node
      * @param BaseUser         $owner   The user
      *
-     * @throws \InvalidArgumentException
-     *
      * @return NodeTranslation
+     *
+     * @throws \InvalidArgumentException
      */
     public function addDraftNodeVersionFor(
         HasNodeInterface $hasNode,

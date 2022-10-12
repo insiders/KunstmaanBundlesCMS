@@ -2,7 +2,13 @@
 
 namespace Kunstmaan\GeneratorBundle\Generator;
 
+use Doctrine\Persistence\ManagerRegistry;
+use Kunstmaan\GeneratorBundle\Helper\CommandAssistant;
+use Symfony\Bundle\MakerBundle\Doctrine\DoctrineHelper;
+use Symfony\Component\DependencyInjection\ContainerInterface;
+use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\HttpKernel\Bundle\BundleInterface;
+use Symfony\Component\HttpKernel\Kernel;
 use Symfony\Component\Yaml\Yaml;
 
 /**
@@ -29,6 +35,14 @@ class DefaultPagePartGenerator extends KunstmaanGenerator
      * @var array
      */
     private $sections;
+    /** @var DoctrineHelper */
+    private $doctrineHelper;
+
+    public function __construct(Filesystem $filesystem, ManagerRegistry $registry, $skeletonDir, CommandAssistant $assistant, ContainerInterface $container, DoctrineHelper $doctrineHelper)
+    {
+        parent::__construct($filesystem, $registry, $skeletonDir, $assistant, $container);
+        $this->doctrineHelper = $doctrineHelper;
+    }
 
     /**
      * Generate the pagepart.
@@ -70,10 +84,11 @@ class DefaultPagePartGenerator extends KunstmaanGenerator
             'pagepart' => $this->entity,
             'pagepartname' => str_replace('PagePart', '', $this->entity),
             'adminType' => '\\' . $this->bundle->getNamespace(
-                ) . '\\Form\\PageParts\\' . $this->entity . 'AdminType',
+            ) . '\\Form\\PageParts\\' . $this->entity . 'AdminType',
             'underscoreName' => strtolower(preg_replace('/([a-z])([A-Z])/', '$1_$2', $this->entity)),
             'prefix' => $this->prefix,
-            'isV4' => $this->isSymfony4(),
+            'canUseAttributes' => Kernel::VERSION_ID >= 50200,
+            'canUseEntityAttributes' => $this->doctrineHelper->doesClassUsesAttributes('App\\Entity\\Unkown' . uniqid()),
         ];
 
         $this->renderSingleFile(
@@ -118,8 +133,8 @@ class DefaultPagePartGenerator extends KunstmaanGenerator
     {
         $params = [
             'pagepart' => strtolower(
-                    preg_replace('/([a-z])([A-Z])/', '$1-$2', str_ireplace('PagePart', '', $this->entity))
-                ) . '-pp',
+                preg_replace('/([a-z])([A-Z])/', '$1-$2', str_ireplace('PagePart', '', $this->entity))
+            ) . '-pp',
         ];
 
         $this->renderSingleFile(
@@ -147,7 +162,7 @@ class DefaultPagePartGenerator extends KunstmaanGenerator
     private function generateSectionConfig()
     {
         if (count($this->sections) > 0) {
-            $dir = $this->isSymfony4() ? $this->container->getParameter('kernel.project_dir') . '/config/kunstmaancms/pageparts/' : $this->bundle->getPath() . '/Resources/config/pageparts/';
+            $dir = $this->container->getParameter('kernel.project_dir') . '/config/kunstmaancms/pageparts/';
             foreach ($this->sections as $section) {
                 $data = $originalData = Yaml::parse(file_get_contents($dir . $section));
                 if (array_key_exists('kunstmaan_page_part', $data)) {
@@ -177,8 +192,7 @@ class DefaultPagePartGenerator extends KunstmaanGenerator
                     $data = $originalData;
                 }
 
-                //Sf4 structure of the config file is nested deeper, increase the level when values are inlined
-                $ymlData = Yaml::dump($data, $this->isSymfony4() ? 5 : 2);
+                $ymlData = Yaml::dump($data, 5);
                 file_put_contents($dir . $section, $ymlData);
             }
 

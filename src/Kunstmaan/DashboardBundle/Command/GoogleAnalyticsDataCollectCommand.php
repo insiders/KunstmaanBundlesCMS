@@ -46,7 +46,7 @@ final class GoogleAnalyticsDataCollectCommand extends Command
         $this->queryHelper = $queryHelper;
     }
 
-    protected function configure()
+    protected function configure(): void
     {
         $this
             ->setName('kuma:dashboard:widget:googleanalytics:data:collect')
@@ -74,10 +74,7 @@ final class GoogleAnalyticsDataCollectCommand extends Command
             );
     }
 
-    /**
-     * @return int|void|null
-     */
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $this->output = $output;
 
@@ -132,10 +129,8 @@ final class GoogleAnalyticsDataCollectCommand extends Command
      * get a single overview
      *
      * @param int $overviewId
-     *
-     * @return AnalyticsOverview
      */
-    private function getSingleOverview($overviewId)
+    private function getSingleOverview($overviewId): AnalyticsOverview
     {
         // get specified overview
         $overviewRepository = $this->em->getRepository(AnalyticsOverview::class);
@@ -152,10 +147,8 @@ final class GoogleAnalyticsDataCollectCommand extends Command
      * get all overviews of a segment
      *
      * @param int $segmentId
-     *
-     * @return array
      */
-    private function getOverviewsOfSegment($segmentId)
+    private function getOverviewsOfSegment($segmentId): array
     {
         // get specified segment
         $segmentRepository = $this->em->getRepository(AnalyticsSegment::class);
@@ -176,10 +169,8 @@ final class GoogleAnalyticsDataCollectCommand extends Command
      * get all overviews of a config
      *
      * @param int $configId
-     *
-     * @return array
      */
-    private function getOverviewsOfConfig($configId)
+    private function getOverviewsOfConfig($configId): array
     {
         $configRepository = $this->em->getRepository(AnalyticsConfig::class);
         $segmentRepository = $this->em->getRepository(AnalyticsSegment::class);
@@ -206,12 +197,7 @@ final class GoogleAnalyticsDataCollectCommand extends Command
         return $config->getOverviews();
     }
 
-    /**
-     * get all overviews
-     *
-     * @return array
-     */
-    private function getAllOverviews()
+    private function getAllOverviews(): array
     {
         $configRepository = $this->em->getRepository(AnalyticsConfig::class);
         $overviewRepository = $this->em->getRepository(AnalyticsOverview::class);
@@ -237,10 +223,8 @@ final class GoogleAnalyticsDataCollectCommand extends Command
 
     /**
      * update the overviews
-     *
-     * @param array $overviews collection of all overviews which need to be updated
      */
-    public function updateData($overviews)
+    public function updateData($overviews): void
     {
         // helpers
         $metrics = new MetricsCommandHelper($this->configHelper, $this->queryHelper, $this->output, $this->em);
@@ -288,10 +272,8 @@ final class GoogleAnalyticsDataCollectCommand extends Command
 
     /**
      * Reset the data for the overview
-     *
-     * @param AnalyticsOverview $overview The overview
      */
-    private function reset(AnalyticsOverview $overview)
+    private function reset(AnalyticsOverview $overview): void
     {
         // reset overview
         $overview->setNewUsers(0);

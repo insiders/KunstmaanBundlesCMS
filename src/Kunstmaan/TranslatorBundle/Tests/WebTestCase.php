@@ -6,6 +6,7 @@ use Doctrine\Common\DataFixtures\Executor\ORMExecutor;
 use Doctrine\Common\DataFixtures\Loader;
 use Doctrine\Common\DataFixtures\Purger\ORMPurger;
 use Doctrine\ORM\Tools\SchemaTool;
+use Kunstmaan\TranslatorBundle\Tests\app\AppKernel;
 use Kunstmaan\TranslatorBundle\Tests\Fixtures\TranslationDataFixture;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase as BaseWebTestCase;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -40,20 +41,14 @@ class WebTestCase extends BaseWebTestCase
         $fs->remove($dir);
     }
 
-    /**
-     * @return string
-     */
-    protected static function getKernelClass()
+    protected static function getKernelClass(): string
     {
         require_once __DIR__ . '/app/AppKernel.php';
 
-        return 'Kunstmaan\TranslatorBundle\Tests\app\AppKernel';
+        return AppKernel::class;
     }
 
-    /**
-     * @return KernelInterface
-     */
-    protected static function createKernel(array $options = [])
+    protected static function createKernel(array $options = []): KernelInterface
     {
         $class = self::getKernelClass();
 
@@ -80,7 +75,7 @@ class WebTestCase extends BaseWebTestCase
         $em = $container->get('doctrine.orm.default_entity_manager');
         $meta = $em->getMetadataFactory()->getAllMetadata();
         $tool = new SchemaTool($em);
-        $tool->dropSchema($meta);
+        $tool->dropDatabase();
         $tool->createSchema($meta);
 
         // insert fixtures

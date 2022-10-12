@@ -1,6 +1,6 @@
 <?php
 
-namespace  Kunstmaan\PagePartBundle\Helper;
+namespace Kunstmaan\PagePartBundle\Helper;
 
 use Kunstmaan\PagePartBundle\PagePartAdmin\PagePartAdminConfiguratorInterface;
 
@@ -12,7 +12,7 @@ interface HasPagePartsInterface
     public function getId();
 
     /**
-     * @return PagePartAdminConfiguratorInterface[]
+     * @return PagePartAdminConfiguratorInterface[]|string[]
      */
     public function getPagePartAdminConfigurations();
 }

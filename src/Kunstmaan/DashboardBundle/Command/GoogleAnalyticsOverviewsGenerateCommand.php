@@ -24,7 +24,7 @@ final class GoogleAnalyticsOverviewsGenerateCommand extends Command
         $this->em = $em;
     }
 
-    protected function configure()
+    protected function configure(): void
     {
         $this
             ->setName('kuma:dashboard:widget:googleanalytics:overviews:generate')
@@ -45,10 +45,7 @@ final class GoogleAnalyticsOverviewsGenerateCommand extends Command
             );
     }
 
-    /**
-     * @return int|void|null
-     */
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         // get params
         $configId = false;

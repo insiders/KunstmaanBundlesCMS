@@ -5,56 +5,53 @@ namespace {{ namespace }}\Entity\PageParts;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
 
+{% if canUseEntityAttributes %}
+#[ORM\Entity]
+#[ORM\Table(name: '{{ prefix }}{{ underscoreName }}s')]
+{% else %}
 /**
- * {{ pagepart }}
- *
- * @ORM\Table(name="{{ prefix }}{{ underscoreName }}s")
  * @ORM\Entity
+ * @ORM\Table(name="{{ prefix }}{{ underscoreName }}s")
  */
+{% endif %}
 class {{ pagepart }} extends AbstractPagePart
 {
     /**
+     * @var string|null
+{% if canUseEntityAttributes == false %}
+     *
      * @ORM\Column(type="text", nullable=true)
+{% if canUseAttributes == false %}
      * @Assert\NotBlank()
+{% endif %}
+{% endif %}
      */
+{% if canUseAttributes %}
+    #[Assert\NotBlank]
+{% endif %}
+{% if canUseEntityAttributes %}
+    #[ORM\Column(type: 'text', nullable: true)]
+{% endif %}
     protected $content;
 
-    /**
-     * @return string
-     */
-    public function getContent()
+    public function getContent(): ?string
     {
         return $this->content;
     }
 
-    /**
-     * @param string $content
-     *
-     * @return {{ pagepart }}
-     */
-    public function setContent($content)
+    public function setContent(?string $content): RawHtmlPagePart
     {
         $this->content = $content;
 
         return $this;
     }
 
-    /**
-     * Get the twig view.
-     *
-     * @return string
-     */
-    public function getDefaultView()
+    public function getDefaultView(): string
     {
-        return '{% if not isV4 %}{{ bundle }}:{%endif%}PageParts/{{ pagepart }}{% if not isV4 %}:{% else %}/{% endif %}view.html.twig';
+        return 'PageParts/{{ pagepart }}/view.html.twig';
     }
 
-    /**
-     * Get the admin form type.
-     *
-     * @return string
-     */
-    public function getDefaultAdminType()
+    public function getDefaultAdminType(): string
     {
         return {{ adminType }}::class;
     }

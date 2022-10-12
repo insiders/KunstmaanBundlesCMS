@@ -3,6 +3,7 @@
 namespace Kunstmaan\DashboardBundle\Command;
 
 use Doctrine\ORM\EntityManagerInterface;
+use Kunstmaan\DashboardBundle\Entity\AnalyticsConfig;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -22,7 +23,7 @@ final class GoogleAnalyticsConfigFlushCommand extends Command
         $this->em = $em;
     }
 
-    protected function configure()
+    protected function configure(): void
     {
         $this
             ->setName('kuma:dashboard:widget:googleanalytics:config:flush')
@@ -36,12 +37,9 @@ final class GoogleAnalyticsConfigFlushCommand extends Command
             );
     }
 
-    /**
-     * @return int|void|null
-     */
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $configRepository = $this->em->getRepository('KunstmaanDashboardBundle:AnalyticsConfig');
+        $configRepository = $this->em->getRepository(AnalyticsConfig::class);
         $configId = $input->getOption('config');
         $configs = [];
 

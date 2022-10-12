@@ -5,10 +5,12 @@ namespace Kunstmaan\GeneratorBundle\Generator;
 use Doctrine\Persistence\ManagerRegistry;
 use Kunstmaan\GeneratorBundle\Helper\CommandAssistant;
 use Kunstmaan\GeneratorBundle\Helper\GeneratorUtils;
+use Symfony\Bundle\MakerBundle\Doctrine\DoctrineHelper;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpKernel\Bundle\BundleInterface;
+use Symfony\Component\HttpKernel\Kernel;
 
 /**
  * Generates an Article section
@@ -29,14 +31,17 @@ class ArticleGenerator extends KunstmaanGenerator
      * @var array
      */
     private $parentPages = [];
+    /** @var DoctrineHelper */
+    private $doctrineHelper;
 
     /**
      * @param string $skeletonDir
      */
-    public function __construct(Filesystem $filesystem, ManagerRegistry $registry, $skeletonDir, array $parentPages, CommandAssistant $assistant, ContainerInterface $container)
+    public function __construct(Filesystem $filesystem, ManagerRegistry $registry, $skeletonDir, array $parentPages, CommandAssistant $assistant, ContainerInterface $container, DoctrineHelper $doctrineHelper)
     {
         parent::__construct($filesystem, $registry, $skeletonDir, $assistant, $container);
         $this->parentPages = $parentPages;
+        $this->doctrineHelper = $doctrineHelper;
     }
 
     /**
@@ -62,7 +67,8 @@ class ArticleGenerator extends KunstmaanGenerator
             'uses_author' => $usesAuthor,
             'uses_category' => $usesCategories,
             'uses_tag' => $usesTags,
-            'isV4' => $this->isSymfony4(),
+            'canUseAttributes' => Kernel::VERSION_ID >= 50200,
+            'canUseEntityAttributes' => $this->doctrineHelper->doesClassUsesAttributes('App\\Entity\\Unkown' . uniqid()),
         ];
 
         $this->generateEntities($parameters);
@@ -72,9 +78,7 @@ class ArticleGenerator extends KunstmaanGenerator
         $this->generateController($parameters);
         $this->generatePageTemplateConfigs($parameters);
         $this->generateTemplates($parameters, $bundleWithHomePage);
-        $this->generateRouting($parameters, $multilanguage);
         $this->generateMenu($parameters);
-        $this->generateServices($parameters);
         $this->generateViewDataProvider($parameters);
         $this->updateParentPages();
         if ($dummydata) {
@@ -87,6 +91,8 @@ class ArticleGenerator extends KunstmaanGenerator
      */
     public function generateServices(array $parameters)
     {
+        trigger_deprecation('kunstmaan/generator-bundle', '6.2', 'Method "%s" is deprecated and will be removed.', __METHOD__);
+
         if ($this->isSymfony4()) {
             return;
         }
@@ -142,6 +148,8 @@ class ArticleGenerator extends KunstmaanGenerator
      */
     public function generateRouting(array $parameters, $multilanguage)
     {
+        trigger_deprecation('kunstmaan/generator-bundle', '6.2', 'Method "%s" is deprecated and will be removed.', __METHOD__);
+
         if ($this->isSymfony4()) {
             return;
         }
@@ -253,16 +261,16 @@ class ArticleGenerator extends KunstmaanGenerator
      */
     public function generatePageTemplateConfigs(array $parameters)
     {
-        $basePath = $this->isSymfony4() ? $this->container->getParameter('kernel.project_dir') : $this->bundle->getPath();
-        $relPath = $this->isSymfony4() ? '/config/kunstmaancms/pagetemplates/' : '/Resources/config/pagetemplates/';
+        $basePath = $this->container->getParameter('kernel.project_dir');
+        $relPath = '/config/kunstmaancms/pagetemplates/';
         $sourceDir = $this->skeletonDir . '/Resources/config/pagetemplates/';
         $targetDir = $basePath . $relPath;
 
         $this->renderSingleFile($sourceDir, $targetDir, 'page.yml', $parameters, false, strtolower($this->entity) . 'page.yml');
         $this->renderSingleFile($sourceDir, $targetDir, 'overviewpage.yml', $parameters, false, strtolower($this->entity) . 'overviewpage.yml');
 
-        $basePath = $this->isSymfony4() ? $this->container->getParameter('kernel.project_dir') : $this->bundle->getPath();
-        $relPath = $this->isSymfony4() ? '/config/kunstmaancms/pageparts/' : '/Resources/config/pageparts/';
+        $basePath = $this->container->getParameter('kernel.project_dir');
+        $relPath = '/config/kunstmaancms/pageparts/';
         $sourceDir = $this->skeletonDir . '/Resources/config/pageparts/';
         $targetDir = $basePath . $relPath;
 
@@ -442,7 +450,7 @@ class ArticleGenerator extends KunstmaanGenerator
             $twigParameters['pluralType'] = 'categories';
             $partial .= $this->render('/PagePartial.php.twig', $twigParameters);
             $partialFunctions .= $this->render('/PagePartialFunctions.php.twig', $twigParameters);
-            $constructor .= '$this->categories = new ArrayCollection();' . "\n";
+            $constructor .= '$this->categories = new ArrayCollection();' . "\n        ";
         }
 
         if ($parameters['uses_tag']) {

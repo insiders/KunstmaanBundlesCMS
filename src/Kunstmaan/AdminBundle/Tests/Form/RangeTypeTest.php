@@ -7,6 +7,9 @@ use PHPUnit\Framework\TestCase;
 use Symfony\Component\Form\Extension\Core\Type\IntegerType;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
+/**
+ * @group legacy
+ */
 class RangeTypeTest extends TestCase
 {
     public function testMethods()
@@ -14,9 +17,7 @@ class RangeTypeTest extends TestCase
         $colorType = new RangeType();
 
         $resolver = $this->createMock(OptionsResolver::class);
-        $resolver->expects($this->once())
-            ->method('setDefaults')
-            ->willReturn(true);
+        $resolver->expects($this->once())->method('setDefaults')->willReturn($resolver);
 
         /* @var OptionsResolver $resolver */
         $colorType->configureOptions($resolver);

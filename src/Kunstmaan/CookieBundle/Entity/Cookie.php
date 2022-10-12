@@ -5,47 +5,54 @@ namespace Kunstmaan\CookieBundle\Entity;
 use Doctrine\ORM\Mapping as ORM;
 use Gedmo\Mapping\Annotation as Gedmo;
 use Kunstmaan\AdminBundle\Entity\AbstractEntity;
+use Kunstmaan\CookieBundle\Repository\CookieRepository;
 use Symfony\Component\Validator\Constraints as Assert;
 
 /**
- * Cookie
- *
  * @ORM\Table(name="kuma_cookies")
  * @ORM\Entity(repositoryClass="Kunstmaan\CookieBundle\Repository\CookieRepository")
  */
+#[ORM\Table(name: 'kuma_cookies')]
+#[ORM\Entity(repositoryClass: CookieRepository::class)]
 class Cookie extends AbstractEntity
 {
     /**
      * @var string
+     *
      * @Gedmo\Translatable()
      * @Assert\NotBlank()
-     *
      * @ORM\Column(name="name", type="string", length=255, nullable=true)
      */
+    #[ORM\Column(name: 'name', type: 'string', length: 255, nullable: true)]
+    #[Gedmo\Translatable]
     private $name;
 
     /**
      * @var string
-     * @Gedmo\Translatable()
      *
+     * @Gedmo\Translatable()
      * @ORM\Column(name="description", type="text", nullable=true)
      */
+    #[ORM\Column(name: 'description', type: 'text', nullable: true)]
+    #[Gedmo\Translatable]
     private $description;
 
     /**
      * @Assert\NotBlank()
-     *
      * @ORM\ManyToOne(targetEntity="Kunstmaan\CookieBundle\Entity\CookieType", inversedBy="cookies")
      * @ORM\JoinColumn(name="type_id", referencedColumnName="id", nullable=false)
      */
+    #[ORM\ManyToOne(targetEntity: CookieType::class, inversedBy: 'cookies')]
+    #[ORM\JoinColumn(name: 'type_id', referencedColumnName: 'id', nullable: false)]
     private $type;
 
     /**
      * @var string
-     * @Assert\NotNull()
      *
+     * @Assert\NotNull()
      * @ORM\Column(name="domain", type="string", length=255, nullable=true)
      */
+    #[ORM\Column(name: 'domain', type: 'string', length: 255, nullable: true)]
     private $domain;
 
     /**

@@ -135,9 +135,7 @@ class FileFormSubmissionFieldTest extends TestCase
 
         $file->method('getClientOriginalName')->willReturn('example-name.pdf');
 
-        $file->expects($this->any())
-            ->method('move')
-            ->willReturn(true);
+        $file->expects($this->any())->method('move');
 
         $object->file = $file;
         $object->upload(__DIR__ . '/../../Resources/assets/', __DIR__ . '/../../Resources/assets/');

@@ -6,17 +6,26 @@ use Kunstmaan\GeneratorBundle\Generator\SearchPageGenerator;
 use Kunstmaan\GeneratorBundle\Helper\GeneratorUtils;
 use Kunstmaan\GeneratorBundle\Helper\Sf4AppBundle;
 use Sensio\Bundle\GeneratorBundle\Command\GenerateDoctrineCommand;
-use Sensio\Bundle\GeneratorBundle\Command\Validators;
+use Symfony\Bundle\MakerBundle\Doctrine\DoctrineHelper;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\HttpKernel\Kernel;
 
 /**
  * Generates a SearchPage based on the KunstmaanNodeSearchBundle
  */
 class GenerateSearchPageCommand extends GenerateDoctrineCommand
 {
+    /** @var DoctrineHelper */
+    private $doctrineHelper;
+
+    public function __construct(DoctrineHelper $doctrineHelper)
+    {
+        parent::__construct();
+
+        $this->doctrineHelper = $doctrineHelper;
+    }
+
     /**
      * @see Command
      */
@@ -63,19 +72,7 @@ EOT
 
         $prefix = $input->getOption('prefix');
         $createPage = $input->getOption('createpage');
-        if (Kernel::VERSION_ID < 40000) {
-            GeneratorUtils::ensureOptionsProvided($input, ['namespace']);
-
-            $namespace = Validators::validateBundleNamespace($input->getOption('namespace'));
-            $bundle = strtr($namespace, ['\\' => '']);
-
-            $bundle = $this
-                ->getApplication()
-                ->getKernel()
-                ->getBundle($bundle);
-        } else {
-            $bundle = new Sf4AppBundle($this->getContainer()->getParameter('kernel.project_dir'));
-        }
+        $bundle = new Sf4AppBundle($this->getContainer()->getParameter('kernel.project_dir'));
 
         $rootDir = $this->getApplication()->getKernel()->getProjectDir();
 
@@ -103,26 +100,11 @@ EOT
         $questionHelper->writeSection($output, 'Welcome to the SearchPage generator');
 
         $inputAssistant = GeneratorUtils::getInputAssistant($input, $output, $questionHelper, $this->getApplication()->getKernel(), $this->getContainer());
-
-        if (Kernel::VERSION_ID >= 40000) {
-            $inputAssistant->askForPrefix();
-
-            return;
-        }
-
-        $inputAssistant->askForNamespace([
-            '',
-            'This command helps you to generate a SearchPage.',
-            'You must specify the namespace of the bundle where you want to generate the SearchPage in.',
-            'Use <comment>/</comment> instead of <comment>\\ </comment>for the namespace delimiter to avoid any problem.',
-            '',
-        ]);
-
         $inputAssistant->askForPrefix();
     }
 
     protected function createGenerator()
     {
-        return new SearchPageGenerator($this->getContainer()->get('filesystem'), '/searchpage', $this->getContainer()->getParameter('kernel.project_dir'));
+        return new SearchPageGenerator($this->getContainer()->get('filesystem'), '/searchpage', $this->getContainer()->getParameter('kernel.project_dir'), $this->doctrineHelper);
     }
 }

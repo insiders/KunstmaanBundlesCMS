@@ -3,7 +3,6 @@
 namespace Kunstmaan\SearchBundle\Command;
 
 use Kunstmaan\SearchBundle\Configuration\SearchConfigurationChain;
-use Kunstmaan\SearchBundle\Configuration\SearchConfigurationInterface;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -28,24 +27,17 @@ final class SetupIndexCommand extends Command
         $this->configurationChain = $configurationChain;
     }
 
-    protected function configure()
+    protected function configure(): void
     {
         $this
             ->setName('kuma:search:setup')
             ->setDescription('Set up the index(es)');
     }
 
-    /**
-     * @return int|null null or 0 if everything went fine, or an error code
-     */
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $helper = $this->getHelper('question');
 
-        /**
-         * @var string
-         * @var SearchConfigurationInterface $searchConfiguration
-         */
         foreach ($this->configurationChain->getConfigurations() as $alias => $searchConfiguration) {
             $languagesNotAnalyzed = $searchConfiguration->getLanguagesNotAnalyzed();
             if (\count($languagesNotAnalyzed) > 0) {
@@ -55,7 +47,7 @@ final class SetupIndexCommand extends Command
                 );
                 $question->setErrorMessage('Answer %s is invalid.');
                 if ($helper->ask($input, $output, $question) === 'No') {
-                    return;
+                    return 0;
                 }
             }
 

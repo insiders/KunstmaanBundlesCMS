@@ -12,6 +12,8 @@ use Symfony\Component\Validator\Constraints as Assert;
  * @ORM\Entity()
  * @ORM\Table(name="kuma_editable_media_wrapper")
  */
+#[ORM\Entity]
+#[ORM\Table(name: 'kuma_editable_media_wrapper')]
 class EditableMediaWrapper extends AbstractEntity
 {
     /**
@@ -19,11 +21,14 @@ class EditableMediaWrapper extends AbstractEntity
      * @ORM\JoinColumn(name="media_id", referencedColumnName="id")
      * @Assert\NotNull()
      */
+    #[ORM\ManyToOne(targetEntity: Media::class, cascade: ['persist'])]
+    #[ORM\JoinColumn(name: 'media_id', referencedColumnName: 'id')]
     private $media;
 
     /**
      * @ORM\Column(name="runtime_config", type="text", nullable=true)
      */
+    #[ORM\Column(name: 'runtime_config', type: 'text', nullable: true)]
     private $runTimeConfig;
 
     public function getMedia(): ?Media

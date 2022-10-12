@@ -4,30 +4,23 @@ namespace {{ namespace }}\Entity\PageParts;
 
 use Doctrine\ORM\Mapping as ORM;
 
+{% if canUseEntityAttributes %}
+#[ORM\Entity]
+#[ORM\Table(name: '{{ prefix }}{{ underscoreName }}s')]
+{% else %}
 /**
- * {{ pagepart }}
- *
- * @ORM\Table(name="{{ prefix }}{{ underscoreName }}s")
  * @ORM\Entity
+ * @ORM\Table(name="{{ prefix }}{{ underscoreName }}s")
  */
+{% endif %}
 class {{ pagepart }} extends AbstractPagePart
 {
-    /**
-     * Get the twig view.
-     *
-     * @return string
-     */
-    public function getDefaultView()
+    public function getDefaultView(): string
     {
-        return '{% if not isV4 %}{{ bundle }}:{%endif%}PageParts/{{ pagepart }}{% if not isV4 %}:{% else %}/{% endif %}view.html.twig';
+        return 'PageParts/{{ pagepart }}/view.html.twig';
     }
 
-    /**
-     * Get the admin form type.
-     *
-     * @return string
-     */
-    public function getDefaultAdminType()
+    public function getDefaultAdminType(): string
     {
         return {{ adminType }}::class;
     }

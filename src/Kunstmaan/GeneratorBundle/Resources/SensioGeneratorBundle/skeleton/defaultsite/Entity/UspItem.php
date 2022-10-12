@@ -2,146 +2,160 @@
 
 namespace {{ namespace }}\Entity;
 
+use {{ namespace }}\Entity\PageParts\UspPagePart;
 use Doctrine\ORM\Mapping as ORM;
 use Kunstmaan\AdminBundle\Entity\AbstractEntity;
+use Kunstmaan\MediaBundle\Entity\Media;
 use Symfony\Component\Validator\Constraints as Assert;
-use {{ namespace }}\Entity\PageParts\UspPagePart;
 
+{% if canUseEntityAttributes %}
+#[ORM\Entity]
+#[ORM\Table(name: '{{ prefix }}usp_item')]
+{% else %}
 /**
  * @ORM\Table(name="{{ prefix }}usp_item")
  * @ORM\Entity
  */
+{% endif %}
 class UspItem extends AbstractEntity
 {
     /**
-     * @var \Kunstmaan\MediaBundle\Entity\Media
+     * @var Media|null
+{% if canUseEntityAttributes == false %}
      *
      * @ORM\ManyToOne(targetEntity="Kunstmaan\MediaBundle\Entity\Media")
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="icon_id", referencedColumnName="id")
      * })
+{% if canUseAttributes == false %}
      * @Assert\NotNull()
+{% endif %}
+{% endif %}
      */
+{% if canUseAttributes %}
+    #[Assert\NotNull]
+{% endif %}
+{% if canUseEntityAttributes %}
+    #[ORM\ManyToOne(targetEntity: Media::class)]
+    #[ORM\JoinColumn(name: 'icon_id', referencedColumnName: 'id')]
+{% endif %}
     private $icon;
 
     /**
-     * @var string
+     * @var string|null
+{% if canUseEntityAttributes == false %}
      *
      * @ORM\Column(name="title", type="string", length=255, nullable=true)
+{% if canUseAttributes == false %}
      * @Assert\NotBlank()
+{% endif %}
+{% endif %}
      */
+{% if canUseAttributes %}
+    #[Assert\NotBlank]
+{% endif %}
+{% if canUseEntityAttributes %}
+    #[ORM\Column(name: 'title', type: 'string', length: 255, nullable: true)]
+{% endif %}
     private $title;
 
     /**
-     * @var string
+     * @var string|null
+{% if canUseEntityAttributes == false %}
      *
      * @ORM\Column(name="description", type="text", nullable=true)
+{% endif %}
      */
+{% if canUseEntityAttributes %}
+    #[ORM\Column(name: 'description', type: 'text', nullable: true)]
+{% endif %}
     private $description;
 
     /**
-     * @var integer
+     * @var int
+{% if canUseEntityAttributes == false %}
      *
      * @ORM\Column(name="weight", type="integer", nullable=true)
+{% if canUseAttributes == false %}
      * @Assert\NotBlank()
+{% endif %}
+{% endif %}
      */
+{% if canUseAttributes %}
+    #[Assert\NotBlank]
+{% endif %}
+{% if canUseEntityAttributes %}
+    #[ORM\Column(name: 'weight', type: 'integer', nullable: true)]
+{% endif %}
     private $weight;
 
     /**
+     * @var UspPagePart
+{% if canUseEntityAttributes == false %}
+     *
      * @ORM\ManyToOne(targetEntity="\{{ namespace }}\Entity\PageParts\UspPagePart", inversedBy="items")
      * @ORM\JoinColumn(name="usp_pp_id", referencedColumnName="id")
-     **/
+{% endif %}
+     */
+{% if canUseEntityAttributes %}
+    #[ORM\ManyToOne(targetEntity: UspPagePart::class, inversedBy: 'items')]
+    #[ORM\JoinColumn(name: 'usp_pp_id', referencedColumnName: 'id')]
+{% endif %}
     private $uspPagePart;
 
-    /**
-     * @param \Kunstmaan\MediaBundle\Entity\Media $icon
-     */
-    public function setIcon($icon)
+    public function setIcon(?Media $icon): void
     {
-	$this->icon = $icon;
+        $this->icon = $icon;
     }
 
-    /**
-     * @return \Kunstmaan\MediaBundle\Entity\Media
-     */
-    public function getIcon()
+    public function getIcon(): ?Media
     {
-	return $this->icon;
+        return $this->icon;
     }
 
-    /**
-     * @return string
-     */
-    public function getTitle()
+    public function getTitle(): ?string
     {
-	return $this->title;
+        return $this->title;
     }
 
-    /**
-     * @param string $title
-     *
-     * @return UspItem
-     */
-    public function setTitle($title)
+    public function setTitle(?string $title): self
     {
-	$this->title = $title;
+        $this->title = $title;
 
-	return $this;
+        return $this;
     }
 
-    /**
-     * @return string
-     */
-    public function getDescription()
+    public function getDescription(): ?string
     {
-	return $this->description;
+        return $this->description;
     }
 
-    /**
-     * @param string $description
-     *
-     * @return UspItem
-     */
-    public function setDescription($description)
+    public function setDescription(?string $description): self
     {
-	$this->description = $description;
+        $this->description = $description;
 
-	return $this;
+        return $this;
     }
 
-    /**
-     * @return int
-     */
-    public function getWeight()
+    public function getWeight(): int
     {
-	return $this->weight;
+        return $this->weight;
     }
 
-    /**
-     * @param int $weight
-     *
-     * @return UspItem
-     */
-    public function setWeight($weight)
+    public function setWeight(int $weight): self
     {
-	$this->weight = $weight;
+        $this->weight = $weight;
 
-	return $this;
+        return $this;
     }
 
-    /**
-     * @param UspPagePart $uspPagePart
-     */
-    public function setUspPagePart(UspPagePart $uspPagePart)
+    public function setUspPagePart(UspPagePart $uspPagePart): void
     {
-	$this->uspPagePart = $uspPagePart;
+        $this->uspPagePart = $uspPagePart;
     }
 
-    /**
-     * @return UspPagePart
-     */
-    public function getUspPagePart()
+    public function getUspPagePart(): UspPagePart
     {
-	return $this->uspPagePart;
+        return $this->uspPagePart;
     }
 }

@@ -2,27 +2,43 @@
 
 namespace {{ namespace }}\Entity\PageParts;
 
+use {{ namespace }}\Entity\UspItem;
 use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Kunstmaan\AdminBundle\Entity\DeepCloneInterface;
 use Symfony\Component\Validator\Constraints as Assert;
-use {{ namespace }}\Entity\UspItem;
 
+{% if canUseEntityAttributes %}
+#[ORM\Entity]
+#[ORM\Table(name: '{{ prefix }}usp_page_parts')]
+{% else %}
 /**
  * @ORM\Table(name="{{ prefix }}usp_page_parts")
  * @ORM\Entity
  */
+{% endif %}
 class UspPagePart extends AbstractPagePart implements DeepCloneInterface
 {
     /**
-     * @var ArrayCollection
+     * @var Collection
+{% if canUseEntityAttributes == false %}
      *
+{% if canUseAttributes == false %}
      * @Assert\Valid()
+{% endif %}
      * @ORM\OneToMany(targetEntity="\{{ namespace }}\Entity\UspItem", mappedBy="uspPagePart", cascade={"persist", "remove"}, orphanRemoval=true)
      * @ORM\OrderBy({"weight" = "ASC"})
-     **/
+{% endif %}
+     */
+{% if canUseAttributes %}
+    #[Assert\Valid]
+{% endif %}
+{% if canUseEntityAttributes %}
+    #[ORM\OneToMany(targetEntity: UspItem::class, mappedBy: 'uspPagePart', cascade: ['persist', 'remove'], orphanRemoval: true)]
+    #[ORM\OrderBy(['weight' => 'ASC'])]
+{% endif %}
     private $items;
-
 
     public function __construct()
     {
@@ -32,63 +48,44 @@ class UspPagePart extends AbstractPagePart implements DeepCloneInterface
     /**
      * @param ArrayCollection $items
      */
-    public function setItems($items)
+    public function setItems($items): void
     {
         foreach ($items as $item) {
             $this->addItem($item);
         }
     }
 
-    /**
-     * @return ArrayCollection
-     */
-    public function getItems()
+    public function getItems(): Collection
     {
         return $this->items;
     }
 
-    /**
-     * @param UspItem $item
-     */
-    public function addItem(UspItem $item)
+    public function addItem(UspItem $item): void
     {
         $item->setUspPagePart($this);
 
         $this->items->add($item);
     }
 
-    /**
-     * @param UspItem $item
-     */
-    public function removeItem(UspItem $item)
+    public function removeItem(UspItem $item): void
     {
         $this->items->removeElement($item);
     }
 
-    /**
-     * Get the twig view.
-     *
-     * @return string
-     */
-    public function getDefaultView()
+    public function getDefaultView(): string
     {
-        return '{% if not isV4 %}{{ bundle.getName() }}:{%endif%}PageParts/UspPagePart{% if not isV4 %}:{% else %}/{% endif %}view.html.twig';
+        return 'PageParts/UspPagePart/view.html.twig';
     }
 
-    /**
-     * Get the admin form type.
-     *
-     * @return string
-     */
-    public function getDefaultAdminType()
+    public function getDefaultAdminType(): string
     {
         return \{{ namespace }}\Form\PageParts\UspPagePartAdminType::class;
     }
 
     /**
-     * When cloning this entity, we must also clone all entities in the ArrayCollection
+     * When cloning this entity, we must also clone all entities in the ArrayCollection.
      */
-    public function deepClone()
+    public function deepClone(): void
     {
         $items = $this->getItems();
         $this->items = new ArrayCollection();

@@ -4,6 +4,7 @@ namespace Kunstmaan\MenuBundle\Form;
 
 use Doctrine\ORM\EntityRepository;
 use Kunstmaan\MenuBundle\Entity\MenuItem;
+use Kunstmaan\NodeBundle\Entity\Node;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
@@ -140,15 +141,17 @@ class MenuItemAdminType extends AbstractType
     public function configureOptions(OptionsResolver $resolver)
     {
         $resolver->setDefaults(
-          [
-              'data_class' => MenuItem::class,
-              'menu' => null,
-              'entityId' => null,
-              'rootNode' => null,
-              'menuItemClass' => null,
-              'locale' => null,
-          ]
+            [
+                'data_class' => MenuItem::class,
+                'menu' => null,
+                'entityId' => null,
+                'rootNode' => null,
+                'menuItemClass' => null,
+                'locale' => null,
+            ]
         );
+
+        $resolver->setAllowedTypes('rootNode', [Node::class, 'null']);
     }
 
     /**

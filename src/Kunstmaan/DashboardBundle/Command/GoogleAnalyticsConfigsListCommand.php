@@ -22,17 +22,14 @@ final class GoogleAnalyticsConfigsListCommand extends Command
         $this->em = $em;
     }
 
-    protected function configure()
+    protected function configure(): void
     {
         $this
             ->setName('kuma:dashboard:widget:googleanalytics:configs:list')
             ->setDescription('List available configs');
     }
 
-    /**
-     * @return int|void|null
-     */
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $configs = $this->getconfigs();
 
@@ -54,10 +51,8 @@ final class GoogleAnalyticsConfigsListCommand extends Command
 
     /**
      * get all segments
-     *
-     * @return array
      */
-    private function getconfigs()
+    private function getconfigs(): array
     {
         // get all segments
         $configRepository = $this->em->getRepository(AnalyticsConfig::class);

@@ -6,6 +6,34 @@ This changelog references the relevant changes (bug and security fixes) done in 
 To get the diff for a specific change, go to https://github.com/kunstmaan/KunstmaanBundlesCMS/commit/XXX where XXX is the change hash
 To get the diff between two versions, go to https://github.com/kunstmaan/KunstmaanBundlesCMS/compare/6.1.0...6.1.1
 
+## 6.1.6 / 2022-10-05
+
+* [NodeBundle] Temporary disable csrf check on delete because conflict with other page types [#3153](https://github.com/Kunstmaan/KunstmaanBundlesCMS/pull/3153) ([@acrobat](https://github.com/acrobat))
+* [AllBiundles] Update demo site url [#3168](https://github.com/Kunstmaan/KunstmaanBundlesCMS/pull/3168) ([@acrobat](https://github.com/acrobat))
+* [AllBundles] Update cms website urls to new domain + update doc urls [#3161](https://github.com/Kunstmaan/KunstmaanBundlesCMS/pull/3161) ([@acrobat](https://github.com/acrobat))
+* [RedirectBundle] Save empty domain so redirect router catches all incoming domains for project [#3160](https://github.com/Kunstmaan/KunstmaanBundlesCMS/pull/3160) ([@acrobat](https://github.com/acrobat))
+* [AllBundles] Update setup-node action to latest version [#3151](https://github.com/Kunstmaan/KunstmaanBundlesCMS/pull/3151) ([@acrobat](https://github.com/acrobat))
+* [TranslatorBundle] Fix sqlite error in translator tests with doctrine/dbal v2.10+ [#3150](https://github.com/Kunstmaan/KunstmaanBundlesCMS/pull/3150) ([@acrobat](https://github.com/acrobat))
+
+## 6.1.5 / 2022-06-26
+
+* [NodeBundle] issue where max weight could be exceeded and cause irregular behaviour with sorting [#3143](https://github.com/Kunstmaan/KunstmaanBundlesCMS/pull/3143) ([@Numkil](https://github.com/Numkil))
+* [AdminBundle] Limit doctrine/persistence to 2.x to avoid issues with deprecated entity notation [#3142](https://github.com/Kunstmaan/KunstmaanBundlesCMS/pull/3142) ([@acrobat](https://github.com/acrobat))
+
+## 6.1.4 / 2022-06-07
+
+* [FormBundle] Fix label docblock [#3132](https://github.com/Kunstmaan/KunstmaanBundlesCMS/pull/3132) ([@dannyvw](https://github.com/dannyvw))
+* [NodeBundle] Implement controller improvements for restored node search action [#3128](https://github.com/Kunstmaan/KunstmaanBundlesCMS/pull/3128) ([@acrobat](https://github.com/acrobat))
+* [MultidomainBundle] Fix eventsubscriber service config [#3118](https://github.com/Kunstmaan/KunstmaanBundlesCMS/pull/3118) ([@acrobat](https://github.com/acrobat))
+* [DashboardBundle] Fix trying to access array offset on value of type null [#3109](https://github.com/Kunstmaan/KunstmaanBundlesCMS/pull/3109) ([@dannyvw](https://github.com/dannyvw))
+* [UserManagementBundle] Fix user events [#3107](https://github.com/Kunstmaan/KunstmaanBundlesCMS/pull/3107) ([@dannyvw](https://github.com/dannyvw))
+* [NodeBundle] Fix missing route bc-break in url chooser search [#3127](https://github.com/Kunstmaan/KunstmaanBundlesCMS/pull/3127) ([@acrobat](https://github.com/acrobat))
+* [CookieBundle] Fix php8 deprecation for passing null to stripos [#3106](https://github.com/Kunstmaan/KunstmaanBundlesCMS/pull/3106) ([@acrobat](https://github.com/acrobat))
+* [UserManagementBundle] Restore user edit/delete initialize events [#3099](https://github.com/Kunstmaan/KunstmaanBundlesCMS/pull/3099) ([@acrobat](https://github.com/acrobat))
+* [MultidomainBundle] Restore slug router parameter override [#3098](https://github.com/Kunstmaan/KunstmaanBundlesCMS/pull/3098) ([@acrobat](https://github.com/acrobat))
+* [MediaPagePartBundle] Fix nullable url [#3135](https://github.com/Kunstmaan/KunstmaanBundlesCMS/pull/3135) ([@dannyvw](https://github.com/dannyvw))
+* [SeoBundle] Revert espacing extra metatags string to avoid render issue [#3133](https://github.com/Kunstmaan/KunstmaanBundlesCMS/pull/3133) ([@acrobat](https://github.com/acrobat))
+
 ## 6.1.3 / 2022-01-28
 
 * [LeadGenerationBundle] Add missing controller services [#3060](https://github.com/Kunstmaan/KunstmaanBundlesCMS/pull/3060) ([@acrobat](https://github.com/acrobat))

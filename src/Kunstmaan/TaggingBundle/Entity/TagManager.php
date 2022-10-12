@@ -98,7 +98,7 @@ class TagManager extends BaseTagManager
      */
     public function findAll()
     {
-        $tagsRepo = $this->em->getRepository('KunstmaanTaggingBundle:Tag');
+        $tagsRepo = $this->em->getRepository(Tag::class);
 
         return $tagsRepo->findAll();
     }

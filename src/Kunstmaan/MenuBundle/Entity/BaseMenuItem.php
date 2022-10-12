@@ -12,6 +12,7 @@ use Symfony\Component\Validator\Context\ExecutionContextInterface;
 /**
  * @ORM\MappedSuperclass()
  */
+#[ORM\MappedSuperclass]
 abstract class BaseMenuItem extends AbstractEntity
 {
     const TYPE_PAGE_LINK = 'page_link';
@@ -33,6 +34,9 @@ abstract class BaseMenuItem extends AbstractEntity
      * @Assert\NotNull()
      * @Gedmo\TreeRoot(identifierMethod="getMenu")
      */
+    #[ORM\ManyToOne(targetEntity: Menu::class, inversedBy: 'items')]
+    #[ORM\JoinColumn(name: 'menu_id', referencedColumnName: 'id')]
+    #[Gedmo\TreeRoot(identifierMethod: 'getMenu')]
     protected $menu;
 
     /**
@@ -41,6 +45,7 @@ abstract class BaseMenuItem extends AbstractEntity
      * @ORM\Column(name="type", type="string", length=15, nullable=true)
      * @Assert\NotBlank()
      */
+    #[ORM\Column(name: 'type', type: 'string', length: 15, nullable: true)]
     protected $type;
 
     /**
@@ -49,6 +54,8 @@ abstract class BaseMenuItem extends AbstractEntity
      * @ORM\ManyToOne(targetEntity="Kunstmaan\NodeBundle\Entity\NodeTranslation")
      * @ORM\JoinColumn(name="node_translation_id", referencedColumnName="id")
      */
+    #[ORM\ManyToOne(targetEntity: NodeTranslation::class)]
+    #[ORM\JoinColumn(name: 'node_translation_id', referencedColumnName: 'id')]
     protected $nodeTranslation;
 
     /**
@@ -56,6 +63,7 @@ abstract class BaseMenuItem extends AbstractEntity
      *
      * @ORM\Column(name="title", type="string", nullable=true)
      */
+    #[ORM\Column(name: 'title', type: 'string', nullable: true)]
     protected $title;
 
     /**
@@ -63,6 +71,7 @@ abstract class BaseMenuItem extends AbstractEntity
      *
      * @ORM\Column(name="url", type="string", nullable=true)
      */
+    #[ORM\Column(name: 'url', type: 'string', nullable: true)]
     protected $url;
 
     /**
@@ -70,6 +79,7 @@ abstract class BaseMenuItem extends AbstractEntity
      *
      * @ORM\Column(name="new_window", type="boolean", nullable=true)
      */
+    #[ORM\Column(name: 'new_window', type: 'boolean', nullable: true)]
     protected $newWindow;
 
     /**
@@ -78,6 +88,8 @@ abstract class BaseMenuItem extends AbstractEntity
      * @Gedmo\TreeLeft
      * @ORM\Column(name="lft", type="integer")
      */
+    #[Gedmo\TreeLeft]
+    #[ORM\Column(name: 'lft', type: 'integer')]
     protected $lft;
 
     /**
@@ -86,6 +98,8 @@ abstract class BaseMenuItem extends AbstractEntity
      * @Gedmo\TreeLevel
      * @ORM\Column(name="lvl", type="integer")
      */
+    #[Gedmo\TreeLevel]
+    #[ORM\Column(name: 'lvl', type: 'integer')]
     protected $lvl;
 
     /**
@@ -94,6 +108,8 @@ abstract class BaseMenuItem extends AbstractEntity
      * @Gedmo\TreeRight
      * @ORM\Column(name="rgt", type="integer")
      */
+    #[Gedmo\TreeRight]
+    #[ORM\Column(name: 'rgt', type: 'integer')]
     protected $rgt;
 
     /**

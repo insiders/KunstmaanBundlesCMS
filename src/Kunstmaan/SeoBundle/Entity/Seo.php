@@ -7,6 +7,7 @@ use Doctrine\ORM\Mapping as ORM;
 use Kunstmaan\AdminBundle\Entity\AbstractEntity;
 use Kunstmaan\MediaBundle\Entity\Media;
 use Kunstmaan\SeoBundle\Form\SeoType;
+use Kunstmaan\SeoBundle\Repository\SeoRepository;
 use Kunstmaan\UtilitiesBundle\Helper\ClassLookup;
 
 /**
@@ -16,6 +17,10 @@ use Kunstmaan\UtilitiesBundle\Helper\ClassLookup;
  * @ORM\Table(name="kuma_seo", indexes={@ORM\Index(name="idx_seo_lookup", columns={"ref_id", "ref_entity_name"})})
  * @ORM\ChangeTrackingPolicy("DEFERRED_EXPLICIT")
  */
+#[ORM\Entity(repositoryClass: SeoRepository::class)]
+#[ORM\Table(name: 'kuma_seo')]
+#[ORM\Index(name: 'idx_seo_lookup', columns: ['ref_id', 'ref_entity_name'])]
+#[ORM\ChangeTrackingPolicy('DEFERRED_EXPLICIT')]
 class Seo extends AbstractEntity
 {
     /**
@@ -23,6 +28,7 @@ class Seo extends AbstractEntity
      *
      * @ORM\Column(name="meta_title", type="string", nullable=true)
      */
+    #[ORM\Column(name: 'meta_title', type: 'string', nullable: true)]
     protected $metaTitle;
 
     /**
@@ -30,6 +36,7 @@ class Seo extends AbstractEntity
      *
      * @ORM\Column(name="meta_description", type="text", nullable=true)
      */
+    #[ORM\Column(name: 'meta_description', type: 'text', nullable: true)]
     protected $metaDescription;
 
     /**
@@ -44,6 +51,7 @@ class Seo extends AbstractEntity
      *
      * @ORM\Column(name="meta_author", type="string", nullable=true)
      */
+    #[ORM\Column(name: 'meta_author', type: 'string', nullable: true)]
     protected $metaAuthor;
 
     /**
@@ -51,6 +59,7 @@ class Seo extends AbstractEntity
      *
      * @ORM\Column(name="meta_robots", type="string", nullable=true)
      */
+    #[ORM\Column(name: 'meta_robots', type: 'string', nullable: true)]
     protected $metaRobots;
 
     /**
@@ -58,6 +67,7 @@ class Seo extends AbstractEntity
      *
      * @ORM\Column(name="og_type", type="string", nullable=true)
      */
+    #[ORM\Column(name: 'og_type', type: 'string', nullable: true)]
     protected $ogType;
 
     /**
@@ -65,6 +75,7 @@ class Seo extends AbstractEntity
      *
      * @ORM\Column(name="og_title", type="string", nullable=true)
      */
+    #[ORM\Column(name: 'og_title', type: 'string', nullable: true)]
     protected $ogTitle;
 
     /**
@@ -72,6 +83,7 @@ class Seo extends AbstractEntity
      *
      * @ORM\Column(name="og_description", type="text", nullable=true)
      */
+    #[ORM\Column(name: 'og_description', type: 'text', nullable: true)]
     protected $ogDescription;
 
     /**
@@ -80,6 +92,8 @@ class Seo extends AbstractEntity
      * @ORM\ManyToOne(targetEntity="Kunstmaan\MediaBundle\Entity\Media")
      * @ORM\JoinColumn(name="og_image_id", referencedColumnName="id")
      */
+    #[ORM\ManyToOne(targetEntity: Media::class)]
+    #[ORM\JoinColumn(name: 'og_image_id', referencedColumnName: 'id')]
     protected $ogImage;
 
     /**
@@ -87,6 +101,7 @@ class Seo extends AbstractEntity
      *
      * @ORM\Column(name="extra_metadata", type="text", nullable=true)
      */
+    #[ORM\Column(name: 'extra_metadata', type: 'text', nullable: true)]
     protected $extraMetadata;
 
     /**
@@ -94,6 +109,7 @@ class Seo extends AbstractEntity
      *
      * @ORM\Column(type="bigint", name="ref_id")
      */
+    #[ORM\Column(name: 'ref_id', type: 'bigint')]
     protected $refId;
 
     /**
@@ -101,26 +117,31 @@ class Seo extends AbstractEntity
      *
      * @ORM\Column(type="string", name="ref_entity_name")
      */
+    #[ORM\Column(name: 'ref_entity_name', type: 'string')]
     protected $refEntityName;
 
     /**
      * @ORM\Column(type="string", nullable=true, name="og_url")
      */
+    #[ORM\Column(name: 'og_url', type: 'string', nullable: true)]
     protected $ogUrl;
 
     /**
      * @ORM\Column(type="string", length=100, nullable=true, name="og_article_author")
      */
+    #[ORM\Column(name: 'og_article_author', type: 'string', length: 100, nullable: true)]
     protected $ogArticleAuthor;
 
     /**
      * @ORM\Column(type="string", length=100, nullable=true, name="og_article_publisher")
      */
+    #[ORM\Column(name: 'og_article_publisher', type: 'string', length: 100, nullable: true)]
     protected $ogArticlePublisher;
 
     /**
      * @ORM\Column(type="string", length=100, nullable=true, name="og_article_section")
      */
+    #[ORM\Column(name: 'og_article_section', type: 'string', length: 100, nullable: true)]
     protected $ogArticleSection;
 
     /**
@@ -128,6 +149,7 @@ class Seo extends AbstractEntity
      *
      * @ORM\Column(name="twitter_title", type="string", length=255, nullable=true)
      */
+    #[ORM\Column(name: 'twitter_title', type: 'string', length: 255, nullable: true)]
     protected $twitterTitle;
 
     /**
@@ -135,6 +157,7 @@ class Seo extends AbstractEntity
      *
      * @ORM\Column(name="twitter_description", type="text", nullable=true)
      */
+    #[ORM\Column(name: 'twitter_description', type: 'text', nullable: true)]
     protected $twitterDescription;
 
     /**
@@ -142,6 +165,7 @@ class Seo extends AbstractEntity
      *
      * @ORM\Column(name="twitter_site", type="string", length=255, nullable=true)
      */
+    #[ORM\Column(name: 'twitter_site', type: 'string', length: 255, nullable: true)]
     protected $twitterSite;
 
     /**
@@ -149,6 +173,7 @@ class Seo extends AbstractEntity
      *
      * @ORM\Column(name="twitter_creator", type="string", length=255, nullable=true)
      */
+    #[ORM\Column(name: 'twitter_creator', type: 'string', length: 255, nullable: true)]
     protected $twitterCreator;
 
     /**
@@ -157,6 +182,8 @@ class Seo extends AbstractEntity
      * @ORM\ManyToOne(targetEntity="Kunstmaan\MediaBundle\Entity\Media")
      * @ORM\JoinColumn(name="twitter_image_id", referencedColumnName="id")
      */
+    #[ORM\ManyToOne(targetEntity: Media::class)]
+    #[ORM\JoinColumn(name: 'twitter_image_id', referencedColumnName: 'id')]
     protected $twitterImage;
 
     /**

@@ -9,6 +9,7 @@ use Doctrine\ORM\Configuration;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\Mapping\ClassMetadata;
 use Doctrine\ORM\Mapping\QuoteStrategy;
+use Doctrine\ORM\Query;
 use Doctrine\ORM\Query\AST\FromClause;
 use Doctrine\ORM\Query\AST\IdentificationVariableDeclaration;
 use Doctrine\ORM\Query\AST\IndexBy;
@@ -24,7 +25,7 @@ class AclWalkerTest extends TestCase
     public function testWalker()
     {
         $range = new RangeVariableDeclaration('someschema', 's');
-        $expr = new PathExpression('int', 'id');
+        $expr = new PathExpression('int', 'id', 'id');
         $expr->type = PathExpression::TYPE_STATE_FIELD;
         $indexBy = new IndexBy($expr);
         $from = new FromClause([new IdentificationVariableDeclaration($range, $indexBy, [])]);
@@ -47,13 +48,17 @@ class AclWalkerTest extends TestCase
         $meta->expects($this->once())->method('getTableName')->willReturn('sometable');
         $strategy->expects($this->once())->method('getTableName')->willReturn('sometable');
         $config->expects($this->once())->method('getQuoteStrategy')->willReturn($strategy);
+        $config->expects($this->once())->method('getDefaultQueryHints')->willReturn([]);
 
-        $query->expects($this->once())->method('getEntityManager')->willReturn($em);
-        $query->expects($this->exactly(4))->method('getHint')->will($this->onConsecutiveCalls('sometable', 'sometable', 's', null));
         $em->expects($this->once())->method('getConnection')->willReturn($conn);
-        $em->expects($this->once())->method('getConfiguration')->willReturn($config);
+        $em->expects($this->exactly(3))->method('getConfiguration')->willReturn($config);
         $em->expects($this->once())->method('getClassMetaData')->willReturn($meta);
         $result->expects($this->once())->method('getResultSetMapping')->willReturn($mapping);
+
+        $query = new Query($em);
+        $query->setHint('acl.entityRootTableName', 'sometable');
+        $query->setHint('acl.entityRootTableDqlAlias', 's');
+        $query->setHint('acl.extra.query', null);
 
         $aclWalker = new AclWalker($query, $result, []);
         $sql = $aclWalker->walkFromClause($from);

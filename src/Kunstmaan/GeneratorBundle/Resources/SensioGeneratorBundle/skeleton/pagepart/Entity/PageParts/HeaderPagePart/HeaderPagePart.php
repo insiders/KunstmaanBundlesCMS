@@ -5,91 +5,88 @@ namespace {{ namespace }}\Entity\PageParts;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
 
+{% if canUseEntityAttributes %}
+#[ORM\Entity]
+#[ORM\Table(name: '{{ prefix }}{{ underscoreName }}s')]
+{% else %}
 /**
- * {{ pagepart }}
- *
- * @ORM\Table(name="{{ prefix }}{{ underscoreName }}s")
  * @ORM\Entity
+ * @ORM\Table(name="{{ prefix }}{{ underscoreName }}s")
  */
+{% endif %}
 class {{ pagepart }} extends AbstractPagePart
 {
     /**
+     * @var int|null
+{% if canUseEntityAttributes == false %}
+     *
      * @ORM\Column(name="niv", type="integer", nullable=true)
+{% if canUseAttributes == false %}
      * @Assert\NotBlank(message="headerpagepart.niv.not_blank")
+{% endif %}
+{% endif %}
      */
+{% if canUseAttributes %}
+    #[Assert\NotBlank(message: 'headerpagepart.niv.not_blank')]
+{% endif %}
+{% if canUseEntityAttributes %}
+    #[ORM\Column(name: 'niv', type: 'integer', nullable: true)]
+{% endif %}
     private $niv;
 
     /**
+     * @var string
+{% if canUseEntityAttributes == false %}
+     *
      * @ORM\Column(name="title", type="string", nullable=true)
+{% if canUseAttributes == false %}
      * @Assert\NotBlank(message="headerpagepart.title.not_blank")
+{% endif %}
+{% endif %}
      */
+{% if canUseAttributes %}
+    #[Assert\NotBlank(message: 'headerpagepart.title.not_blank')]
+{% endif %}
+{% if canUseEntityAttributes %}
+    #[ORM\Column(name: 'title', type: 'string', nullable: true)]
+{% endif %}
     private $title;
 
     /**
      * @var array Supported header sizes
      */
-    public static $supportedHeaders = array(1, 2, 3, 4, 5, 6);
+    public static $supportedHeaders = [1, 2, 3, 4, 5, 6];
 
-    /**
-     * Set niv
-     *
-     * @param int $niv
-     *
-     * @return {{ pagepart }}
-     */
-    public function setNiv($niv)
+    public function setNiv(?int $niv): HeaderPagePart
     {
         $this->niv = $niv;
 
         return $this;
     }
 
-    /**
-     * Get niv
-     *
-     * @return int
-     */
-    public function getNiv()
+    public function getNiv(): ?int
     {
         return $this->niv;
     }
 
-    /**
-     * @param string $title
-     *
-     * @return {{ pagepart }}
-     */
-    public function setTitle($title)
+    public function setTitle(?string $title): HeaderPagePart
     {
         $this->title = $title;
 
         return $this;
     }
 
-    /**
-     * @return string
-     */
-    public function getTitle()
+    public function getTitle(): ?string
     {
         return $this->title;
     }
 
-    /**
-     * Get the twig view.
-     *
-     * @return string
-     */
-    public function getDefaultView()
+    public function getDefaultView(): string
     {
-        return '{% if not isV4 %}{{ bundle }}:{%endif%}PageParts/{{ pagepart }}{% if not isV4 %}:{% else %}/{% endif %}view.html.twig';
+        return 'PageParts/{{ pagepart }}/view.html.twig';
     }
 
-    /**
-     * Get the admin form type.
-     *
-     * @return string
-     */
-    public function getDefaultAdminType()
+    public function getDefaultAdminType(): string
     {
         return {{ adminType }}::class;
     }

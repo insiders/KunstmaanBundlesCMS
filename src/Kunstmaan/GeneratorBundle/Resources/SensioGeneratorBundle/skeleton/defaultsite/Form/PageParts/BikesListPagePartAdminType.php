@@ -2,31 +2,22 @@
 
 namespace {{ namespace }}\Form\PageParts;
 
+use {{ namespace }}\Entity\PageParts\BikesListPagePart;
+use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
-class BikesListPagePartAdminType extends \Symfony\Component\Form\AbstractType
+class BikesListPagePartAdminType extends AbstractType
 {
-    public function buildForm(FormBuilderInterface $builder, array $options)
+    public function buildForm(FormBuilderInterface $builder, array $options): void
     {
-	parent::buildForm($builder, $options);
+        parent::buildForm($builder, $options);
     }
 
-
-    public function getBlockPrefix()
+    public function configureOptions(OptionsResolver $resolver): void
     {
-	return 'bikeslistpageparttype';
-    }
-
-    /**
-     * Sets the default options for this type.
-     *
-     * @param OptionsResolver $resolver The resolver for the options.
-     */
-    public function configureOptions(OptionsResolver $resolver)
-    {
-	$resolver->setDefaults(array(
-	    'data_class' => '\{{ namespace }}\Entity\PageParts\BikesListPagePart'
-	));
+        $resolver->setDefaults([
+            'data_class' => BikesListPagePart::class,
+        ]);
     }
 }

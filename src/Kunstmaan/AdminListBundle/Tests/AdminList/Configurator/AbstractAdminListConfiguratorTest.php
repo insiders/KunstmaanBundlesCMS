@@ -80,7 +80,7 @@ class AbstractAdminListConfiguratorTest extends TestCase
 
     public function testGetViewUrlFor()
     {
-        //from array
+        // from array
         $item = ['id' => 999];
         $viewUrl = $this->abstractAdminListConfMock->getViewUrlFor($item);
         $this->assertArrayHasKey('path', $viewUrl);
@@ -400,7 +400,7 @@ class AbstractAdminListConfiguratorTest extends TestCase
 
         $requestMock = $this->getMockBuilder(Request::class)
             ->setConstructorArgs([['page' => 1], [], ['_route' => 'testroute']])
-            ->setMethods(['getSession'])
+            ->onlyMethods(['getSession'])
             ->getMock()
         ;
         $sessionMock = $this->createMock(Session::class);
@@ -432,7 +432,7 @@ class AbstractAdminListConfiguratorTest extends TestCase
 
         $requestMock = $this->getMockBuilder(Request::class)
             ->setConstructorArgs([[], [], ['_route' => 'testroute']])
-            ->setMethods(['getSession'])
+            ->onlyMethods(['getSession'])
             ->getMock()
         ;
         $sessionMock = $this->createMock(Session::class);

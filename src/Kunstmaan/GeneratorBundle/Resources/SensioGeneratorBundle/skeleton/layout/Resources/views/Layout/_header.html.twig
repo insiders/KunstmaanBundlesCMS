@@ -14,7 +14,7 @@
             {# Logo #}
             {% set homepagePageNode = nodemenu.getRootNodeMenuItem() %}
             <a href="{{ path('_slug', { 'url': homepagePageNode.slug }) }}" class="main-header__logo">
-                <img src="{{ asset('/frontend/img/demosite/logo-thecrew.svg') }}" alt="The Crew" class="main-header__logo__img">
+                <img src="{{ asset('build/img/demosite/logo-thecrew.svg') }}" alt="The Crew" class="main-header__logo__img">
             </a>
 
 
@@ -43,7 +43,7 @@
 {# Desktop header #}
 {# DemositeMessage #}
 {% block cookieconsent %}
-    {% include '<% if not isV4 %><%= shortBundleName %>/<% endif %>Layout/_demositemessage.html.twig' %}
+    {% include 'Layout/_demositemessage.html.twig' %}
 {% endblock %}
 
 {% if nodemenu is defined %}
@@ -52,7 +52,7 @@
             {# Logo #}
             {% set homepagePageNode = nodemenu.getNodeByInternalName('homepage') %}
             <a href="{{ path('_slug', { 'url': homepagePageNode.slug }) }}" class="main-header__logo">
-                <img src="{{ asset('/frontend/img/demosite/logo-thecrew.svg') }}" alt="The Crew" class="main-header__logo__img">
+                <img src="{{ asset('build/img/demosite/logo-thecrew.svg') }}" alt="The Crew" class="main-header__logo__img">
             </a>
 
 
@@ -121,7 +121,7 @@
             {# Logo #}
             {% set homepagePageNode = nodemenu.getNodeByInternalName('homepage') %}
             <a href="{{ path('_slug', { 'url': homepagePageNode.slug }) }}" class="main-header__logo">
-                <img src="{{ asset('/frontend/img/general/logo-kunstmaan.svg') }}" alt="Kunstmaan" class="main-header__logo__img">
+                <img src="{{ asset('build/img/general/logo-kunstmaan.svg') }}" alt="Kunstmaan" class="main-header__logo__img">
             </a>
 
 

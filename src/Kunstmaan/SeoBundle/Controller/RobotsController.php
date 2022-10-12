@@ -3,14 +3,15 @@
 namespace Kunstmaan\SeoBundle\Controller;
 
 use Kunstmaan\SeoBundle\Event\RobotsEvent;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Template;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 
-final class RobotsController
+final class RobotsController extends AbstractController
 {
-    private $dispatcher;
+    private EventDispatcherInterface $dispatcher;
 
     public function __construct(EventDispatcherInterface $dispatcher)
     {
@@ -19,16 +20,13 @@ final class RobotsController
 
     /**
      * @Route(path="/robots.txt", name="KunstmaanSeoBundle_robots", defaults={"_format": "txt"})
-     * @Template("@KunstmaanSeo/Admin/Robots/index.html.twig")
-     *
-     * @return array
      */
-    public function indexAction(Request $request)
+    public function indexAction(Request $request): Response
     {
         $event = new RobotsEvent();
 
         $event = $this->dispatcher->dispatch($event);
 
-        return ['robots' => $event->getContent()];
+        return $this->render('@KunstmaanSeo/Admin/Robots/index.html.twig', ['robots' => $event->getContent()]);
     }
 }

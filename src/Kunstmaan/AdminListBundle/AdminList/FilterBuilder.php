@@ -3,6 +3,7 @@
 namespace Kunstmaan\AdminListBundle\AdminList;
 
 use Kunstmaan\AdminListBundle\AdminList\FilterType\FilterTypeInterface;
+use Symfony\Component\HttpFoundation\InputBag;
 use Symfony\Component\HttpFoundation\Request;
 
 class FilterBuilder
@@ -89,7 +90,7 @@ class FilterBuilder
 
     public function bindRequest(Request $request)
     {
-        $filterBuilderName = 'filter_' . $request->get('_route');
+        $filterBuilderName = 'filter_' . $request->attributes->get('_route');
 
         $this->currentParameters = $request->query->all();
         if (\count($this->currentParameters) === 0) {
@@ -102,17 +103,15 @@ class FilterBuilder
             $request->getSession()->set($filterBuilderName, $this->currentParameters);
         }
 
-        $filterColumnNames = $request->query->get('filter_columnname');
-        if (isset($filterColumnNames)) {
-            $uniqueIds = $request->query->get('filter_uniquefilterid');
-            $index = 0;
-            foreach ($filterColumnNames as $filterColumnName) {
-                $uniqueId = $uniqueIds[$index];
-                $filter = new Filter($filterColumnName, $this->get($filterColumnName), $uniqueId);
-                $this->currentFilters[] = $filter;
-                $filter->bindRequest($request);
-                ++$index;
-            }
+        $filterColumnNames = class_exists(InputBag::class) ? $request->query->all('filter_columnname') : $request->query->get('filter_columnname', []);
+        $uniqueIds = class_exists(InputBag::class) ? $request->query->all('filter_uniquefilterid') : $request->query->get('filter_uniquefilterid', []);
+        $index = 0;
+        foreach ($filterColumnNames as $filterColumnName) {
+            $uniqueId = $uniqueIds[$index];
+            $filter = new Filter($filterColumnName, $this->get($filterColumnName), $uniqueId);
+            $this->currentFilters[] = $filter;
+            $filter->bindRequest($request);
+            ++$index;
         }
     }
 

@@ -8,15 +8,16 @@ use Kunstmaan\VotingBundle\Event\Facebook\FacebookSendEvent;
 use Kunstmaan\VotingBundle\Event\LinkedIn\LinkedInShareEvent;
 use Kunstmaan\VotingBundle\Event\UpDown\DownVoteEvent;
 use Kunstmaan\VotingBundle\Event\UpDown\UpVoteEvent;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Template;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\EventDispatcher\GenericEvent;
 use Symfony\Component\EventDispatcher\LegacyEventDispatcherProxy;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Contracts\EventDispatcher\Event;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 
-final class VotingController
+final class VotingController extends AbstractController
 {
     /** @var EventDispatcherInterface */
     private $eventDispatcher;
@@ -28,24 +29,26 @@ final class VotingController
 
     /**
      * @Route("/voting-upvote", name="voting_upvote")
-     * @Template("@KunstmaanVoting/UpDown/voted.html.twig")
      */
-    public function upVoteAction(Request $request)
+    public function upVoteAction(Request $request): Response
     {
-        $reference = $request->get('reference');
-        $value = $request->get('value');
+        $reference = $request->query->get('reference');
+        $value = $request->query->get('value');
         $this->eventDispatcher->dispatch(new UpVoteEvent($request, $reference, $value), Events::VOTE_UP);
+
+        return $this->render('@KunstmaanVoting/UpDown/voted.html.twig');
     }
 
     /**
      * @Route("/voting-downvote", name="voting_downvote")
-     * @Template("@KunstmaanVoting/UpDown/voted.html.twig")
      */
-    public function downVoteAction(Request $request)
+    public function downVoteAction(Request $request): Response
     {
-        $reference = $request->get('reference');
-        $value = $request->get('value');
+        $reference = $request->query->get('reference');
+        $value = $request->query->get('value');
         $this->eventDispatcher->dispatch(new DownVoteEvent($request, $reference, $value), Events::VOTE_DOWN);
+
+        return $this->render('@KunstmaanVoting/UpDown/voted.html.twig');
     }
 
     /**
@@ -53,8 +56,8 @@ final class VotingController
      */
     public function facebookLikeAction(Request $request)
     {
-        $response = $request->get('response');
-        $value = $request->get('value');
+        $response = $request->query->get('response');
+        $value = $request->query->get('value');
         $this->eventDispatcher->dispatch(new FacebookLikeEvent($request, $response, $value), Events::FACEBOOK_LIKE);
     }
 
@@ -63,8 +66,8 @@ final class VotingController
      */
     public function facebookSendAction(Request $request)
     {
-        $response = $request->get('response');
-        $value = $request->get('value');
+        $response = $request->query->get('response');
+        $value = $request->query->get('value');
         $this->eventDispatcher->dispatch(new FacebookSendEvent($request, $response, $value), Events::FACEBOOK_SEND);
     }
 
@@ -73,8 +76,8 @@ final class VotingController
      */
     public function linkedInShareAction(Request $request)
     {
-        $reference = $request->get('reference');
-        $value = $request->get('value');
+        $reference = $request->query->get('reference');
+        $value = $request->query->get('value');
         $this->eventDispatcher->dispatch(new LinkedInShareEvent($request, $reference, $value), Events::LINKEDIN_SHARE);
     }
 

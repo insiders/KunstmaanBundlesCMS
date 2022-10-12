@@ -43,7 +43,7 @@ final class CreatePdfPreviewCommand extends Command
         $this->enablePdfPreview = $enablePdfPreview;
     }
 
-    protected function configure()
+    protected function configure(): void
     {
         parent::configure();
 
@@ -55,17 +55,11 @@ final class CreatePdfPreviewCommand extends Command
             );
     }
 
-    /**
-     * @return int
-     */
-    public function execute(InputInterface $input, OutputInterface $output)
+    public function execute(InputInterface $input, OutputInterface $output): int
     {
         $output->writeln('Creating PDF preview images...');
 
-        /**
-         * @var EntityManager
-         */
-        $medias = $this->em->getRepository('KunstmaanMediaBundle:Media')->findBy(
+        $medias = $this->em->getRepository(Media::class)->findBy(
             ['contentType' => 'application/pdf', 'deleted' => false]
         );
         /** @var Media $media */

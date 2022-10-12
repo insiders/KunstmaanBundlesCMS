@@ -21,6 +21,9 @@ use Symfony\Component\Validator\Constraints as Assert;
  * @ORM\HasLifecycleCallbacks
  * @ORM\Table(name="kuma_file_form_submission_fields")
  */
+#[ORM\Entity]
+#[ORM\HasLifecycleCallbacks]
+#[ORM\Table(name: 'kuma_file_form_submission_fields')]
 class FileFormSubmissionField extends FormSubmissionField
 {
     /**
@@ -28,6 +31,7 @@ class FileFormSubmissionField extends FormSubmissionField
      *
      * @ORM\Column(name="ffsf_value", type="string")
      */
+    #[ORM\Column(name: 'ffsf_value', type: 'string')]
     protected $fileName;
 
     /**
@@ -36,6 +40,8 @@ class FileFormSubmissionField extends FormSubmissionField
      * @ORM\Column(type="string", unique=true, length=255)
      * @ORM\GeneratedValue(strategy="AUTO")
      */
+    #[ORM\Column(name: 'uuid', type: 'string', unique: true, length: 255)]
+    #[ORM\GeneratedValue('AUTO')]
     protected $uuid;
 
     /**
@@ -43,6 +49,7 @@ class FileFormSubmissionField extends FormSubmissionField
      *
      * @ORM\Column(type="string", nullable=true)
      */
+    #[ORM\Column(name: 'url', type: 'string', nullable: true)]
     protected $url;
 
     /**
