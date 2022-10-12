@@ -60,6 +60,7 @@ class Folder extends AbstractEntity implements GedmoNode
      * }, fields={"name"})
      * @ORM\Column(type="string")
      */
+    #[ORM\Column(name: 'slug', type: 'string')]
     protected $slug;
 
     /**
