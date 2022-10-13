@@ -44,6 +44,7 @@ class Seo extends AbstractEntity
      *
      * @ORM\Column(name="meta_keywords", type="string", nullable=true)
      */
+    #[ORM\Column(name: 'meta_keywords', type: 'string', nullable: true)]
     protected $metaKeywords;
 
     /**
