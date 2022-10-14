@@ -7,16 +7,12 @@ use Kunstmaan\DashboardBundle\Helper\Google\ClientHelper;
 
 class ServiceHelper
 {
-    /** @var Google_AnalyticsService */
-    private $service;
-
     /** @var ClientHelper */
     private $clientHelper;
 
     public function __construct(ClientHelper $clientHelper)
     {
         $this->clientHelper = $clientHelper;
-        $this->service = new Google_AnalyticsService($clientHelper->getClient());
     }
 
     /**
@@ -24,7 +20,7 @@ class ServiceHelper
      */
     public function getService()
     {
-        return $this->service;
+        return new Google_AnalyticsService($this->clientHelper->getClient());
     }
 
     /**
