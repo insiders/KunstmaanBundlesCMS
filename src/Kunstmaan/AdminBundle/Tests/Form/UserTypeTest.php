@@ -37,6 +37,7 @@ class UserTypeTest extends TestCase
             ],
             'password_required' => true,
             'can_edit_all_fields' => true,
+            'can_add_super_users' => false,
         ]);
     }
 }
