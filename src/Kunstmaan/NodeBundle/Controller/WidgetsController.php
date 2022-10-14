@@ -180,9 +180,9 @@ final class WidgetsController extends AbstractController
         foreach ($rootNodes as $rootNode) {
             if ($nodeTranslation = $rootNode->getNodeTranslation($locale, true)) {
                 if ($isMultiDomain && !$switched) {
-                    $slug = sprintf("link://%s:%s/%s", $switchedHost['id'], $nodeTranslation->getId(), $nodeTranslation->getSlug());
+                    $slug = sprintf('link://%s:%s/%s', $switchedHost['id'], $nodeTranslation->getId(), $nodeTranslation->getSlug());
                 } else {
-                    $slug = sprintf("link://%s/%s", $nodeTranslation->getId(), $nodeTranslation->getSlug());
+                    $slug = sprintf('link://%s/%s', $nodeTranslation->getId(), $nodeTranslation->getSlug());
                 }
 
                 switch (true) {

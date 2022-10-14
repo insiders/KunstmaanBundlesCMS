@@ -107,7 +107,7 @@ class FileFormSubmissionField extends FormSubmissionField
             $fileSystem->write($url, $content);
         } else {
             @trigger_error(
-                    'Not passing the filesystem as the third argument of upload is deprecated since KunstmaanMediaBundle 5.7 and will be required in KunstmaanMediaBundle 6.0.',
+                'Not passing the filesystem as the third argument of upload is deprecated since KunstmaanMediaBundle 5.7 and will be required in KunstmaanMediaBundle 6.0.',
                 E_USER_DEPRECATED
             );
 

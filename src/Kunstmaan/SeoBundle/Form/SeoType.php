@@ -45,9 +45,9 @@ class SeoType extends AbstractType
                 ],
                 'constraints' => [
                     new Length([
-                       'max' => 300
-                    ])
-                ]
+                       'max' => 300,
+                    ]),
+                ],
             ])
             ->add('metaKeywords', TextType::class, [
                 'label' => 'Meta keywords',
@@ -57,9 +57,9 @@ class SeoType extends AbstractType
                 ],
                 'constraints' => [
                     new Length([
-                        'max' => 255
-                    ])
-                ]
+                        'max' => 255,
+                    ]),
+                ],
             ]);
 
         $builder->add('metaRobots', ChoiceType::class, [

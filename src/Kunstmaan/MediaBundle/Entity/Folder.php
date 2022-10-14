@@ -552,9 +552,9 @@ class Folder extends AbstractEntity implements GedmoNode
     public function getOptionLabel()
     {
         return str_repeat(
-                '-',
-                $this->getLevel()
-            ) . ' ' . $this->getName();
+            '-',
+            $this->getLevel()
+        ) . ' ' . $this->getName();
     }
 
     /**
@@ -584,18 +584,19 @@ class Folder extends AbstractEntity implements GedmoNode
 
     /**
      * @param string $slug
+     *
      * @return Folder
      */
     public function setSlug($slug)
     {
         $this->slug = $slug;
+
         return $this;
     }
 
     /**
      * Check whether current folder has target folder as one of its descendant.
      *
-     * @param Folder $subFolder
      * @return bool
      */
     public function hasDescendant(Folder $subFolder)

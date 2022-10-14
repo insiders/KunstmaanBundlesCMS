@@ -406,8 +406,8 @@ final class MediaController extends AbstractController
     }
 
     /**
-     * @param int     $folderId The folder id
-     * @param string  $fileType The type
+     * @param int    $folderId The folder id
+     * @param string $fileType The type
      *
      * @Route("create/modal/{folderId}/{fileType}", requirements={"folderId" = "\d+", "fileType" = ".+"}, name="KunstmaanMediaBundle_media_modal_create", methods={"POST"})
      *

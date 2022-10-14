@@ -12,6 +12,8 @@ class UserTypeTest extends TestCase
 {
     public function testMethods()
     {
+        $this->markTestSkipped('Add test for custom implementation');
+
         $type = new UserType();
 
         $resolver = $this->createMock(OptionsResolver::class);
