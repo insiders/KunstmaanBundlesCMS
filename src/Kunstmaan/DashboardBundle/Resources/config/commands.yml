@@ -21,7 +21,7 @@ services:
             - '@kunstmaan_dashboard.helper.google.analytics.config'
             - '@kunstmaan_dashboard.helper.google.analytics.query'
         tags:
-            - { name: console.command }
+            - { name: console.command, command: kuma:dashboard:widget:googleanalytics:data:collect }
 
     Kunstmaan\DashboardBundle\Command\GoogleAnalyticsDataFlushCommand:
         arguments: ['@doctrine.orm.entity_manager']
