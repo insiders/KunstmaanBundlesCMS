@@ -3,6 +3,7 @@
 namespace Kunstmaan\GeneratorBundle\Command;
 
 use Kunstmaan\GeneratorBundle\Generator\ArticleGenerator;
+use Symfony\Bundle\MakerBundle\Doctrine\DoctrineHelper;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\HttpKernel\Bundle\BundleInterface;
 
@@ -55,6 +56,15 @@ class GenerateArticleCommand extends KunstmaanGenerateCommand
      * @var bool
      */
     private $dummydata;
+    /** @var DoctrineHelper */
+    private $doctrineHelper;
+
+    public function __construct(DoctrineHelper $doctrineHelper)
+    {
+        parent::__construct();
+
+        $this->doctrineHelper = $doctrineHelper;
+    }
 
     /**
      * @see Command
@@ -101,7 +111,7 @@ EOT
         $filesystem = $this->getContainer()->get('filesystem');
         $registry = $this->getContainer()->get('doctrine');
 
-        return new ArticleGenerator($filesystem, $registry, '/article', $this->parentPages, $this->assistant, $this->getContainer());
+        return new ArticleGenerator($filesystem, $registry, '/article', $this->parentPages, $this->assistant, $this->getContainer(), $this->doctrineHelper);
     }
 
     /**
@@ -241,7 +251,6 @@ EOT
     {
         $dummydataOption = $this->assistant->getOption('dummydata');
         if ($dummydataOption != 'y' && $dummydataOption != 'n') {
-            /** @var $question */
             $dummydataOption = $this->assistant->askConfirmation("\nDo you want to generate data fixtures to populate your database ? (y/n)\n", 'n', '?', false);
         }
 
@@ -255,7 +264,6 @@ EOT
     {
         $categoryOption = $this->assistant->getOption('with-category');
         if ($categoryOption != 'y' && $categoryOption != 'n') {
-            /** @var $question */
             $categoryOption = $this->assistant->askConfirmation("\nDo you want to use categories ? (y/n)\n", 'y', '?', true);
         }
 
@@ -269,7 +277,6 @@ EOT
     {
         $tagOption = $this->assistant->getOption('with-tag');
         if ($tagOption != 'y' && $tagOption != 'n') {
-            /** @var $question */
             $tagOption = $this->assistant->askConfirmation("\nDo you want to use tags ? (y/n)\n", 'y', '?', true);
         }
 
@@ -283,7 +290,6 @@ EOT
     {
         $authorOption = $this->assistant->getOption('with-author');
         if ($authorOption != 'y' && $authorOption != 'n') {
-            /** @var $question */
             $authorOption = $this->assistant->askConfirmation("\nDo you want to use authors ? (y/n)\n", 'y', '?', true);
         }
 

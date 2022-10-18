@@ -25,7 +25,7 @@ final class TranslationFlagCommand extends Command
         $this->translationRepository = $translationRepository;
     }
 
-    protected function configure()
+    protected function configure(): void
     {
         parent::configure();
 
@@ -36,10 +36,7 @@ final class TranslationFlagCommand extends Command
         ;
     }
 
-    /**
-     * @return int
-     */
-    public function execute(InputInterface $input, OutputInterface $output)
+    public function execute(InputInterface $input, OutputInterface $output): int
     {
         if ($input->getOption('reset')) {
             $this->resetAllTranslationFlags();

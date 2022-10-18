@@ -5,7 +5,7 @@ namespace Kunstmaan\AdminListBundle\AdminList\Configurator;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Query\QueryBuilder;
 use Kunstmaan\AdminListBundle\AdminList\FilterType\DBAL\AbstractDBALFilterType;
-use Kunstmaan\AdminListBundle\Helper\DoctrineDBALAdapter;
+use Pagerfanta\Doctrine\DBAL\QueryAdapter as DbalQueryAdapter;
 use Pagerfanta\Pagerfanta;
 
 /**
@@ -85,11 +85,13 @@ abstract class AbstractDoctrineDBALAdminListConfigurator extends AbstractAdminLi
     public function getPagerfanta()
     {
         if (\is_null($this->pagerfanta)) {
-            $adapter = new DoctrineDBALAdapter(
-                $this->getQueryBuilder(),
-                $this->getCountField(),
-                $this->getUseDistinctCount()
-            );
+            $adapter = new DbalQueryAdapter($this->getQueryBuilder(), function (QueryBuilder $queryBuilder): void {
+                $distinctString = $this->getUseDistinctCount() ? 'DISTINCT ' : '';
+                $queryBuilder->select('COUNT(' . $distinctString . $this->getCountField() . ') AS total_results')
+                    ->resetQueryPart('orderBy')
+                    ->setMaxResults(1);
+            });
+
             $this->pagerfanta = new Pagerfanta($adapter);
             $this->pagerfanta->setMaxPerPage($this->getLimit());
             $this->pagerfanta->setCurrentPage($this->getPage());
@@ -98,10 +100,13 @@ abstract class AbstractDoctrineDBALAdminListConfigurator extends AbstractAdminLi
         return $this->pagerfanta;
     }
 
-    public function adaptQueryBuilder(
-        QueryBuilder $queryBuilder,
-        array $params = []
-    ) {
+    /**
+     * @param array<int|string, mixed> $params
+     *
+     * @return void
+     */
+    public function adaptQueryBuilder(QueryBuilder $queryBuilder, array $params = [])
+    {
         $queryBuilder->where('1=1');
     }
 
@@ -128,11 +133,11 @@ abstract class AbstractDoctrineDBALAdminListConfigurator extends AbstractAdminLi
      */
     public function getIterator()
     {
-        return $this->getQueryBuilder()->execute();
+        return $this->getQueryBuilder()->execute()->iterateAssociative();
     }
 
     /**
-     * @return QueryBuilder|null
+     * @return QueryBuilder
      */
     public function getQueryBuilder()
     {
@@ -152,7 +157,7 @@ abstract class AbstractDoctrineDBALAdminListConfigurator extends AbstractAdminLi
             // Apply sorting
             if (!empty($this->orderBy)) {
                 $orderBy = $this->orderBy;
-                $this->queryBuilder->orderBy($orderBy, ($this->orderDirection == 'DESC' ? 'DESC' : 'ASC'));
+                $this->queryBuilder->orderBy($orderBy, $this->orderDirection == 'DESC' ? 'DESC' : 'ASC');
             }
         }
 

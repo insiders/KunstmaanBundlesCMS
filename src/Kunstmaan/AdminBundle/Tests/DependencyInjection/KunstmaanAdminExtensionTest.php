@@ -32,7 +32,6 @@ class KunstmaanAdminExtensionTest extends AbstractExtensionTestCase
     {
         $this->load([
             'dashboard_route' => true,
-            'admin_password' => 'omgchangethis',
             'menu_items' => [
                 [
                     'route' => 'route66',
@@ -45,7 +44,7 @@ class KunstmaanAdminExtensionTest extends AbstractExtensionTestCase
             'default_locale' => 'nl',
         ]);
 
-        $this->assertContainerBuilderHasParameter('version_checker.url', 'https://cms.kunstmaan.be/version-check');
+        $this->assertContainerBuilderHasParameter('version_checker.url', 'https://kunstmaancms.be/version-check');
         $this->assertContainerBuilderHasParameter('version_checker.timeframe', 60 * 60 * 24);
         $this->assertContainerBuilderHasParameter('kunstmaan_admin.admin_locales');
         $this->assertContainerBuilderHasParameter('kunstmaan_admin.default_admin_locale');

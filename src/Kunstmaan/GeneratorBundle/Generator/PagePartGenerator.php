@@ -98,7 +98,6 @@ class PagePartGenerator extends KunstmaanGenerator
             'bundle' => $this->bundle->getName(),
             'pagepart' => $this->entity,
             'adminType' => '\\' . $this->bundle->getNamespace() . '\\Form\\PageParts\\' . $this->entity . 'AdminType',
-            'isV4' => $this->isSymfony4(),
         ];
         $extraCode = $this->render('/Entity/PageParts/ExtraFunctions.php', $params);
 
@@ -132,8 +131,8 @@ class PagePartGenerator extends KunstmaanGenerator
 
         $params = [
             'pagepart' => strtolower(
-                    preg_replace('/([a-z])([A-Z])/', '$1-$2', str_ireplace('PagePart', '', $this->entity))
-                ) . '-pp',
+                preg_replace('/([a-z])([A-Z])/', '$1-$2', str_ireplace('PagePart', '', $this->entity))
+            ) . '-pp',
             'fields' => $this->fields,
         ];
         $this->renderFile('/Resources/views/PageParts/view.html.twig', $savePath, $params);
@@ -147,11 +146,7 @@ class PagePartGenerator extends KunstmaanGenerator
     private function generateSectionConfig()
     {
         if (count($this->sections) > 0) {
-            if ($this->isSymfony4()) {
-                $dir = $this->container->getParameter('kernel.project_dir') . '/config/kunstmaancms/pageparts/';
-            } else {
-                $dir = $this->bundle->getPath() . '/Resources/config/pageparts/';
-            }
+            $dir = $this->container->getParameter('kernel.project_dir') . '/config/kunstmaancms/pageparts/';
 
             foreach ($this->sections as $section) {
                 $data = Yaml::parse(file_get_contents($dir . $section));
@@ -310,9 +305,9 @@ class PagePartGenerator extends KunstmaanGenerator
                 $entity = new $classNamespace();
 
                 if (!method_exists($entity, 'getPagePartAdminConfigurations') || !method_exists(
-                        $entity,
-                        'getPageTemplates'
-                    )
+                    $entity,
+                    'getPageTemplates'
+                )
                 ) {
                     continue;
                 }
@@ -383,9 +378,9 @@ class PagePartGenerator extends KunstmaanGenerator
                                             'random' => 'http://www.' . strtolower(Lorem::word()) . '.com',
                                         ];
                                     } elseif ($blocks[2] == 'textarea' && array_key_exists(
-                                            'class',
-                                            $attr
-                                        ) && $attr['class'] == 'js-rich-editor rich-editor'
+                                        'class',
+                                        $attr
+                                    ) && $attr['class'] == 'js-rich-editor rich-editor'
                                     ) {
                                         $pageFields[]['rich_text'] = [
                                             'label' => $this->labelCase($name),

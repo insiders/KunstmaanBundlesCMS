@@ -15,7 +15,6 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\HttpKernel\Bundle\BundleInterface;
-use Symfony\Component\HttpKernel\Kernel;
 use Twig\Environment;
 use Twig\Lexer;
 use Twig\Loader\FilesystemLoader;
@@ -125,16 +124,9 @@ class KunstmaanGenerator extends Generator
 
         $class = new ClassMetadataInfo($entityClass, new UnderscoreNamingStrategy());
         if ($withRepository) {
-            if ($this->isSymfony4()) {
-                $repositoryClass = preg_replace('/\\\\Entity\\\\/', '\\Repository\\', $entityClass, 1) . 'Repository';
-                $class->customRepositoryClassName = $repositoryClass;
-                $this->getSymfony4RepositoryGenerator()->writeEntityRepositoryClass($entityClass, $repositoryClass, $bundle->getPath());
-            } else {
-                $entityClass = preg_replace('/\\\\Entity\\\\/', '\\Repository\\', $entityClass, 1);
-                $class->customRepositoryClassName = $entityClass . 'Repository';
-                $path = $bundle->getPath() . str_repeat('/..', substr_count(get_class($bundle), '\\'));
-                $this->getRepositoryGenerator()->writeEntityRepositoryClass($class->customRepositoryClassName, $path);
-            }
+            $repositoryClass = preg_replace('/\\\\Entity\\\\/', '\\Repository\\', $entityClass, 1) . 'Repository';
+            $class->customRepositoryClassName = $repositoryClass;
+            $this->getSymfony4RepositoryGenerator()->writeEntityRepositoryClass($entityClass, $repositoryClass, $bundle->getPath());
         }
 
         foreach ($fields as $fieldSet) {
@@ -188,9 +180,6 @@ class KunstmaanGenerator extends Generator
     /**
      * Generate the entity admin type.
      *
-     * @param        $bundle
-     * @param        $entityName
-     * @param        $entityPrefix
      * @param string $extendClass
      */
     protected function generateEntityAdminType(
@@ -203,10 +192,10 @@ class KunstmaanGenerator extends Generator
         $className = $entityName . 'AdminType';
         $savePath = $bundle->getPath() . '/Form/' . $entityPrefix . '/' . $className . '.php';
         $name = str_replace(
-                '\\',
-                '_',
-                strtolower($bundle->getNamespace())
-            ) . '_' . strtolower($entityName) . 'type';
+            '\\',
+            '_',
+            strtolower($bundle->getNamespace())
+        ) . '_' . strtolower($entityName) . 'type';
 
         $params = [
             'className' => $className,
@@ -228,12 +217,7 @@ class KunstmaanGenerator extends Generator
     protected function installDefaultPageTemplates($bundle)
     {
         // Configuration templates
-        if ($this->isSymfony4()) {
-            $dirPath = $this->container->getParameter('kernel.project_dir') . '/config/kunstmaancms/pagetemplates/';
-        } else {
-            $dirPath = sprintf('%s/Resources/config/pagetemplates/', $bundle->getPath());
-        }
-
+        $dirPath = $this->container->getParameter('kernel.project_dir') . '/config/kunstmaancms/pagetemplates/';
         $skeletonDir = sprintf('%s/Resources/config/pagetemplates/', GeneratorUtils::getFullSkeletonPath('/common'));
 
         // Only copy templates over when the folder does not exist yet...
@@ -270,10 +254,7 @@ class KunstmaanGenerator extends Generator
 
         $contents = file_get_contents($dirPath . 'view.html.twig');
 
-        $twigFile = $this->isSymfony4() ?
-            $twigFile = "{% extends 'Layout/layout.html.twig' %}\n" :
-            $twigFile = "{% extends '" . $bundle->getName() . ":Layout:layout.html.twig' %}\n"
-        ;
+        $twigFile = "{% extends 'Layout/layout.html.twig' %}\n";
 
         if (strpos($contents, '{% extends ') === false) {
             GeneratorUtils::prepend(
@@ -291,12 +272,7 @@ class KunstmaanGenerator extends Generator
     protected function installDefaultPagePartConfiguration($bundle)
     {
         // Pagepart configuration
-        if ($this->isSymfony4()) {
-            $dirPath = $this->container->getParameter('kernel.project_dir') . '/config/kunstmaancms/pageparts/';
-        } else {
-            $dirPath = sprintf('%s/Resources/config/pageparts/', $bundle->getPath());
-        }
-
+        $dirPath = $this->container->getParameter('kernel.project_dir') . '/config/kunstmaancms/pageparts/';
         $skeletonDir = sprintf('%s/Resources/config/pageparts/', GeneratorUtils::getFullSkeletonPath('/common'));
 
         // Only copy when folder does not exist yet
@@ -511,11 +487,7 @@ class KunstmaanGenerator extends Generator
      */
     protected function getTemplateDir(BundleInterface $bundle)
     {
-        if ($this->isSymfony4()) {
-            return $this->container->getParameter('kernel.project_dir') . '/templates';
-        }
-
-        return $bundle->getPath() . '/Resources/views';
+        return $this->container->getParameter('kernel.project_dir') . '/templates';
     }
 
     /**
@@ -523,18 +495,16 @@ class KunstmaanGenerator extends Generator
      */
     protected function getAssetsDir(BundleInterface $bundle)
     {
-        if ($this->isSymfony4()) {
-            return $this->container->getParameter('kernel.project_dir') . '/assets';
-        }
-
-        return $bundle->getPath() . '/Resources';
+        return $this->container->getParameter('kernel.project_dir') . '/assets';
     }
 
     /**
+     * NEXT_MAJOR: remove method.
+     *
      * @internal
      */
     protected function isSymfony4()
     {
-        return Kernel::VERSION_ID >= 40000;
+        return true;
     }
 }

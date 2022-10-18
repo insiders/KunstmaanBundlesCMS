@@ -29,24 +29,24 @@ class UserManagementMenuAdaptor implements MenuAdaptorInterface
         if ('KunstmaanAdminBundle_settings' == $parent->getRoute()) {
             if ($this->authorizationChecker->isGranted('ROLE_ADMIN')) {
                 $menuItem = new MenuItem($menu);
-                $menuItem->setRoute('KunstmaanUserManagementBundle_settings_users')->setUniqueId('Users')->setLabel(
-                        'settings.users'
-                    )->setParent($parent);
+                $menuItem
+                    ->setRoute('KunstmaanUserManagementBundle_settings_users')
+                    ->setUniqueId('Users')
+                    ->setLabel('settings.users')
+                    ->setParent($parent);
                 if (stripos($request->attributes->get('_route'), $menuItem->getRoute()) === 0) {
                     $menuItem->setActive(true);
                     $parent->setActive(true);
                 }
                 $children[] = $menuItem;
-
             }
-            if($this->authorizationChecker->isGranted('ROLE_SUPER_ADMIN')) {
+            if ($this->authorizationChecker->isGranted('ROLE_SUPER_ADMIN')) {
                 $menuItem = new MenuItem($menu);
                 $menuItem
                     ->setRoute('KunstmaanUserManagementBundle_settings_groups')
                     ->setUniqueId('Groups')
                     ->setLabel('settings.groups')
                     ->setParent($parent);
-
                 if (stripos($request->attributes->get('_route'), $menuItem->getRoute()) === 0) {
                     $menuItem->setActive(true);
                     $parent->setActive(true);

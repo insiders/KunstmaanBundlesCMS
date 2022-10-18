@@ -33,7 +33,7 @@ class KunstmaanAdminExtension extends Extension
         $loader->load('services.yml');
         $loader->load('commands.yml');
 
-        $container->setParameter('version_checker.url', 'https://cms.kunstmaan.be/version-check');
+        $container->setParameter('version_checker.url', 'https://kunstmaancms.be/version-check');
         $container->setParameter('version_checker.timeframe', 60 * 60 * 24);
         $container->setParameter('version_checker.enabled', true);
 
@@ -88,7 +88,7 @@ class KunstmaanAdminExtension extends Extension
         $container->setParameter('kunstmaan_admin.website_title', $config['website_title']);
         $container->setParameter('kunstmaan_admin.multi_language', $config['multi_language']);
         $container->setParameter('kunstmaan_admin.required_locales', $config['required_locales']);
-        $container->setParameter('requiredlocales', $config['required_locales']); //Keep old parameter for to keep BC with routing config
+        $container->setParameter('requiredlocales', $config['required_locales']); // Keep old parameter for to keep BC with routing config
     }
 
     /**
@@ -98,7 +98,7 @@ class KunstmaanAdminExtension extends Extension
      */
     public function getNamespace()
     {
-        return 'http://bundles.kunstmaan.be/schema/dic/admin';
+        return 'https://kunstmaancms.be/schema/dic/admin';
     }
 
     /**

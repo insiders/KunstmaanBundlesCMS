@@ -5,7 +5,7 @@ services:
             - '@security.acl.provider'
             - '@security.acl.object_identity_retrieval_strategy'
         tags:
-            - { name: console.command }
+            - { name: console.command, command: kuma:init:acl }
 
     Kunstmaan\NodeBundle\Command\CronUpdateNodeCommand:
         arguments:
@@ -13,4 +13,4 @@ services:
             - '@security.token_storage'
             - '@kunstmaan_node.admin_node.publisher'
         tags:
-            - { name: console.command }
+            - { name: console.command, command: kuma:nodes:cron }

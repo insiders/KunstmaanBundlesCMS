@@ -68,8 +68,6 @@ class TagManager extends BaseTagManager
     }
 
     /**
-     * @param $id
-     *
      * @return mixed|null
      *
      * @throws \Doctrine\ORM\NonUniqueResultException
@@ -98,14 +96,12 @@ class TagManager extends BaseTagManager
      */
     public function findAll()
     {
-        $tagsRepo = $this->em->getRepository('KunstmaanTaggingBundle:Tag');
+        $tagsRepo = $this->em->getRepository(Tag::class);
 
         return $tagsRepo->findAll();
     }
 
     /**
-     * @param $class
-     * @param $locale
      * @param int $nbOfItems
      *
      * @return array|null

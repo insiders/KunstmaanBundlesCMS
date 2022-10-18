@@ -7,9 +7,11 @@ use Doctrine\Common\DataFixtures\AbstractFixture;
 use Doctrine\Common\DataFixtures\OrderedFixtureInterface;
 use Doctrine\Persistence\ObjectManager;
 use Kunstmaan\AdminBundle\Entity\DashboardConfiguration;
+use Kunstmaan\MediaBundle\Entity\Folder;
 use Kunstmaan\MediaBundle\Entity\Media;
 use Kunstmaan\MediaBundle\Helper\RemoteVideo\RemoteVideoHelper;
 use Kunstmaan\MediaBundle\Helper\Services\MediaCreatorService;
+use Kunstmaan\NodeBundle\Entity\Node;
 use Kunstmaan\NodeBundle\Helper\Services\PageCreatorService;
 use Kunstmaan\PagePartBundle\Helper\Services\PagePartCreatorService;
 use Kunstmaan\TranslatorBundle\Entity\Translation;
@@ -133,7 +135,7 @@ class DefaultSiteFixtures extends AbstractFixture implements OrderedFixtureInter
      */
     private function createContentPages()
     {
-        $nodeRepo = $this->manager->getRepository('KunstmaanNodeBundle:Node');
+        $nodeRepo = $this->manager->getRepository(Node::class);
         $homePage = $nodeRepo->findOneBy(array('internalName' => 'homepage'));
 
         $contentPage = new ContentPage();
@@ -167,8 +169,8 @@ class DefaultSiteFixtures extends AbstractFixture implements OrderedFixtureInter
         $contentPage = new ContentPage();
         $contentPage->setTitle('Our bikes');
 
-        $folder = $this->manager->getRepository('KunstmaanMediaBundle:Folder')->findOneBy(array('rel' => 'image'));
-        $basePath = Kernel::VERSION_ID >= 40000 ? '/../../../../assets/' : '/../../../Resources/';
+        $folder = $this->manager->getRepository(Folder::class)->findOneBy(array('rel' => 'image'));
+        $basePath = '/../../../../assets/';
         $imgDir = dirname(__FILE__).$basePath.'ui/img/demosite/';
         $menuMedia = $this->mediaCreator->createFile($imgDir.'stocks/stock1.jpg', $folder->getId());
 
@@ -421,7 +423,7 @@ class DefaultSiteFixtures extends AbstractFixture implements OrderedFixtureInter
                 )
             );
             $media = $this->mediaCreator->createFile($imgDir.'stocks/videothumb.png', $folder->getId());
-            $video = $this->manager->getRepository('KunstmaanMediaBundle:Media')->findOneBy(array('contentType' => 'remote/video'));
+            $video = $this->manager->getRepository(Media::class)->findOneBy(array('contentType' => 'remote/video'));
             $pageparts['main'][] = $this->pagePartCreator->getCreatorArgumentsForPagePartAndProperties(
                 '{{ namespace }}\Entity\PageParts\VideoPagePart',
                 array(
@@ -468,7 +470,7 @@ class DefaultSiteFixtures extends AbstractFixture implements OrderedFixtureInter
      */
     private function createFormPage()
     {
-        $nodeRepo = $this->manager->getRepository('KunstmaanNodeBundle:Node');
+        $nodeRepo = $this->manager->getRepository(Node::class);
         $homePage = $nodeRepo->findOneBy(array('internalName' => 'homepage'));
 
         $formPage = new FormPage();
@@ -554,7 +556,7 @@ class DefaultSiteFixtures extends AbstractFixture implements OrderedFixtureInter
      */
     private function createSearchPage()
     {
-        $nodeRepo = $this->manager->getRepository('KunstmaanNodeBundle:Node');
+        $nodeRepo = $this->manager->getRepository(Node::class);
         $homePage = $nodeRepo->findOneBy(array('internalName' => 'homepage'));
 
         $searchPage = new SearchPage();
@@ -652,8 +654,8 @@ class DefaultSiteFixtures extends AbstractFixture implements OrderedFixtureInter
         $trans['footer.newsletter.description']['en'] = 'Stay current with our weekly newsletter in which we\'ll tell you about our amazing new products, events and reviews';
         $trans['footer.newsletter.description']['nl'] = 'Blijf op de hoogte van onze fantastische nieuwe producten, events en beoordelingen';
 
-        $trans['demositemessage']['en'] = 'This is the demonstration website of the <a href="https://cms.kunstmaan.be">Kunstmaan CMS</a>. <strong>All content on this site is purely fictional!</strong> This site has been created to give you an idea on what you can create using this open-source content management system. You can create your own instance of this site by <a href="https://github.com/roderik/KunstmaanBundlesCMS/blob/master/docs/03-installation.md#generating-your-website-skeleton">running the Default Site Generator with the --demosite option</a>.You can also try out <a href="/en/admin">the administration interface</a> by logging in using <i>admin</i> as username and <i>admin</i> as password.';
-        $trans['demositemessage']['nl'] = 'Dit is de demonstratie website van het <a href="https://cms.kunstmaan.be">Kunstmaan CMS</a>.<strong>Alle inhoud op deze website is pure fictie!</strong> Deze site is gemaakt om je een idee te geven wat je kan bouwen met dit open-source content management system. Je kan je eigen instantie van deze site opzetten door <a href="https://github.com/roderik/KunstmaanBundlesCMS/blob/master/docs/03-installation.md#generating-your-website-skeleton">het draaien van de Default Site Generator met de --demosite optie</a>.Je kan ook <a href="/en/admin">de administratie module</a> uitproberen door in te loggen met <i>admin</i> als username en <i>admin</i> als wachtwoord.';
+        $trans['demositemessage']['en'] = 'This is the demonstration website of the <a href="https://kunstmaancms.be">Kunstmaan CMS</a>. <strong>All content on this site is purely fictional!</strong> This site has been created to give you an idea on what you can create using this open-source content management system. You can create your own instance of this site by <a href="https://github.com/roderik/KunstmaanBundlesCMS/blob/master/docs/03-installation.md#generating-your-website-skeleton">running the Default Site Generator with the --demosite option</a>.You can also try out <a href="/en/admin">the administration interface</a> by logging in using <i>admin</i> as username and <i>admin</i> as password.';
+        $trans['demositemessage']['nl'] = 'Dit is de demonstratie website van het <a href="https://kunstmaancms.be">Kunstmaan CMS</a>.<strong>Alle inhoud op deze website is pure fictie!</strong> Deze site is gemaakt om je een idee te geven wat je kan bouwen met dit open-source content management system. Je kan je eigen instantie van deze site opzetten door <a href="https://github.com/roderik/KunstmaanBundlesCMS/blob/master/docs/03-installation.md#generating-your-website-skeleton">het draaien van de Default Site Generator met de --demosite optie</a>.Je kan ook <a href="/en/admin">de administratie module</a> uitproberen door in te loggen met <i>admin</i> als username en <i>admin</i> als wachtwoord.';
 {% endif %}
 
         $trans['warning.outdated.title']['en'] = 'You are using an outdated browser.';
@@ -686,7 +688,7 @@ class DefaultSiteFixtures extends AbstractFixture implements OrderedFixtureInter
         $trans['cookieconsent.confirm']['fr'] = 'Continuer';
         $trans['cookieconsent.confirm']['de'] = 'Weitergehen';
 
-        $translationId = $this->manager->getRepository('KunstmaanTranslatorBundle:Translation')->getUniqueTranslationId();
+        $translationId = $this->manager->getRepository(Translation::class)->getUniqueTranslationId();
         foreach ($trans as $key => $array) {
             foreach ($array as $lang => $value) {
                 $t = new Translation();
@@ -712,9 +714,9 @@ class DefaultSiteFixtures extends AbstractFixture implements OrderedFixtureInter
     private function createMedia()
     {
         // Add images to database
-        $imageFolder = $this->manager->getRepository('KunstmaanMediaBundle:Folder')->findOneBy(array('rel' => 'image'));
-        $filesFolder = $this->manager->getRepository('KunstmaanMediaBundle:Folder')->findOneBy(array('rel' => 'files'));
-        $basePath = Kernel::VERSION_ID >= 40000 ? '/../../../../assets/' : '/../../../Resources/';
+        $imageFolder = $this->manager->getRepository(Folder::class)->findOneBy(array('rel' => 'image'));
+        $filesFolder = $this->manager->getRepository(Folder::class)->findOneBy(array('rel' => 'files'));
+        $basePath = '/../../../../assets/';
         $publicDir = dirname(__FILE__). $basePath . 'ui/';
         $this->mediaCreator->createFile($publicDir.'img/general/logo-kunstmaan.svg', $imageFolder->getId());
 	{% if demosite %}
@@ -723,7 +725,7 @@ class DefaultSiteFixtures extends AbstractFixture implements OrderedFixtureInter
 	{% endif %}
 
         // Create dummy video folder and add dummy videos
-        $videoFolder = $this->manager->getRepository('KunstmaanMediaBundle:Folder')->findOneBy(array('rel' => 'video'));
+        $videoFolder = $this->manager->getRepository(Folder::class)->findOneBy(array('rel' => 'video'));
         $this->createVideoFile('Kunstmaan', 'WPx-Oe2WrUE', $videoFolder);
     }
 
@@ -736,15 +738,14 @@ class DefaultSiteFixtures extends AbstractFixture implements OrderedFixtureInter
     {
         // Hack for media bundle issue
         $dir = $this->container->get('kernel')->getProjectDir();
-        $publicDir = Kernel::VERSION_ID >= 40000 ? '/public' : '/web';
-        chdir($dir . $publicDir);
+        chdir($dir . '/public');
         $media = new Media();
         $media->setFolder($folder);
         $media->setName($name);
         $helper = new RemoteVideoHelper($media);
         $helper->setCode($code);
         $helper->setType('youtube');
-        $this->manager->getRepository('KunstmaanMediaBundle:Media')->save($media);
+        $this->manager->getRepository(Media::class)->save($media);
         chdir($dir);
 
         return $media;
@@ -785,8 +786,8 @@ class DefaultSiteFixtures extends AbstractFixture implements OrderedFixtureInter
         foreach ($this->requiredLocales as $locale) {
             $pageparts = array();
 
-            $folder = $this->manager->getRepository('KunstmaanMediaBundle:Folder')->findOneBy(array('rel' => 'image'));
-            $basePath = Kernel::VERSION_ID >= 40000 ? '/../../../../assets/' : '/../../../Resources/';
+            $folder = $this->manager->getRepository(Folder::class)->findOneBy(array('rel' => 'image'));
+            $basePath = '/../../../../assets/';
             $imgDir = dirname(__FILE__). $basePath . 'ui/img/demosite/';
 
             $headerMedia = $this->mediaCreator->createFile($imgDir.'stocks/homepage__header.jpg', $folder->getId());

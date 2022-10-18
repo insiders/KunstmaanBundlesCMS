@@ -23,17 +23,14 @@ final class DashboardCommand extends Command
         $this->widgetManager = $widgetManager;
     }
 
-    protected function configure()
+    protected function configure(): void
     {
         $this
             ->setName('kuma:dashboard:collect')
             ->setDescription('Collect all the widget dashboard data');
     }
 
-    /**
-     * @return int|void|null
-     */
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         /** @var DashboardWidget[] $widgets */
         $widgets = $this->widgetManager->getWidgets();

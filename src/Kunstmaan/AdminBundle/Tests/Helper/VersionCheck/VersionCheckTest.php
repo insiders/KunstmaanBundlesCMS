@@ -9,8 +9,6 @@ use GuzzleHttp\Psr7\Response;
 use Kunstmaan\AdminBundle\Helper\VersionCheck\Exception\ParseException;
 use Kunstmaan\AdminBundle\Helper\VersionCheck\VersionChecker;
 use PHPUnit\Framework\TestCase;
-use Psr\Cache\CacheItemInterface;
-use Symfony\Component\Cache\Adapter\AdapterInterface;
 use Symfony\Component\Cache\Adapter\ArrayAdapter;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
@@ -28,7 +26,7 @@ class VersionCheckTest extends TestCase
 
     public function setUp(): void
     {
-        $this->cache = $this->createMock(AdapterInterface::class);
+        $this->cache = new ArrayAdapter();
         $this->translator = $this->createMock(TranslatorInterface::class);
 
         $requestStack = new RequestStack();
@@ -43,7 +41,7 @@ class VersionCheckTest extends TestCase
     {
         $versionCheckerMock = $this->getMockBuilder(VersionChecker::class)
             ->setConstructorArgs([$this->cache, $this->translator, $this->requestStack, 'url', 300, true, $projectDir ?? 'project_dir', 'website_title'])
-            ->setMethods($methods)
+            ->onlyMethods($methods ?? [])
             ->getMock()
         ;
 
@@ -59,16 +57,13 @@ class VersionCheckTest extends TestCase
 
     public function testPeriodicallyCheck()
     {
-        $cacheItem = $this->createMock(CacheItemInterface::class);
-        $cacheItem->method('isHit')->willReturn(true);
-        $cacheItem->method('get')->willReturn([]);
+        $cacheItem = $this->cache->getItem(VersionChecker::CACHE_KEY);
+        $cacheItem->set([]);
 
-        $this->cache
-            ->expects($this->once())
-            ->method('getItem')
-            ->willReturn($cacheItem)
-        ;
-        $versionCheckerMock = $this->setUpVersionCheckerMock(null);
+        $this->cache->save($cacheItem);
+
+        $versionCheckerMock = $this->setUpVersionCheckerMock(['check']);
+        $versionCheckerMock->expects($this->never())->method('check');
         $versionCheckerMock->periodicallyCheck();
     }
 
@@ -99,18 +94,6 @@ class VersionCheckTest extends TestCase
             ->method('trans')
             ->willReturn('translated')
         ;
-
-        if ('instanceOf' === $expectedType) {
-            $cacheItem = $this->createMock(CacheItemInterface::class);
-            $cacheItem->method('isHit')->willReturn(false);
-            $cacheItem->expects($this->once())->method('expiresAfter')->with(300);
-            $cacheItem->expects($this->once())->method('set')->with($this->isInstanceOf($expected));
-
-            $this->cache
-                ->expects($this->once())
-                ->method('getItem')
-                ->willReturn($cacheItem);
-        }
 
         $mock = new MockHandler([
             new Response(200, ['X-Foo' => 'Bar'], \json_encode(['foo' => 'bar'])),

@@ -21,7 +21,6 @@ use Symfony\Component\Form\Extension\Core\Type\NumberType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\HttpKernel\Bundle\BundleInterface;
-use Symfony\Component\HttpKernel\Kernel;
 use Symfony\Component\Yaml\Exception\ParseException;
 use Symfony\Component\Yaml\Yaml;
 
@@ -228,59 +227,7 @@ abstract class KunstmaanGenerateCommand extends GenerateDoctrineCommand
         $questionMoreBundles = "\nIn which bundle do you want to create the %s",
         $questionOneBundle = "The %s will be created for the <comment>%s</comment> bundle.\n"
     ) {
-        if (Kernel::VERSION_ID >= 40000) {
-            return new Sf4AppBundle($this->getContainer()->getParameter('kernel.project_dir'));
-        }
-
-        $ownBundles = $this->getOwnBundles();
-        if (count($ownBundles) <= 0) {
-            $this->assistant->writeError("Looks like you don't have created any bundles for your project...", true);
-        }
-
-        // If the user provided the namespace as input option
-        if (!is_null($namespace)) {
-            foreach ($ownBundles as $key => $bundleInfo) {
-                if (GeneratorUtils::fixNamespace($namespace) == GeneratorUtils::fixNamespace(
-                        $bundleInfo['namespace']
-                    )
-                ) {
-                    $bundleName = $bundleInfo['name'];
-
-                    break;
-                }
-            }
-
-            // When the provided namespace was not found, we show an error on the screen and ask the bundle again
-            if (empty($bundleName)) {
-                $this->assistant->writeError("The provided bundle namespace '$namespace' was not found...");
-            }
-        }
-
-        if (empty($bundleName)) {
-            // If we only have 1 bundle, we don't need to ask
-            if (count($ownBundles) > 1) {
-                $bundleSelect = [];
-                foreach ($ownBundles as $key => $bundleInfo) {
-                    $bundleSelect[$key] = $bundleInfo['name'];
-                }
-                $bundleId = $this->assistant->askSelect(
-                    sprintf($questionMoreBundles, $objectName),
-                    $bundleSelect
-                );
-                $bundleName = $ownBundles[$bundleId]['name'];
-
-                $this->assistant->writeLine('');
-            } else {
-                $bundleName = $ownBundles[1]['name'];
-                $this->assistant->writeLine(
-                    [sprintf($questionOneBundle, $objectName, $bundleName)]
-                );
-            }
-        }
-
-        $bundle = $this->assistant->getKernel()->getBundle($bundleName);
-
-        return $bundle;
+        return new Sf4AppBundle($this->getContainer()->getParameter('kernel.project_dir'));
     }
 
     /**
@@ -343,10 +290,7 @@ abstract class KunstmaanGenerateCommand extends GenerateDoctrineCommand
         $counter = 1;
 
         // Get the available sections from disc
-        $dir = Kernel::VERSION_ID >= 40000 ?
-            $this->getContainer()->getParameter('kernel.project_dir') . '/config/kunstmaancms/pageparts/' :
-            $bundle->getPath() . '/Resources/config/pageparts/'
-        ;
+        $dir = $this->getContainer()->getParameter('kernel.project_dir') . '/config/kunstmaancms/pageparts/';
         if (file_exists($dir) && is_dir($dir)) {
             $finder = new Finder();
             $finder->files()->in($dir)->depth('== 0');
@@ -388,7 +332,7 @@ abstract class KunstmaanGenerateCommand extends GenerateDoctrineCommand
             $data = Yaml::parse(file_get_contents($dir . $file));
 
             if (array_key_exists('kunstmaan_page_part', $data)) {
-                //Get rid of the bundle config lines
+                // Get rid of the bundle config lines
                 $data = array_values(array_values(array_values($data)[0])[0])[0];
             }
 
@@ -396,7 +340,7 @@ abstract class KunstmaanGenerateCommand extends GenerateDoctrineCommand
                 'name' => $data['name'],
                 'context' => $data['context'],
                 'file' => $file,
-                //'file_clean' => substr($file, 0, strlen($file)-4)
+                // 'file_clean' => substr($file, 0, strlen($file)-4)
             ];
         } catch (ParseException $e) {
         }
@@ -463,29 +407,11 @@ abstract class KunstmaanGenerateCommand extends GenerateDoctrineCommand
             // If single -or multipe entity reference in chosen, we need to ask for the entity name
             if (in_array($typeStrings[$typeId], ['single_ref', 'multi_ref'])) {
                 $bundleName = $bundle->getName();
-                $egName = $this->isSymfony4() ? 'App\Entity\FaqItem' : "$bundleName:FaqItem, $bundleName:Blog/Comment";
-                $question = sprintf('Reference entity name (eg. %s)', $egName);
+                $question = sprintf('Reference entity name (eg. %s)', 'App\Entity\FaqItem');
                 $name = $this->assistant->askAndValidate(
                     $question,
                     function ($name) use ($generator, $container) {
-                        /*
-                         * Replace slash to backslash. Eg: CmsBundle:Blog/Comment --> CmsBundle:Blog\Comment
-                         *
-                         * @see \Doctrine\Persistence\Mapping\AbstractClassMetadataFactory::getMetadataFor()
-                         * @see \Doctrine\ORM\Mapping\ClassMetadataFactory::getFqcnFromAlias()
-                         */
-                        if (!$this->isSymfony4()) {
-                            $name = strtr($name, '/', '\\');
-
-                            $parts = explode(':', $name);
-
-                            // Should contain colon
-                            if (count($parts) != 2) {
-                                throw new \InvalidArgumentException(sprintf('"%s" is an invalid entity name', $name));
-                            }
-                        } else {
-                            $parts = explode('\\', $name);
-                        }
+                        $parts = explode('\\', $name);
 
                         // Check reserved words
                         if ($generator->isReservedKeyword(end($parts))) {
@@ -571,7 +497,7 @@ abstract class KunstmaanGenerateCommand extends GenerateDoctrineCommand
                             $lengthValidation
                         );
 
-                        //Ask the maximum width allowed for the image
+                        // Ask the maximum width allowed for the image
                         $maxWidth = $this->assistant->askAndValidate('What is the maximum width for the media object? (in pixels)',
                             $lengthValidation
                         );
@@ -657,10 +583,6 @@ abstract class KunstmaanGenerateCommand extends GenerateDoctrineCommand
     /**
      * Get all the entity fields for a specific type.
      *
-     * @param      $objectName
-     * @param      $prefix
-     * @param      $name
-     * @param      $type
      * @param null $extra
      * @param bool $allNullable
      * @param null $minHeight
@@ -815,8 +737,8 @@ abstract class KunstmaanGenerateCommand extends GenerateDoctrineCommand
                         'inverseJoinColumns' => [
                             [
                                 'name' => strtolower(
-                                        Container::underscore($parts[count($parts) - 1])
-                                    ) . '_id',
+                                    Container::underscore($parts[count($parts) - 1])
+                                ) . '_id',
                                 'referencedColumnName' => 'id',
                                 'unique' => true,
                             ],
@@ -882,11 +804,7 @@ abstract class KunstmaanGenerateCommand extends GenerateDoctrineCommand
         $counter = 1;
 
         // Get the available sections from disc
-        if (Kernel::VERSION_ID >= 40000) {
-            $dir = $this->getContainer()->getParameter('kernel.project_dir') . '/config/kunstmaancms/pagetemplates/';
-        } else {
-            $dir = $bundle->getPath() . '/Resources/config/pagetemplates/';
-        }
+        $dir = $this->getContainer()->getParameter('kernel.project_dir') . '/config/kunstmaancms/pagetemplates/';
 
         if (file_exists($dir) && is_dir($dir)) {
             $finder = new Finder();
@@ -918,7 +836,7 @@ abstract class KunstmaanGenerateCommand extends GenerateDoctrineCommand
             $data = Yaml::parse(file_get_contents($dir . $file));
 
             if (array_key_exists('kunstmaan_page_part', $data)) {
-                //Get rid of the bundle config lines
+                // Get rid of the bundle config lines
                 $data = array_values(array_values(array_values($data)[0])[0])[0];
             }
 
@@ -984,10 +902,12 @@ abstract class KunstmaanGenerateCommand extends GenerateDoctrineCommand
     }
 
     /**
+     * NEXT_MAJOR: remove method.
+     *
      * @internal
      */
     protected function isSymfony4()
     {
-        return Kernel::VERSION_ID >= 40000;
+        return true;
     }
 }

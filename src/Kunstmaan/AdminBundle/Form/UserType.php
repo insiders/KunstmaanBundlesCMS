@@ -88,11 +88,11 @@ class UserType extends AbstractType implements RoleDependentUserFormInterface
             );
 
             if (!$options['can_add_super_users']) {
-                //When the user is not allowed to modify super users,
+                // When the user is not allowed to modify super users,
                 // save any existing super user groups and add them manually to the user
                 $existingSuperGroups = [];
                 $groups->addEventListener(FormEvents::POST_SET_DATA,
-                    function (\Symfony\Component\Form\FormEvent $event) use (&$existingSuperGroups) {
+                    function (FormEvent $event) use (&$existingSuperGroups) {
                         $groups = $event->getData();
                         if (!\is_iterable($groups)) {
                             return;

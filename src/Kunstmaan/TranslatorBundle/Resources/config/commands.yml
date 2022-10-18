@@ -5,22 +5,22 @@ services:
             - '%kuma_translator.default_bundle%'
             - '%kuma_translator.bundles%'
         tags:
-            - { name: console.command }
+            - { name: console.command, command: kuma:translator:import }
 
     Kunstmaan\TranslatorBundle\Command\ExportTranslationsCommand:
         arguments: ['@kunstmaan_translator.service.exporter.command_handler']
         tags:
-            - { name: console.command }
+            - { name: console.command, command: kuma:translator:export }
 
     Kunstmaan\TranslatorBundle\Command\TranslationCacheCommand:
         arguments: ['@kunstmaan_translator.service.translator.resource_cacher', '@kunstmaan_translator.service.translator.cache_validator']
         tags:
-            - { name: console.command }
+            - { name: console.command, command: kuma:translator:cache }
 
     Kunstmaan\TranslatorBundle\Command\TranslationFlagCommand:
         arguments: ['@kunstmaan_translator.repository.translation']
         tags:
-            - { name: console.command }
+            - { name: console.command, command: kuma:translator:flag }
 
     Kunstmaan\TranslatorBundle\Command\ImportTranslationsFromFileCommand:
         arguments:
@@ -28,5 +28,5 @@ services:
             - '@kunstmaan_translator.service.translator.translator'
             - '%kuma_translator.managed_locales%'
         tags:
-            - { name: console.command }
+            - { name: console.command, command: kuma:translator:import-file }
 

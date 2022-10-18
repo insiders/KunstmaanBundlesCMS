@@ -266,9 +266,9 @@ abstract class AbstractAdminListConfigurator implements AdminListConfiguratorInt
     /**
      * @param object $entity
      *
-     * @throws InvalidArgumentException
-     *
      * @return string
+     *
+     * @throws InvalidArgumentException
      */
     public function getAdminType($entity)
     {
@@ -754,7 +754,7 @@ abstract class AbstractAdminListConfigurator implements AdminListConfiguratorInt
         $query = $request->query;
         $session = $request->getSession();
 
-        $adminListName = 'listconfig_' . $request->get('_route');
+        $adminListName = 'listconfig_' . $request->attributes->get('_route');
 
         $this->page = $request->query->getInt('page', 1);
         // Allow alphanumeric, _ & . in order by parameter!

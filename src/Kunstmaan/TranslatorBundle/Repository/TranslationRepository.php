@@ -76,11 +76,10 @@ WHERE
     HAVING MAX(compare) IS NOT NULL
     ORDER BY newest_date DESC
 EOQ;
-        $table = $em->getClassMetadata('KunstmaanTranslatorBundle:Translation')->getTableName();
+        $table = $em->getClassMetadata(Translation::class)->getTableName();
 
         $stmt = $em->getConnection()->prepare(sprintf($sql, $table, $table));
-        $stmt->execute();
-        $result = $stmt->fetch();
+        $result = $stmt->executeQuery()->fetchAssociative();
 
         if (\is_array($result) && \count($result) > 0) {
             return new \DateTime($result['newest_date']);
@@ -102,9 +101,6 @@ EOQ;
     }
 
     /**
-     * @param $locales
-     * @param $domains
-     *
      * @return mixed
      */
     public function getTranslationsByLocalesAndDomains($locales, $domains)
@@ -147,8 +143,6 @@ EOQ;
     }
 
     /**
-     * @param $entity
-     *
      * @return mixed
      */
     public function persist($entity)
@@ -204,9 +198,6 @@ EOQ;
         }
     }
 
-    /**
-     * @param $translationId
-     */
     public function updateTranslations(TranslationModel $translationModel, $translationId)
     {
         $this->getEntityManager()->beginTransaction();

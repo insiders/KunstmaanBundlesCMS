@@ -2,33 +2,27 @@
 
 namespace {{ namespace }}\Entity\PageParts;
 
+use {{ namespace }}\Form\PageParts\BikesListPagePartAdminType;
 use Doctrine\ORM\Mapping as ORM;
 
+{% if canUseEntityAttributes %}
+#[ORM\Entity()]
+#[ORM\Table(name: '{{ prefix }}bikes_list_page_parts')]
+{% else %}
 /**
- * BikesListPagePart
- *
  * @ORM\Table(name="{{ prefix }}bikes_list_page_parts")
  * @ORM\Entity
  */
+{% endif %}
 class BikesListPagePart extends AbstractPagePart
 {
-    /**
-     * Get the twig view.
-     *
-     * @return string
-     */
-    public function getDefaultView()
+    public function getDefaultView(): string
     {
-        return '{% if not isV4 %}{{ bundle.getName() }}:{%endif%}PageParts/BikesListPagePart{% if not isV4 %}:{% else %}/{% endif %}view.html.twig';
+        return 'PageParts/BikesListPagePart/view.html.twig';
     }
 
-    /**
-     * Get the admin form type.
-     *
-     * @return \{{ namespace }}\Form\PageParts\BikesListPagePartAdminType
-     */
-    public function getDefaultAdminType()
+    public function getDefaultAdminType(): string
     {
-        return \{{ namespace }}\Form\PageParts\BikesListPagePartAdminType::class;
+        return BikesListPagePartAdminType::class;
     }
 }

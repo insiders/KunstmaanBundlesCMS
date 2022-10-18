@@ -10,27 +10,35 @@ use Symfony\Component\Validator\Constraints as Assert;
  * @ORM\Entity
  * @ORM\Table(name="kuma_rule_on_exit_intent")
  */
+#[ORM\Entity]
+#[ORM\Table(name: 'kuma_rule_on_exit_intent')]
 class OnExitIntentRule extends AbstractRule
 {
     /**
      * @var int
+     *
      * @ORM\Column(type="integer", nullable=true)
      * @Assert\GreaterThanOrEqual(0)
      */
+    #[ORM\Column(name: 'sensitivity', type: 'integer', nullable: true)]
     private $sensitivity;
 
     /**
      * @var int
+     *
      * @ORM\Column(type="integer", nullable=true)
      * @Assert\GreaterThanOrEqual(0)
      */
+    #[ORM\Column(name: 'timer', type: 'integer', nullable: true)]
     private $timer;
 
     /**
      * @var int
+     *
      * @ORM\Column(type="integer", nullable=true)
      * @Assert\GreaterThanOrEqual(0)
      */
+    #[ORM\Column(name: 'delay', type: 'integer', nullable: true)]
     private $delay;
 
     /**

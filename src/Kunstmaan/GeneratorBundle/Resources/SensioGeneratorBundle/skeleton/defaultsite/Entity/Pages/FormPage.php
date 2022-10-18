@@ -2,66 +2,53 @@
 
 namespace {{ namespace }}\Entity\Pages;
 
+use {{ namespace }}\Form\Pages\FormPageAdminType;
 use Doctrine\ORM\Mapping as ORM;
 use Kunstmaan\FormBundle\Entity\AbstractFormPage;
 use Kunstmaan\PagePartBundle\Helper\HasPageTemplateInterface;
-use Symfony\Component\Form\AbstractType;
-use {{ namespace }}\Form\Pages\FormPageAdminType;
 
+{% if canUseEntityAttributes %}
+#[ORM\Entity()]
+#[ORM\Table(name: '{{ prefix }}form_pages')]
+{% else %}
 /**
- * FormPage
- *
  * @ORM\Entity()
  * @ORM\Table(name="{{ prefix }}form_pages")
  */
+{% endif %}
 class FormPage extends AbstractFormPage implements HasPageTemplateInterface
 {
-    /**
-     * {@inheritdoc}
-     */
-    public function getDefaultAdminType()
+    public function getDefaultAdminType(): string
     {
         return FormPageAdminType::class;
     }
 
-    /**
-     * @return array
-     */
-    public function getPossibleChildTypes()
+    public function getPossibleChildTypes(): array
     {
         return [
             [
-                'name'  => 'ContentPage',
-                'class' => '{{ namespace }}\Entity\Pages\ContentPage'
+                'name' => 'ContentPage',
+                'class' => '{{ namespace }}\Entity\Pages\ContentPage',
             ],
             [
-                'name'  => 'FormPage',
-                'class' => '{{ namespace }}\Entity\Pages\FormPage'
-            ]
+                'name' => 'FormPage',
+                'class' => '{{ namespace }}\Entity\Pages\FormPage',
+            ],
         ];
     }
 
-    /**
-     * @return string[]
-     */
-    public function getPagePartAdminConfigurations()
+    public function getPagePartAdminConfigurations(): array
     {
-        return ['{% if not isV4 %}{{ bundle.getName() }}:{%endif%}form'];
+        return ['form'];
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getPageTemplates()
+    public function getPageTemplates(): array
     {
-        return ['{% if not isV4 %}{{ bundle.getName() }}:{%endif%}formpage'];
+        return ['formpage'];
     }
 
-    /**
-     * @return string
-     */
-    public function getDefaultView()
+    public function getDefaultView(): string
     {
-        return '{% if not isV4 %}{{ bundle.getName() }}:{%endif%}Pages/FormPage{% if not isV4 %}:{% else %}/{% endif %}view.html.twig';
+        return 'Pages/FormPage/view.html.twig';
     }
 }

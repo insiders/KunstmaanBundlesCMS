@@ -197,8 +197,7 @@ class FolderRepository extends NestedTreeRepository
         $sortByField = null,
         $direction = 'ASC',
         $includeNode = false
-    )
-    {
+    ) {
         /** @var QueryBuilder $qb */
         $qb = parent::childrenQueryBuilder($node, $direct, $sortByField, $direction, $includeNode);
         $qb->andWhere('node.deleted != true');
@@ -258,8 +257,7 @@ class FolderRepository extends NestedTreeRepository
         $direct = false,
         array $options = [],
         $includeNode = false
-    )
-    {
+    ) {
         /** @var QueryBuilder $qb */
         $qb = parent::getNodesHierarchyQueryBuilder($node, $direct, $options, $includeNode);
         $qb->andWhere('node.deleted != true');
@@ -293,7 +291,7 @@ class FolderRepository extends NestedTreeRepository
         // Reset tree...
         $sql = 'UPDATE kuma_folders SET lvl=NULL,lft=NULL,rgt=NULL';
         $stmt = $em->getConnection()->prepare($sql);
-        $stmt->execute();
+        $stmt->executeStatement();
 
         $folders = $this->findBy([], ['parent' => 'ASC', 'name' => 'asc']);
 
@@ -369,7 +367,6 @@ class FolderRepository extends NestedTreeRepository
             }
         }
     }
-
 
     public function findOneBySlug($slug)
     {

@@ -1,6 +1,6 @@
 <?php
 
-namespace  Kunstmaan\MediaPagePartBundle\Entity;
+namespace Kunstmaan\MediaPagePartBundle\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 use Kunstmaan\MediaBundle\Entity\Media;
@@ -8,17 +8,19 @@ use Kunstmaan\MediaPagePartBundle\Form\DownloadPagePartAdminType;
 use Kunstmaan\PagePartBundle\Entity\AbstractPagePart;
 
 /**
- * DownloadPagePart
- *
  * @ORM\Entity
  * @ORM\Table(name="kuma_download_page_parts")
  */
+#[ORM\Entity]
+#[ORM\Table(name: 'kuma_download_page_parts')]
 class DownloadPagePart extends AbstractPagePart
 {
     /**
      * @ORM\ManyToOne(targetEntity="Kunstmaan\MediaBundle\Entity\Media")
      * @ORM\JoinColumn(name="media_id", referencedColumnName="id")
      */
+    #[ORM\ManyToOne(targetEntity: Media::class)]
+    #[ORM\JoinColumn(name: 'media_id', referencedColumnName: 'id')]
     protected $media;
 
     /**

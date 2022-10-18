@@ -3,6 +3,7 @@
 namespace Kunstmaan\GeneratorBundle\Command;
 
 use Kunstmaan\GeneratorBundle\Generator\DefaultSiteGenerator;
+use Symfony\Bundle\MakerBundle\Doctrine\DoctrineHelper;
 use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\ConsoleOutput;
@@ -29,6 +30,21 @@ class GenerateDefaultSiteCommand extends KunstmaanGenerateCommand
     private $demosite;
 
     /**
+     * @var bool
+     */
+    private $groundcontrol;
+
+    /** @var DoctrineHelper */
+    private $doctrineHelper;
+
+    public function __construct(DoctrineHelper $doctrineHelper)
+    {
+        parent::__construct();
+
+        $this->doctrineHelper = $doctrineHelper;
+    }
+
+    /**
      * @see Command
      */
     protected function configure()
@@ -48,6 +64,7 @@ EOT
             ->addOption('namespace', '', InputOption::VALUE_OPTIONAL, 'The namespace to generate the default website in')
             ->addOption('prefix', '', InputOption::VALUE_OPTIONAL, 'The prefix to be used in the table names of the generated entities')
             ->addOption('demosite', '', InputOption::VALUE_NONE, 'Whether to generate a website with demo contents or a basic website')
+            ->addOption('groundcontrol', '', InputOption::VALUE_NONE, 'Whether to use Webpack Encore or Groundcontrol as FE build tools')
             ->addOption('browsersync', '', InputOption::VALUE_OPTIONAL, 'The URI that will be used for browsersync to connect')
             ->addOption('articleoverviewpageparent', '', InputOption::VALUE_OPTIONAL, 'Shortnames of the pages that can have the article overview page as a child (comma separated)')
             ->setName('kuma:generate:default-site');
@@ -87,12 +104,18 @@ EOT
 
         $browserSyncUrl = $this->assistant->getOptionOrDefault('browsersync', null);
 
+        /*
+         * If we need to generate Groundcontrol or Webpack Encore
+         */
+        $this->groundcontrol = $this->assistant->getOption('groundcontrol');
+
         // First we generate the layout if it is not yet generated
         $command = $this->getApplication()->find('kuma:generate:layout');
         $arguments = [
             'command' => 'kuma:generate:layout',
             '--namespace' => str_replace('\\', '/', $this->bundle->getNamespace()),
             '--demosite' => $this->demosite,
+            '--groundcontrol' => $this->groundcontrol,
             '--browsersync' => $browserSyncUrl,
             '--subcommand' => true,
         ];
@@ -160,6 +183,6 @@ EOT
         $filesystem = $this->getContainer()->get('filesystem');
         $registry = $this->getContainer()->get('doctrine');
 
-        return new DefaultSiteGenerator($filesystem, $registry, '/defaultsite', $this->assistant, $this->getContainer());
+        return new DefaultSiteGenerator($filesystem, $registry, '/defaultsite', $this->assistant, $this->getContainer(), $this->doctrineHelper);
     }
 }

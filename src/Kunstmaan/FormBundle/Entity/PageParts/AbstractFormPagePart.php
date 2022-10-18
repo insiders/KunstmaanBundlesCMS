@@ -20,6 +20,7 @@ abstract class AbstractFormPagePart extends AbstractPagePart implements FormAdap
      * @Assert\NotBlank()
      * @Assert\Length(max=255)
      */
+    #[ORM\Column(name: 'label', type: 'string')]
     protected $label;
 
     /**
@@ -29,7 +30,7 @@ abstract class AbstractFormPagePart extends AbstractPagePart implements FormAdap
      */
     public function getUniqueId()
     {
-        return str_replace('\\', '', ClassLookup::getClass($this)) . $this->id; //TODO
+        return str_replace('\\', '', ClassLookup::getClass($this)) . $this->id; // TODO
     }
 
     /**

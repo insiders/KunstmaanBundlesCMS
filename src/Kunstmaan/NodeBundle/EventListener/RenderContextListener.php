@@ -29,7 +29,7 @@ class RenderContextListener
         }
 
         $request = $event->getRequest();
-        if ($request->attributes->has('_template')) { //template is already set
+        if ($request->attributes->has('_template')) { // template is already set
             return;
         }
 
@@ -40,8 +40,8 @@ class RenderContextListener
             $nodeMenu = $request->attributes->get('_nodeMenu');
             $parameters = $request->attributes->get('_renderContext');
 
-            if ($request->get('preview') === true) {
-                $version = $request->get('version');
+            if ($request->attributes->get('preview') === true) {
+                $version = $request->query->get('version');
                 if (!empty($version) && is_numeric($version)) {
                     $nodeVersion = $this->em->getRepository(NodeVersion::class)->find($version);
                     if (!\is_null($nodeVersion)) {
@@ -69,8 +69,8 @@ class RenderContextListener
                 $parameters = array_merge($parameters, $response);
             }
 
-            //set the rendercontext with all params as response, plus the template in the request attribs
-            //the SensioFrameworkExtraBundle kernel.view will handle everything else
+            // set the rendercontext with all params as response, plus the template in the request attribs
+            // the SensioFrameworkExtraBundle kernel.view will handle everything else
             $event->setControllerResult((array) $parameters);
 
             $template = new Template([]);

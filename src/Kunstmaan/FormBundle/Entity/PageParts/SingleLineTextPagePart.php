@@ -18,6 +18,8 @@ use Symfony\Component\Validator\Constraints\Regex;
  * @ORM\Entity
  * @ORM\Table(name="kuma_single_line_text_page_parts")
  */
+#[ORM\Entity]
+#[ORM\Table(name: 'kuma_single_line_text_page_parts')]
 class SingleLineTextPagePart extends AbstractFormPagePart
 {
     /**
@@ -25,6 +27,7 @@ class SingleLineTextPagePart extends AbstractFormPagePart
      *
      * @ORM\Column(type="boolean", nullable=true)
      */
+    #[ORM\Column(name: 'required', type: 'boolean', nullable: true)]
     protected $required = false;
 
     /**
@@ -33,6 +36,7 @@ class SingleLineTextPagePart extends AbstractFormPagePart
      * @ORM\Column(type="string", name="error_message_required", nullable=true)
      * @Length(max=255)
      */
+    #[ORM\Column(name: 'error_message_required', type: 'string', nullable: true)]
     protected $errorMessageRequired;
 
     /**
@@ -41,6 +45,7 @@ class SingleLineTextPagePart extends AbstractFormPagePart
      * @ORM\Column(type="string", nullable=true)
      * @Length(max=255)
      */
+    #[ORM\Column(name: 'regex', type: 'string', nullable: true)]
     protected $regex;
 
     /**
@@ -49,6 +54,7 @@ class SingleLineTextPagePart extends AbstractFormPagePart
      * @ORM\Column(type="string", name="error_message_regex", nullable=true)
      * @Length(max=255)
      */
+    #[ORM\Column(name: 'error_message_regex', type: 'string', nullable: true)]
     protected $errorMessageRegex;
 
     /**

@@ -4,6 +4,7 @@ namespace Kunstmaan\MediaBundle\Command;
 
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\EntityManagerInterface;
+use Kunstmaan\MediaBundle\Entity\Media;
 use Kunstmaan\MediaBundle\Helper\MediaManager;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -31,7 +32,7 @@ final class CleanDeletedMediaCommand extends Command
         $this->mediaManager = $mediaManager;
     }
 
-    protected function configure()
+    protected function configure(): void
     {
         parent::configure();
 
@@ -49,10 +50,7 @@ final class CleanDeletedMediaCommand extends Command
             );
     }
 
-    /**
-     * @return int
-     */
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         if ($input->getOption('force') !== true) {
             $helper = $this->getHelper('question');
@@ -65,7 +63,7 @@ final class CleanDeletedMediaCommand extends Command
 
         $output->writeln('<info>Removing all Media from the file system that have their status set to deleted in the database.</info>');
 
-        $medias = $this->em->getRepository('KunstmaanMediaBundle:Media')->findAllDeleted();
+        $medias = $this->em->getRepository(Media::class)->findAllDeleted();
 
         try {
             $this->em->beginTransaction();

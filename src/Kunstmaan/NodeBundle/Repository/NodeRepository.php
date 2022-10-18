@@ -189,9 +189,9 @@ class NodeRepository extends NestedTreeRepository
      * @param BaseUser         $owner        The user
      * @param string           $internalName The internal name (may be null)
      *
-     * @throws \InvalidArgumentException
-     *
      * @return Node
+     *
+     * @throws \InvalidArgumentException
      */
     public function createNodeFor(
         HasNodeInterface $hasNode,
@@ -296,28 +296,16 @@ SQL;
 
         $qb->select($sql)
             ->from('kuma_nodes', 'n')
-            ->leftJoin(
-                'n',
-                'kuma_node_translations',
-                't',
-                '(t.node_id = n.id AND t.lang = :lang)'
-            )
-            ->leftJoin(
-                'n',
-                'kuma_node_translations',
-                'v',
-                '(v.node_id = n.id AND v.lang <> :lang)'
-            )
+            ->leftJoin('n', 'kuma_node_translations', 't', '(t.node_id = n.id AND t.lang = :lang)')
+            ->leftJoin('n', 'kuma_node_translations', 'v', '(v.node_id = n.id AND v.lang <> :lang)')
             ->where('n.deleted = false')
             ->addGroupBy('n.id');
 
-        if ($databasePlatformName === 'postgresql') {
-            $qb->addGroupBy('t.url')
-                ->addGroupby('t.id')
-                ->addGroupby('v.weight')
-                ->addGroupBy('v.title')
-                ->distinct();
-        }
+        $qb->addGroupBy('t.url')
+            ->addGroupby('t.id')
+            ->addGroupby('v.weight')
+            ->addGroupBy('v.title')
+            ->distinct();
 
         $qb->addOrderBy('weight', 'ASC')
             ->addOrderBy('title', 'ASC');
@@ -344,9 +332,8 @@ SQL;
             $stmt->bindValue(':left', $rootNode->getLeft());
             $stmt->bindValue(':right', $rootNode->getRight());
         }
-        $stmt->execute();
 
-        return $stmt->fetchAll();
+        return $stmt->executeQuery()->fetchAllAssociative();
     }
 
     /**

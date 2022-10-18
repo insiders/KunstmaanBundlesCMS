@@ -2,30 +2,36 @@
 
 namespace {{ namespace }}\Entity\Pages;
 
+use {{ namespace }}\Form\Pages\{{ entity_class }}PageAdminType;
+use {{ namespace }}\Repository\{{ entity_class }}PageRepository;
 use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Kunstmaan\ArticleBundle\Entity\AbstractArticlePage;
+use Kunstmaan\NodeBundle\Entity\HideSidebarInNodeEditInterface;
 use Kunstmaan\NodeSearchBundle\Helper\SearchTypeInterface;
 use Kunstmaan\PagePartBundle\Helper\HasPageTemplateInterface;
-use Kunstmaan\NodeBundle\Entity\HideSidebarInNodeEditInterface;
-use {{ namespace }}\Form\Pages\{{ entity_class }}PageAdminType;
 
+{% if canUseEntityAttributes %}
+#[ORM\Entity(repositoryClass: {{ entity_class }}PageRepository::class)]
+#[ORM\Table(name: '{{ prefix }}{{ entity_class|lower }}_pages')]
+#[ORM\HasLifecycleCallbacks]
+{% else %}
 /**
  * @ORM\Entity(repositoryClass="{{ namespace }}\Repository\{{ entity_class }}PageRepository")
  * @ORM\Table(name="{{ prefix }}{{ entity_class|lower }}_pages")
  * @ORM\HasLifecycleCallbacks
  */
+{% endif %}
 class {{ entity_class }}Page extends AbstractArticlePage implements HasPageTemplateInterface, SearchTypeInterface, HideSidebarInNodeEditInterface
 {
     //%PagePartial.php.twig%
-
     public function __construct()
     {
         //%constructor%
     }
 
     //%PagePartialFunctions.php.twig%
-
     public function getDefaultAdminType(): string
     {
         return {{ entity_class }}PageAdminType::class;
@@ -38,29 +44,34 @@ class {{ entity_class }}Page extends AbstractArticlePage implements HasPageTempl
 
     public function getPagePartAdminConfigurations(): array
     {
-        return ['{% if not isV4 %}{{ bundle.getName() }}:{%endif%}{{ entity_class|lower }}main'];
+        return ['{{ entity_class|lower }}main'];
     }
 
     public function getPageTemplates(): array
     {
-        return ['{% if not isV4 %}{{ bundle.getName() }}:{%endif%}{{ entity_class|lower }}page'];
+        return ['{{ entity_class|lower }}page'];
     }
 
     public function getDefaultView(): string
     {
-        return '{% if not isV4 %}{{ bundle.getName() }}:{%endif%}Pages/{{ entity_class }}Page{% if not isV4 %}:{% else %}/{% endif %}view.html.twig';
+        return 'Pages/{{ entity_class }}Page/view.html.twig';
     }
 
     /**
      * Before persisting this entity, check the date.
      * When no date is present, fill in current date and time.
+{% if canUseEntityAttributes == false%}
      *
      * @ORM\PrePersist
+{% endif %}
      */
-    public function _prePersist()
+{% if canUseEntityAttributes %}
+    #[ORM\PrePersist]
+{% endif %}
+    public function _prePersist(): void
     {
         // Set date to now when none is set
-        if ($this->date == null) {
+        if (null === $this->date) {
             $this->setDate(new \DateTime());
         }
     }

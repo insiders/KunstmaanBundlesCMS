@@ -7,11 +7,10 @@ use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\Mapping as ORM;
 use Kunstmaan\AdminBundle\Entity\AbstractEntity;
 use Kunstmaan\NodeBundle\Form\NodeTranslationAdminType;
+use Kunstmaan\NodeBundle\Repository\NodeTranslationRepository;
 use Symfony\Component\Validator\Constraints as Assert;
 
 /**
- * NodeTranslation
- *
  * @ORM\Entity(repositoryClass="Kunstmaan\NodeBundle\Repository\NodeTranslationRepository")
  * @ORM\Table(
  *     name="kuma_node_translations",
@@ -20,6 +19,11 @@ use Symfony\Component\Validator\Constraints as Assert;
  * )
  * @ORM\ChangeTrackingPolicy("DEFERRED_EXPLICIT")
  */
+#[ORM\Entity(repositoryClass: NodeTranslationRepository::class)]
+#[ORM\Table(name: 'kuma_node_translations')]
+#[ORM\UniqueConstraint(name: 'ix_kuma_node_translations_node_lang', columns: ['node_id', 'lang'])]
+#[ORM\Index(name: 'idx__node_translation_lang_url', columns: ['lang', 'url'], options: ['lengths' => [null, 255]])]
+#[ORM\ChangeTrackingPolicy('DEFERRED_EXPLICIT')]
 class NodeTranslation extends AbstractEntity
 {
     /**
@@ -28,6 +32,8 @@ class NodeTranslation extends AbstractEntity
      * @ORM\ManyToOne(targetEntity="Node", inversedBy="nodeTranslations")
      * @ORM\JoinColumn(name="node_id", referencedColumnName="id")
      */
+    #[ORM\ManyToOne(targetEntity: Node::class, inversedBy: 'nodeTranslations')]
+    #[ORM\JoinColumn(name: 'node_id', referencedColumnName: 'id')]
     protected $node;
 
     /**
@@ -35,6 +41,7 @@ class NodeTranslation extends AbstractEntity
      *
      * @ORM\Column(type="string")
      */
+    #[ORM\Column(name: 'lang', type: 'string')]
     protected $lang;
 
     /**
@@ -42,6 +49,7 @@ class NodeTranslation extends AbstractEntity
      *
      * @ORM\Column(type="boolean")
      */
+    #[ORM\Column(name: 'online', type: 'boolean')]
     protected $online = false;
 
     /**
@@ -49,6 +57,7 @@ class NodeTranslation extends AbstractEntity
      *
      * @ORM\Column(type="string")
      */
+    #[ORM\Column(name: 'title', type: 'string')]
     protected $title;
 
     /**
@@ -58,6 +67,7 @@ class NodeTranslation extends AbstractEntity
      * @Assert\Regex("/^[a-zA-Z0-9\-_\/]+$/")
      * @Assert\Length(max="255")
      */
+    #[ORM\Column(name: 'slug', type: 'string', nullable: true)]
     protected $slug;
 
     /**
@@ -66,6 +76,7 @@ class NodeTranslation extends AbstractEntity
      * @ORM\Column(type="text", nullable=true)
      * @Assert\Length(max="1000")
      */
+    #[ORM\Column(name: 'url', type: 'text', nullable: true)]
     protected $url;
 
     /**
@@ -74,14 +85,19 @@ class NodeTranslation extends AbstractEntity
      * @ORM\ManyToOne(targetEntity="NodeVersion")
      * @ORM\JoinColumn(name="public_node_version_id", referencedColumnName="id")
      */
+    #[ORM\ManyToOne(targetEntity: NodeVersion::class)]
+    #[ORM\JoinColumn(name: 'public_node_version_id', referencedColumnName: 'id')]
     protected $publicNodeVersion;
 
     /**
      * @var ArrayCollection
+     *
      * @Assert\Valid()
      * @ORM\OneToMany(targetEntity="NodeVersion", mappedBy="nodeTranslation")
      * @ORM\OrderBy({"created" = "ASC"})
      */
+    #[ORM\OneToMany(targetEntity: NodeVersion::class, mappedBy: 'nodeTranslation')]
+    #[ORM\OrderBy(['created' => 'ASC'])]
     protected $nodeVersions;
 
     /**
@@ -89,6 +105,7 @@ class NodeTranslation extends AbstractEntity
      *
      * @ORM\Column(type="smallint", nullable=true)
      */
+    #[ORM\Column(name: 'weight', type: 'smallint', nullable: true)]
     protected $weight;
 
     /**
@@ -96,6 +113,7 @@ class NodeTranslation extends AbstractEntity
      *
      * @ORM\Column(type="datetime", nullable=true)
      */
+    #[ORM\Column(name: 'created', type: 'datetime', nullable: true)]
     protected $created;
 
     /**
@@ -103,6 +121,7 @@ class NodeTranslation extends AbstractEntity
      *
      * @ORM\Column(type="datetime", nullable=true)
      */
+    #[ORM\Column(name: 'updated', type: 'datetime', nullable: true)]
     protected $updated;
 
     /**

@@ -83,6 +83,8 @@ class FileFormSubmissionFieldTest extends TestCase
             ->disableOriginalConstructor()
             ->getMock();
 
+        $file->method('getClientOriginalName')->willReturn('example-name.pdf');
+
         $file->expects($this->any())
             ->method('getPathname')
             ->willReturn(__FILE__);
@@ -126,6 +128,8 @@ class FileFormSubmissionFieldTest extends TestCase
 
     public function testUploadBC()
     {
+        $this->markTestSkipped('Not needed BC test');
+
         $object = $this->object;
         $this->assertNull($object->upload('..', '..'));
 
@@ -135,9 +139,7 @@ class FileFormSubmissionFieldTest extends TestCase
 
         $file->method('getClientOriginalName')->willReturn('example-name.pdf');
 
-        $file->expects($this->any())
-            ->method('move')
-            ->willReturn(true);
+        $file->expects($this->any())->method('move');
 
         $object->file = $file;
         $object->upload(__DIR__ . '/../../Resources/assets/', __DIR__ . '/../../Resources/assets/');

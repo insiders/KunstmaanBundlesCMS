@@ -42,13 +42,13 @@ use Kunstmaan\NodeBundle\Helper\PageCloningHelper;
 use Kunstmaan\NodeBundle\Helper\Services\ACLPermissionCreatorService;
 use Kunstmaan\NodeBundle\Repository\NodeVersionRepository;
 use Kunstmaan\UtilitiesBundle\Helper\ClassLookup;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Template;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Form\FormFactoryInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
 use Symfony\Component\Security\Core\Exception\AccessDeniedException;
@@ -125,11 +125,8 @@ final class NodeAdminController extends AbstractController
 
     /**
      * @Route("/", name="KunstmaanNodeBundle_nodes")
-     * @Template("@KunstmaanNode/Admin/list.html.twig")
-     *
-     * @return array
      */
-    public function indexAction(Request $request)
+    public function indexAction(Request $request): Response
     {
         $this->init($request);
 
@@ -159,9 +156,9 @@ final class NodeAdminController extends AbstractController
         $adminlist = $this->container->get('kunstmaan_adminlist.factory')->createList($nodeAdminListConfigurator);
         $adminlist->bindRequest($request);
 
-        return [
+        return $this->render('@KunstmaanNode/Admin/list.html.twig', [
             'adminlist' => $adminlist,
-        ];
+        ]);
     }
 
     /**
@@ -186,7 +183,7 @@ final class NodeAdminController extends AbstractController
 
         $this->denyAccessUnlessGranted(PermissionMap::PERMISSION_EDIT, $node);
 
-        $originalLanguage = $request->get('originallanguage');
+        $originalLanguage = $request->query->get('originallanguage');
         $otherLanguageNodeTranslation = $node->getNodeTranslation($originalLanguage, true);
         $otherLanguageNodeNodeVersion = $otherLanguageNodeTranslation->getPublicNodeVersion();
         $otherLanguagePage = $otherLanguageNodeNodeVersion->getRef($this->em);
@@ -212,7 +209,7 @@ final class NodeAdminController extends AbstractController
             Events::COPY_PAGE_TRANSLATION
         );
 
-        return $this->redirect($this->generateUrl('KunstmaanNodeBundle_nodes_edit', ['id' => $id]));
+        return $this->redirectToRoute('KunstmaanNodeBundle_nodes_edit', ['id' => $id]);
     }
 
     /**
@@ -232,7 +229,7 @@ final class NodeAdminController extends AbstractController
     public function recopyFromOtherLanguageAction(Request $request, $id)
     {
         if (!$this->isCsrfTokenValid('recopy-from-language', $request->request->get('token'))) {
-            return new RedirectResponse($this->generateUrl('KunstmaanNodeBundle_nodes_edit', ['id' => $id]));
+            return $this->redirectToRoute('KunstmaanNodeBundle_nodes_edit', ['id' => $id]);
         }
 
         $this->init($request);
@@ -241,7 +238,7 @@ final class NodeAdminController extends AbstractController
 
         $this->denyAccessUnlessGranted(PermissionMap::PERMISSION_EDIT, $node);
 
-        $otherLanguageNodeTranslation = $this->em->getRepository(NodeTranslation::class)->find($request->get('source'));
+        $otherLanguageNodeTranslation = $this->em->getRepository(NodeTranslation::class)->find($request->request->get('source'));
         $otherLanguageNodeNodeVersion = $otherLanguageNodeTranslation->getPublicNodeVersion();
         $otherLanguagePage = $otherLanguageNodeNodeVersion->getRef($this->em);
         $myLanguagePage = $this->container->get('kunstmaan_admin.clone.helper')
@@ -266,7 +263,7 @@ final class NodeAdminController extends AbstractController
             Events::RECOPY_PAGE_TRANSLATION
         );
 
-        return $this->redirect($this->generateUrl('KunstmaanNodeBundle_nodes_edit', ['id' => $id, 'subaction' => NodeVersion::DRAFT_VERSION]));
+        return $this->redirectToRoute('KunstmaanNodeBundle_nodes_edit', ['id' => $id, 'subaction' => NodeVersion::DRAFT_VERSION]);
     }
 
     /**
@@ -308,7 +305,7 @@ final class NodeAdminController extends AbstractController
             Events::ADD_EMPTY_PAGE_TRANSLATION
         );
 
-        return $this->redirect($this->generateUrl('KunstmaanNodeBundle_nodes_edit', ['id' => $id]));
+        return $this->redirectToRoute('KunstmaanNodeBundle_nodes_edit', ['id' => $id]);
     }
 
     /**
@@ -332,7 +329,7 @@ final class NodeAdminController extends AbstractController
         $request = $this->container->get('request_stack')->getCurrentRequest();
         $this->nodePublisher->handlePublish($request, $nodeTranslation);
 
-        return $this->redirect($this->generateUrl('KunstmaanNodeBundle_nodes_edit', ['id' => $node->getId()]));
+        return $this->redirectToRoute('KunstmaanNodeBundle_nodes_edit', ['id' => $node->getId()]);
     }
 
     /**
@@ -359,7 +356,7 @@ final class NodeAdminController extends AbstractController
         $request = $this->container->get('request_stack')->getCurrentRequest();
         $this->nodePublisher->handleUnpublish($request, $nodeTranslation);
 
-        return $this->redirect($this->generateUrl('KunstmaanNodeBundle_nodes_edit', ['id' => $node->getId()]));
+        return $this->redirectToRoute('KunstmaanNodeBundle_nodes_edit', ['id' => $node->getId()]);
     }
 
     /**
@@ -391,7 +388,7 @@ final class NodeAdminController extends AbstractController
             $this->container->get('translator')->trans('kuma_node.admin.unschedule.flash.success')
         );
 
-        return $this->redirect($this->generateUrl('KunstmaanNodeBundle_nodes_edit', ['id' => $id]));
+        return $this->redirectToRoute('KunstmaanNodeBundle_nodes_edit', ['id' => $id]);
     }
 
     /**
@@ -410,10 +407,6 @@ final class NodeAdminController extends AbstractController
      */
     public function deleteAction(Request $request, $id)
     {
-        if (!$this->isCsrfTokenValid('node-delete', $request->request->get('token'))) {
-            return new RedirectResponse($this->generateUrl('KunstmaanNodeBundle_nodes_edit', ['id' => $id]));
-        }
-
         $this->init($request);
         /* @var Node $node */
         $node = $this->em->getRepository(Node::class)->find($id);
@@ -474,7 +467,7 @@ final class NodeAdminController extends AbstractController
     public function duplicateAction(Request $request, $id)
     {
         if (!$this->isCsrfTokenValid('node-duplicate', $request->request->get('token'))) {
-            return new RedirectResponse($this->generateUrl('KunstmaanNodeBundle_nodes_edit', ['id' => $id]));
+            return $this->redirectToRoute($this->generateUrl('KunstmaanNodeBundle_nodes_edit', ['id' => $id]));
         }
 
         $this->init($request);
@@ -492,15 +485,15 @@ final class NodeAdminController extends AbstractController
         $newPage = $this->container->get('kunstmaan_admin.clone.helper')
             ->deepCloneAndSave($originalRef);
 
-        //set the title
-        $title = $request->get('title');
+        // set the title
+        $title = $request->request->get('title');
         if (\is_string($title) && !empty($title)) {
             $newPage->setTitle($title);
         } else {
             $newPage->setTitle('New page');
         }
 
-        //set the parent
+        // set the parent
         $parentNodeTranslation = $originalNode->getParent()->getNodeTranslation($this->locale, true);
         $parent = $parentNodeTranslation->getPublicNodeVersion()->getRef($this->em);
         $newPage->setParent($parent);
@@ -528,9 +521,7 @@ final class NodeAdminController extends AbstractController
             $this->container->get('translator')->trans('kuma_node.admin.duplicate.flash.success')
         );
 
-        return $this->redirect(
-            $this->generateUrl('KunstmaanNodeBundle_nodes_edit', ['id' => $nodeNewPage->getId()])
-        );
+        return $this->redirectToRoute('KunstmaanNodeBundle_nodes_edit', ['id' => $nodeNewPage->getId()]);
     }
 
     /**
@@ -546,7 +537,7 @@ final class NodeAdminController extends AbstractController
     public function duplicateWithChildrenAction(Request $request, $id)
     {
         if (!$this->isCsrfTokenValid('node-duplicate-with-children', $request->request->get('token'))) {
-            return new RedirectResponse($this->generateUrl('KunstmaanNodeBundle_nodes_edit', ['id' => $id]));
+            return $this->redirectToRoute($this->generateUrl('KunstmaanNodeBundle_nodes_edit', ['id' => $id]));
         }
 
         if (!$this->getParameter('kunstmaan_node.show_duplicate_with_children')) {
@@ -554,7 +545,7 @@ final class NodeAdminController extends AbstractController
         }
 
         $this->init($request);
-        $title = $request->get('title', null);
+        $title = $request->request->get('title');
 
         $nodeNewPage = $this->pageCloningHelper->duplicateWithChildren($id, $this->locale, $this->user, $title);
 
@@ -587,7 +578,7 @@ final class NodeAdminController extends AbstractController
 
         $this->denyAccessUnlessGranted(PermissionMap::PERMISSION_EDIT, $node);
 
-        $version = $request->get('version');
+        $version = $request->query->get('version');
 
         if (empty($version) || !is_numeric($version)) {
             throw new InvalidArgumentException('No version was specified');
@@ -637,15 +628,10 @@ final class NodeAdminController extends AbstractController
             $this->container->get('translator')->trans('kuma_node.admin.revert.flash.success')
         );
 
-        return $this->redirect(
-            $this->generateUrl(
-                'KunstmaanNodeBundle_nodes_edit',
-                [
-                    'id' => $id,
-                    'subaction' => 'draft',
-                ]
-            )
-        );
+        return $this->redirectToRoute('KunstmaanNodeBundle_nodes_edit', [
+            'id' => $id,
+            'subaction' => 'draft',
+        ]);
     }
 
     /**
@@ -709,12 +695,7 @@ final class NodeAdminController extends AbstractController
             Events::ADD_NODE
         );
 
-        return $this->redirect(
-            $this->generateUrl(
-                'KunstmaanNodeBundle_nodes_edit',
-                ['id' => $nodeNewPage->getId()]
-            )
-        );
+        return $this->redirectToRoute('KunstmaanNodeBundle_nodes_edit', ['id' => $nodeNewPage->getId()]);
     }
 
     /**
@@ -758,12 +739,7 @@ final class NodeAdminController extends AbstractController
             Events::ADD_NODE
         );
 
-        return $this->redirect(
-            $this->generateUrl(
-                'KunstmaanNodeBundle_nodes_edit',
-                ['id' => $nodeNewPage->getId()]
-            )
-        );
+        return $this->redirectToRoute('KunstmaanNodeBundle_nodes_edit', ['id' => $nodeNewPage->getId()]);
     }
 
     /**
@@ -777,8 +753,8 @@ final class NodeAdminController extends AbstractController
     {
         $this->init($request);
         $nodes = [];
-        $nodeIds = $request->get('nodes');
-        $changeParents = $request->get('parent');
+        $nodeIds = $request->request->get('nodes');
+        $changeParents = $request->request->get('parent');
 
         foreach ($nodeIds as $id) {
             /* @var Node $node */
@@ -795,7 +771,7 @@ final class NodeAdminController extends AbstractController
                 $this->denyAccessUnlessGranted(PermissionMap::PERMISSION_EDIT, $parent);
                 $node->setParent($parent);
                 $this->em->persist($node);
-                $this->em->flush($node);
+                $this->em->flush();
             }
 
             /* @var NodeTranslation $nodeTranslation */
@@ -812,7 +788,7 @@ final class NodeAdminController extends AbstractController
 
                 $nodeTranslation->setWeight($weight);
                 $this->em->persist($nodeTranslation);
-                $this->em->flush($nodeTranslation);
+                $this->em->flush();
 
                 $this->dispatch(
                     new NodeEvent($node, $nodeTranslation, $nodeVersion, $page),
@@ -823,11 +799,9 @@ final class NodeAdminController extends AbstractController
             }
         }
 
-        return new JsonResponse(
-            [
-                'Success' => 'The node-translations for [' . $this->locale . '] have got new weight values',
-            ]
-        );
+        return new JsonResponse([
+            'Success' => 'The node-translations for [' . $this->locale . '] have got new weight values',
+        ]);
     }
 
     /**
@@ -838,16 +812,13 @@ final class NodeAdminController extends AbstractController
      *      name="KunstmaanNodeBundle_nodes_edit",
      *      methods={"GET", "POST"}
      * )
-     * @Template("@KunstmaanNode/NodeAdmin/edit.html.twig")
      *
      * @param int    $id        The node id
      * @param string $subaction The subaction (draft|public)
      *
-     * @return RedirectResponse|array
-     *
      * @throws AccessDeniedException
      */
-    public function editAction(Request $request, $id, $subaction)
+    public function editAction(Request $request, $id, $subaction): Response
     {
         $this->init($request);
         /* @var Node $node */
@@ -873,7 +844,7 @@ final class NodeAdminController extends AbstractController
         /* @var HasNodeInterface $page */
         $page = null;
         $draft = ($subaction == 'draft');
-        $saveAsDraft = $request->get('saveasdraft');
+        $saveAsDraft = $request->request->get('saveasdraft');
         if ((!$draft && !empty($saveAsDraft)) || ($draft && \is_null($draftNodeVersion))) {
             // Create a new draft version
             $draft = true;
@@ -892,7 +863,7 @@ final class NodeAdminController extends AbstractController
             if ($request->getMethod() == 'POST') {
                 $nodeVersionIsLocked = $this->isNodeVersionLocked($nodeTranslation, true);
 
-                //Check the version timeout and make a new nodeversion if the timeout is passed
+                // Check the version timeout and make a new nodeversion if the timeout is passed
                 $thresholdDate = date(
                     'Y-m-d H:i:s',
                     time() - $this->getParameter(
@@ -1019,12 +990,7 @@ final class NodeAdminController extends AbstractController
                     unset($params['subaction']);
                 }
 
-                return $this->redirect(
-                    $this->generateUrl(
-                        'KunstmaanNodeBundle_nodes_edit',
-                        $params
-                    )
-                );
+                return $this->redirectToRoute('KunstmaanNodeBundle_nodes_edit', $params);
             }
         }
 
@@ -1034,7 +1000,7 @@ final class NodeAdminController extends AbstractController
         );
         $queuedNodeTranslationAction = $this->em->getRepository(QueuedNodeTranslationAction::class)->findOneBy(['nodeTranslation' => $nodeTranslation]);
 
-        return [
+        return $this->render('@KunstmaanNode/NodeAdmin/edit.html.twig', [
             'page' => $page,
             'entityname' => ClassLookup::getClass($page),
             'nodeVersions' => $nodeVersions,
@@ -1047,11 +1013,11 @@ final class NodeAdminController extends AbstractController
             'subaction' => $subaction,
             'tabPane' => $tabPane,
             'editmode' => true,
-            'childCount' => $this->em->getRepository('KunstmaanNodeBundle:Node')->getChildCount($node),
+            'childCount' => $this->em->getRepository(Node::class)->getChildCount($node),
             'queuedNodeTranslationAction' => $queuedNodeTranslationAction,
             'nodeVersionLockCheck' => $this->getParameter('kunstmaan_node.lock_enabled'),
             'nodeVersionLockInterval' => $this->getParameter('kunstmaan_node.lock_check_interval'),
-        ];
+        ]);
     }
 
     /**
@@ -1233,7 +1199,7 @@ final class NodeAdminController extends AbstractController
         /* @var HasNodeInterface $newPage */
         $newPage = new $type();
 
-        $title = $request->get('title');
+        $title = $request->request->get('title');
         if (\is_string($title) && !empty($title)) {
             $newPage->setTitle($title);
         } else {
@@ -1249,11 +1215,12 @@ final class NodeAdminController extends AbstractController
      * @param Request $request
      *
      * @return string
+     *
      * @throw InvalidArgumentException
      */
     private function validatePageType($request)
     {
-        $type = $request->get('type');
+        $type = $request->query->get('type');
 
         if (empty($type)) {
             throw new InvalidArgumentException('Please specify a type of page you want to create');
@@ -1263,12 +1230,12 @@ final class NodeAdminController extends AbstractController
     }
 
     /**
-     * @return \Symfony\Component\HttpFoundation\Response
+     * @return Response
      */
     private function renderNodeNotTranslatedPage(Node $node)
     {
-        //try to find a parent node with the correct translation, if there is none allow copy.
-        //if there is a parent but it doesn't have the language to copy to don't allow it
+        // try to find a parent node with the correct translation, if there is none allow copy.
+        // if there is a parent but it doesn't have the language to copy to don't allow it
         $parentNode = $node->getParent();
         if ($parentNode) {
             $parentNodeTranslation = $parentNode->getNodeTranslation(
@@ -1292,16 +1259,11 @@ final class NodeAdminController extends AbstractController
             $parentsAreOk = true;
         }
 
-        return $this->render(
-            '@KunstmaanNode/NodeAdmin/pagenottranslated.html.twig',
-            [
-                'node' => $node,
-                'nodeTranslations' => $node->getNodeTranslations(
-                    true
-                ),
-                'copyfromotherlanguages' => $parentsAreOk,
-            ]
-        );
+        return $this->render('@KunstmaanNode/NodeAdmin/pagenottranslated.html.twig', [
+            'node' => $node,
+            'nodeTranslations' => $node->getNodeTranslations(true),
+            'copyfromotherlanguages' => $parentsAreOk,
+        ]);
     }
 
     /**
@@ -1316,7 +1278,7 @@ final class NodeAdminController extends AbstractController
         return $eventDispatcher->dispatch($event, $eventName);
     }
 
-    public static function getSubscribedServices()
+    public static function getSubscribedServices(): array
     {
         return [
             'security.authorization_checker' => AuthorizationCheckerInterface::class,

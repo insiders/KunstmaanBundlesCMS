@@ -18,6 +18,9 @@ use Symfony\Component\Validator\Constraints\NotBlank;
  * @ORM\HasLifecycleCallbacks
  * @ORM\Table(name="kuma_file_upload_page_parts")
  */
+#[ORM\Entity]
+#[ORM\HasLifecycleCallbacks]
+#[ORM\Table(name: 'kuma_file_upload_page_parts')]
 class FileUploadPagePart extends AbstractFormPagePart
 {
     /**
@@ -25,6 +28,7 @@ class FileUploadPagePart extends AbstractFormPagePart
      *
      * @ORM\Column(type="boolean", nullable=true)
      */
+    #[ORM\Column(name: 'required', type: 'boolean', nullable: true)]
     protected $required = false;
 
     /**
@@ -33,6 +37,7 @@ class FileUploadPagePart extends AbstractFormPagePart
      * @ORM\Column(type="string", name="error_message_required", nullable=true)
      * @Length(max=255)
      */
+    #[ORM\Column(name: 'error_message_required', type: 'string', nullable: true)]
     protected $errorMessageRequired;
 
     /**

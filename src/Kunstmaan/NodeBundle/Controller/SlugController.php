@@ -48,10 +48,10 @@ final class SlugController extends AbstractController
      * @param string  $url     The url
      * @param bool    $preview Show in preview mode
      *
+     * @return Response|array
+     *
      * @throws NotFoundHttpException
      * @throws AccessDeniedException
-     *
-     * @return Response|array
      */
     public function slugAction(Request $request, $url = null, $preview = false)
     {
@@ -87,7 +87,7 @@ final class SlugController extends AbstractController
 
         $this->eventDispatcher->dispatch($securityEvent, Events::SLUG_SECURITY);
 
-        //render page
+        // render page
         $renderContext = new RenderContext(
             [
                 'nodetranslation' => $nodeTranslation,
@@ -144,7 +144,7 @@ final class SlugController extends AbstractController
         /* @var HasNodeInterface $entity */
         $entity = null;
         if ($preview) {
-            $version = $request->get('version');
+            $version = $request->query->get('version');
             if (!empty($version) && is_numeric($version)) {
                 $nodeVersion = $em->getRepository(NodeVersion::class)->find($version);
                 if (!\is_null($nodeVersion)) {

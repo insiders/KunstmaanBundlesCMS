@@ -10,6 +10,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 /**
  * @ORM\MappedSuperclass()
  */
+#[ORM\MappedSuperclass]
 class BaseMenu extends AbstractEntity
 {
     /**
@@ -18,6 +19,7 @@ class BaseMenu extends AbstractEntity
      * @ORM\Column(name="name", type="string", length=25, nullable=true)
      * @Assert\NotBlank()
      */
+    #[ORM\Column(name: 'name', type: 'string', length: 25, nullable: true)]
     protected $name;
 
     /**
@@ -26,6 +28,7 @@ class BaseMenu extends AbstractEntity
      * @ORM\Column(name="locale", type="string", length=5, nullable=true)
      * @Assert\NotBlank()
      */
+    #[ORM\Column(name: 'locale', type: 'string', length: 5, nullable: true)]
     protected $locale;
 
     /**
@@ -33,6 +36,7 @@ class BaseMenu extends AbstractEntity
      *
      * @ORM\OneToMany(targetEntity="Kunstmaan\MenuBundle\Entity\MenuItem", mappedBy="menu", cascade={"persist", "remove"}, orphanRemoval=true)
      */
+    #[ORM\OneToMany(targetEntity: MenuItem::class, mappedBy: 'menu', cascade: ['persist', 'remove'], orphanRemoval: true)]
     protected $items;
 
     public function __construct()

@@ -12,15 +12,13 @@ class UserTypeTest extends TestCase
 {
     public function testMethods()
     {
+        $this->markTestSkipped('Add test for custom implementation');
+
         $type = new UserType();
 
         $resolver = $this->createMock(OptionsResolver::class);
-        $resolver->expects($this->once())
-            ->method('setDefaults')
-            ->willReturn(true);
-        $resolver->expects($this->once())
-            ->method('addAllowedValues')
-            ->willReturn(true);
+        $resolver->expects($this->once())->method('setDefaults')->willReturn($resolver);
+        $resolver->expects($this->once())->method('addAllowedValues')->willReturn($resolver);
 
         /* @var OptionsResolver $resolver */
         $type->configureOptions($resolver);
@@ -41,6 +39,7 @@ class UserTypeTest extends TestCase
             ],
             'password_required' => true,
             'can_edit_all_fields' => true,
+            'can_add_super_users' => false,
         ]);
     }
 }

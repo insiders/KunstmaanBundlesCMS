@@ -2,8 +2,14 @@
 
 namespace Kunstmaan\GeneratorBundle\Generator;
 
+use Doctrine\Persistence\ManagerRegistry;
+use Kunstmaan\GeneratorBundle\Helper\CommandAssistant;
 use Kunstmaan\GeneratorBundle\Helper\GeneratorUtils;
+use Symfony\Bundle\MakerBundle\Doctrine\DoctrineHelper;
+use Symfony\Component\DependencyInjection\ContainerInterface;
+use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\HttpKernel\Bundle\BundleInterface;
+use Symfony\Component\HttpKernel\Kernel;
 use Symfony\Component\Yaml\Yaml;
 
 /**
@@ -32,18 +38,32 @@ class DefaultSiteGenerator extends KunstmaanGenerator
     private $demosite;
 
     /**
+     * @var bool
+     */
+    private $groundControl;
+    /** @var DoctrineHelper */
+    private $doctrineHelper;
+
+    public function __construct(Filesystem $filesystem, ManagerRegistry $registry, $skeletonDir, CommandAssistant $assistant, ContainerInterface $container, DoctrineHelper $doctrineHelper)
+    {
+        parent::__construct($filesystem, $registry, $skeletonDir, $assistant, $container);
+        $this->doctrineHelper = $doctrineHelper;
+    }
+
+    /**
      * Generate the website.
      *
      * @param string $prefix
      * @param string $rootDir
      * @param bool   $demosite
      */
-    public function generate(BundleInterface $bundle, $prefix, $rootDir, $demosite = false)
+    public function generate(BundleInterface $bundle, $prefix, $rootDir, $demosite = false, $groundControl = false)
     {
         $this->bundle = $bundle;
         $this->prefix = GeneratorUtils::cleanPrefix($prefix);
         $this->rootDir = $rootDir;
         $this->demosite = $demosite;
+        $this->groundControl = $groundControl;
 
         $parameters = [
             'namespace' => $this->bundle->getNamespace(),
@@ -52,7 +72,9 @@ class DefaultSiteGenerator extends KunstmaanGenerator
             'prefix' => $this->prefix,
             'demosite' => $this->demosite,
             'multilanguage' => $this->isMultiLangEnvironment(),
-            'isV4' => $this->isSymfony4(),
+            'groundcontrol' => $this->groundControl,
+            'canUseAttributes' => Kernel::VERSION_ID >= 50200,
+            'canUseEntityAttributes' => $this->doctrineHelper->doesClassUsesAttributes('App\\Entity\\Unkown' . uniqid()),
         ];
 
         $this->generateControllers($parameters);
@@ -64,8 +86,6 @@ class DefaultSiteGenerator extends KunstmaanGenerator
         $this->generateFixtures($parameters);
         $this->generatePagepartConfigs($parameters);
         $this->generatePagetemplateConfigs($parameters);
-        $this->generateConfig();
-        $this->generateRouting($parameters);
         $this->generateTemplates($parameters);
     }
 
@@ -198,24 +218,6 @@ class DefaultSiteGenerator extends KunstmaanGenerator
             $targetDir = $this->bundle->getPath() . $relPath;
 
             $this->renderSingleFile($sourceDir, $targetDir, 'AdminMenuAdaptor.php', $parameters);
-
-            if ($this->isSymfony4()) {
-                return;
-            }
-
-            $file = $this->bundle->getPath() . '/Resources/config/services.yml';
-            if (!is_file($file)) {
-                $ymlData = 'services:';
-            } else {
-                $ymlData = '';
-            }
-            $ymlData .= "\n\n    " . strtolower($this->bundle->getName()) . '.admin_menu_adaptor:';
-            $ymlData .= "\n        class: " . $this->bundle->getNamespace() . "\Helper\Menu\AdminMenuAdaptor";
-            $ymlData .= "\n        tags:";
-            $ymlData .= "\n            -  { name: 'kunstmaan_admin.menu.adaptor' }\n";
-            file_put_contents($file, $ymlData, FILE_APPEND);
-
-            $this->assistant->writeLine('Generating menu adaptors : <info>OK</info>');
         }
     }
 
@@ -247,8 +249,8 @@ class DefaultSiteGenerator extends KunstmaanGenerator
      */
     public function generatePagepartConfigs(array $parameters)
     {
-        $basePath = $this->isSymfony4() ? $this->container->getParameter('kernel.project_dir') : $this->bundle->getPath();
-        $relPath = $this->isSymfony4() ? '/config/kunstmaancms/pageparts' : '/Resources/config/pageparts/';
+        $basePath = $this->container->getParameter('kernel.project_dir');
+        $relPath = '/config/kunstmaancms/pageparts';
         $sourceDir = $this->skeletonDir . '/Resources/config/pageparts/';
         $targetDir = $basePath . $relPath;
 
@@ -274,8 +276,8 @@ class DefaultSiteGenerator extends KunstmaanGenerator
      */
     public function generatePagetemplateConfigs(array $parameters)
     {
-        $basePath = $this->isSymfony4() ? $this->container->getParameter('kernel.project_dir') : $this->bundle->getPath();
-        $relPath = $this->isSymfony4() ? '/config/kunstmaancms/pagetemplates/' : '/Resources/config/pagetemplates/';
+        $basePath = $this->container->getParameter('kernel.project_dir');
+        $relPath = '/config/kunstmaancms/pagetemplates/';
         $sourceDir = $this->skeletonDir . '/Resources/config/pagetemplates/';
         $targetDir = $basePath . $relPath;
 
@@ -297,6 +299,8 @@ class DefaultSiteGenerator extends KunstmaanGenerator
      */
     public function generateConfig()
     {
+        trigger_deprecation('kunstmaan/generator-bundle', '6.2', 'Method "%s" is deprecated and will be removed.', __METHOD__);
+
         if ($this->isSymfony4()) {
             return;
         }
@@ -319,6 +323,8 @@ class DefaultSiteGenerator extends KunstmaanGenerator
      */
     public function generateRouting(array $parameters)
     {
+        trigger_deprecation('kunstmaan/generator-bundle', '6.2', 'Method "%s" is deprecated and will be removed.', __METHOD__);
+
         if ($this->isSymfony4()) {
             return;
         }
@@ -388,19 +394,19 @@ class DefaultSiteGenerator extends KunstmaanGenerator
         $this->renderFiles($this->skeletonDir . $relPath, $this->getTemplateDir($this->bundle) . '/Error/', $parameters, true);
 
         $sourcePath = '/app/TwigBundle/views';
-        $targetPath = $this->isSymfony4() ? $this->rootDir . '/templates/bundles/TwigBundle' : $this->rootDir . '/app/Resources/TwigBundle/views';
+        $targetPath = $this->rootDir . '/templates/bundles/TwigBundle';
         $this->renderFiles($this->skeletonDir . $sourcePath, $targetPath, $parameters, true);
 
         // Bundle overwrites
 
         if ($this->demosite) {
             $sourcePath = '/app/KunstmaanSitemapBundle/views';
-            $targetPath = $this->isSymfony4() ? $this->rootDir . '/templates/bundles/KunstmaanSitemapBundle' : $this->rootDir . '/app/Resources/KunstmaanSitemapBundle/views';
+            $targetPath = $this->rootDir . '/templates/bundles/KunstmaanSitemapBundle';
 
             $this->renderFiles($this->skeletonDir . $sourcePath, $targetPath, $parameters, true);
 
             $sourcePath = '/app/KunstmaanFormBundle/views';
-            $targetPath = $this->isSymfony4() ? $this->rootDir . '/templates/bundles/KunstmaanFormBundle' : $this->rootDir . '/app/Resources/KunstmaanFormBundle/views';
+            $targetPath = $this->rootDir . '/templates/bundles/KunstmaanFormBundle';
             $this->renderFiles($this->skeletonDir . $sourcePath, $targetPath, $parameters, true);
         }
 
@@ -418,15 +424,6 @@ class DefaultSiteGenerator extends KunstmaanGenerator
         if ($this->demosite) {
             $this->renderSingleFile($this->skeletonDir . $relPath, $this->bundle->getPath() . $relPath, 'BikesTwigExtension.php', $parameters, true);
         }
-
-        if ($this->isSymfony4()) {
-            return;
-        }
-
-        $relPath = '/Resources/config/';
-        $sourceDir = $this->skeletonDir . $relPath;
-        $targetDir = $this->bundle->getPath() . $relPath;
-        $this->renderSingleFile($sourceDir, $targetDir, 'services.yml', $parameters, true);
     }
 
     /**

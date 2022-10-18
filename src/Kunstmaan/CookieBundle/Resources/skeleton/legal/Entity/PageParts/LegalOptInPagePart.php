@@ -38,7 +38,7 @@ class LegalOptInPagePart extends AbstractFormPagePart
      *
      * @param bool $required
      *
-     * @return CheckboxPagePart
+     * @return LegalOptInPagePart
      */
     public function setRequired($required)
     {
@@ -62,7 +62,7 @@ class LegalOptInPagePart extends AbstractFormPagePart
      *
      * @param string $errorMessageRequired
      *
-     * @return CheckboxPagePart
+     * @return LegalOptInPagePart
      */
     public function setErrorMessageRequired($errorMessageRequired)
     {
@@ -126,7 +126,7 @@ class LegalOptInPagePart extends AbstractFormPagePart
      */
     public function getDefaultView()
     {
-        return '{% if not isV4 %}{{ bundle.getName() }}:{%endif%}PageParts{% if not isV4 %}:{% else %}/{% endif %}LegalOptInPagePart/view.html.twig';
+        return 'PageParts{% if not isV4 %}:{% else %}/{% endif %}LegalOptInPagePart/view.html.twig';
     }
 
     /**

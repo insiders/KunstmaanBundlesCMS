@@ -60,7 +60,7 @@ services:
 
     Kunstmaan\SeoBundle\Controller\RobotsController:
         autowire: true
-        tags: ['controller.service_arguments']
+        tags: ['controller.service_arguments', 'container.service_subscriber']
 
     Kunstmaan\SeoBundle\Controller\Admin\SettingsController:
         arguments: [ '@translator', '@doctrine.orm.entity_manager' ]

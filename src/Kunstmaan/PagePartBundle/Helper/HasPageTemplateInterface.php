@@ -1,6 +1,6 @@
 <?php
 
-namespace  Kunstmaan\PagePartBundle\Helper;
+namespace Kunstmaan\PagePartBundle\Helper;
 
 use Kunstmaan\PagePartBundle\PageTemplate\PageTemplateInterface;
 
@@ -10,7 +10,7 @@ use Kunstmaan\PagePartBundle\PageTemplate\PageTemplateInterface;
 interface HasPageTemplateInterface extends HasPagePartsInterface
 {
     /**
-     * @return PageTemplateInterface[]
+     * @return PageTemplateInterface[]|string[]
      */
     public function getPageTemplates();
 }

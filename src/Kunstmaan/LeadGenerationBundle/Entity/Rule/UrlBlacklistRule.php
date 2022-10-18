@@ -10,13 +10,17 @@ use Symfony\Component\Validator\Constraints as Assert;
  * @ORM\Entity
  * @ORM\Table(name="kuma_rule_url_blacklist")
  */
+#[ORM\Entity]
+#[ORM\Table(name: 'kuma_rule_url_blacklist')]
 class UrlBlacklistRule extends AbstractRule
 {
     /**
      * @var string
+     *
      * @ORM\Column(name="urls", type="text", nullable=true)
      * @Assert\NotBlank()
      */
+    #[ORM\Column(name: 'urls', type: 'text', nullable: true)]
     private $urls;
 
     /**

@@ -19,10 +19,13 @@ class MigrateFolderSlugsCommand extends Command
         $this->entityManager = $entityManager;
     }
 
+    /**
+     * @return int
+     */
     public function execute(InputInterface $input, OutputInterface $output)
     {
-        //Force slug (re)gen by appending a space to the name which will force the slug generation.
-        //Then reset the name
+        // Force slug (re)gen by appending a space to the name which will force the slug generation.
+        // Then reset the name
         $repo = $this->entityManager->getRepository(Folder::class);
         $translationRepo = $this->entityManager->getRepository(Translation::class);
         $entities = $repo->findAll();
@@ -61,7 +64,7 @@ class MigrateFolderSlugsCommand extends Command
             ->setName('kuma:media:generate-folder-slugs')
             ->setDescription('Fill existing media folder slugs')
             ->setHelp(
-                "The <info>kuma:media:generate-folder-slugs</info> command can be used to generate slugs for media folders."
+                'The <info>kuma:media:generate-folder-slugs</info> command can be used to generate slugs for media folders.'
             );
     }
 }

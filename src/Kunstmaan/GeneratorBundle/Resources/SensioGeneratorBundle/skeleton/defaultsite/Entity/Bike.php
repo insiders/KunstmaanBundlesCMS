@@ -5,166 +5,170 @@ namespace {{ namespace }}\Entity;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
 
+{% if canUseEntityAttributes %}
+#[ORM\Entity]
+#[ORM\Table(name: '{{ prefix }}bike')]
+{% else %}
 /**
- * Bike
- *
  * @ORM\Table(name="{{ prefix }}bike")
  * @ORM\Entity
  */
+{% endif %}
 class Bike extends \Kunstmaan\AdminBundle\Entity\AbstractEntity
 {
-    const TYPE_CITY_BIKE = 'city_bike';
-    const TYPE_MOUNTAIN_BIKE = 'mountain_bike';
-    const TYPE_RACING_BIKE = 'racing_bike';
+    public const TYPE_CITY_BIKE = 'city_bike';
+    public const TYPE_MOUNTAIN_BIKE = 'mountain_bike';
+    public const TYPE_RACING_BIKE = 'racing_bike';
 
     /**
      * @var array Supported bike types
      */
-    public static $types = array(
-	self::TYPE_CITY_BIKE,
-	self::TYPE_MOUNTAIN_BIKE,
-	self::TYPE_RACING_BIKE
-    );
+    public static $types = [
+        self::TYPE_CITY_BIKE,
+        self::TYPE_MOUNTAIN_BIKE,
+        self::TYPE_RACING_BIKE,
+    ];
 
     /**
-     * @var string
+     * @var string|null
+{% if canUseEntityAttributes == false %}
      *
      * @ORM\Column(name="type", type="string", length=20, nullable=true)
+{% if canUseAttributes == false %}
      * @Assert\NotBlank()
+{% endif %}
+{% endif %}
      */
+{% if canUseAttributes %}
+    #[Assert\NotBlank]
+{% endif %}
+{% if canUseEntityAttributes %}
+    #[ORM\Column(name: 'type', type: 'string', length: 20, nullable: true)]
+{% endif %}
     private $type;
 
     /**
-     * @var string
+     * @var string|null
+{% if canUseEntityAttributes == false %}
      *
      * @ORM\Column(name="model", type="string", length=100, nullable=true)
+{% if canUseAttributes == false %}
      * @Assert\NotBlank()
+{% endif %}
+{% endif %}
      */
+{% if canUseAttributes %}
+    #[Assert\NotBlank]
+{% endif %}
+{% if canUseEntityAttributes %}
+    #[ORM\Column(name: 'model', type: 'string', length: 100, nullable: true)]
+{% endif %}
     private $model;
 
     /**
-     * @var string
+     * @var string|null
+{% if canUseEntityAttributes == false %}
      *
      * @ORM\Column(name="brand", type="string", length=100, nullable=true)
+{% if canUseAttributes == false %}
      * @Assert\NotBlank()
+{% endif %}
+{% endif %}
      */
+{% if canUseAttributes %}
+    #[Assert\NotBlank]
+{% endif %}
+{% if canUseEntityAttributes %}
+    #[ORM\Column(name: 'brand', type: 'string', length: 100, nullable: true)]
+{% endif %}
     private $brand;
 
     /**
-     * @var double
+     * @var string|null
+{% if canUseEntityAttributes == false %}
      *
      * @ORM\Column(name="price", type="decimal", precision=8, scale=2, nullable=true)
+{% endif %}
      */
+{% if canUseEntityAttributes %}
+    #[ORM\Column(name: 'price', type: 'decimal', precision: 8, scale: 2, nullable: true)]
+{% endif %}
     private $price;
 
     /**
-     * @ORM\Column(type="smallint", nullable=true)
-     * @Assert\Type(type = "numeric")
+     * @var int|null
+{% if canUseEntityAttributes == false %}
      *
-     * @var integer
+     * @ORM\Column(type="smallint", nullable=true)
+{% if canUseAttributes == false %}
+     * @Assert\Type(type = "numeric")
+{% endif %}
+{% endif %}
      */
+{% if canUseAttributes %}
+    #[Assert\Type(type: 'numeric')]
+{% endif %}
+{% if canUseEntityAttributes %}
+    #[ORM\Column(name: 'weight', type: 'smallint', nullable: true)]
+{% endif %}
     private $weight;
 
-    /**
-     * @return string
-     */
-    public function getType()
+    public function getType(): ?string
     {
-	return $this->type;
+        return $this->type;
     }
 
-    /**
-     * @param string $type
-     *
-     * @return Bike
-     */
-    public function setType($type)
+    public function setType(?string $type): Bike
     {
-	$this->type = $type;
+        $this->type = $type;
 
-	return $this;
+        return $this;
     }
 
-    /**
-     * @return string
-     */
-    public function getModel()
+    public function getModel(): ?string
     {
-	return $this->model;
+        return $this->model;
     }
 
-    /**
-     * @param string $model
-     *
-     * @return Bike
-     */
-    public function setModel($model)
+    public function setModel(?string $model): Bike
     {
-	$this->model = $model;
+        $this->model = $model;
 
-	return $this;
+        return $this;
     }
 
-    /**
-     * @return string
-     */
-    public function getBrand()
+    public function getBrand(): ?string
     {
-	return $this->brand;
+        return $this->brand;
     }
 
-    /**
-     * @param string $brand
-     *
-     * @return Bike
-     */
-    public function setBrand($brand)
+    public function setBrand(?string $brand): Bike
     {
-	$this->brand = $brand;
+        $this->brand = $brand;
 
-	return $this;
+        return $this;
     }
 
-    /**
-     * @return float
-     */
-    public function getPrice()
+    public function getPrice(): ?string
     {
-	return $this->price;
+        return $this->price;
     }
 
-    /**
-     * @param float $price
-     *
-     * @return Bike
-     */
-    public function setPrice($price)
+    public function setPrice(?string $price): Bike
     {
-	$this->price = $price;
+        $this->price = $price;
 
-	return $this;
+        return $this;
     }
 
-    /**
-     * Set weight
-     *
-     * @param integer $weight
-     *
-     * @return Bike
-     */
-    public function setWeight($weight)
+    public function setWeight(int $weight): Bike
     {
         $this->weight = $weight;
 
         return $this;
     }
 
-    /**
-     * Get weight
-     *
-     * @return integer
-     */
-    public function getWeight()
+    public function getWeight(): ?int
     {
         return $this->weight;
     }
