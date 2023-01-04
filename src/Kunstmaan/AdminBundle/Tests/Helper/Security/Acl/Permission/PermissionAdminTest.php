@@ -14,7 +14,6 @@ use Kunstmaan\AdminBundle\Helper\Security\Acl\Permission\PermissionMapInterface;
 use Kunstmaan\NodeBundle\Entity\Node;
 use Kunstmaan\UtilitiesBundle\Helper\Shell\Shell;
 use PHPUnit\Framework\TestCase;
-use ReflectionClass;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Kernel;
@@ -297,7 +296,7 @@ class PermissionAdminTest extends TestCase
         $request->request = $this->createMock(Request::class);
         $request->request->expects($this->any())->method('get')->will($this->onConsecutiveCalls(['ADMIN' => ['ADD' => ['VIEW']]], true));
 
-        $mirror = new ReflectionClass(PermissionAdmin::class);
+        $mirror = new \ReflectionClass(PermissionAdmin::class);
         $property = $mirror->getProperty('tokenStorage');
         $property->setAccessible(true);
         $val = $property->getValue($object);
@@ -319,7 +318,7 @@ class PermissionAdminTest extends TestCase
         $acl = $this->createMock(AclInterface::class);
         $acl->expects($this->once())->method('getObjectAces')->willReturn([1 => $ace]);
 
-        $mirror = new ReflectionClass(PermissionAdmin::class);
+        $mirror = new \ReflectionClass(PermissionAdmin::class);
         $method = $mirror->getMethod('getMaskAtIndex');
         $method->setAccessible(true);
 
@@ -354,7 +353,7 @@ class PermissionAdminTest extends TestCase
         $storage = $this->createMock(TokenStorage::class);
         $storage->expects($this->once())->method('getToken')->willReturn($token);
 
-        $mirror = new ReflectionClass(PermissionAdmin::class);
+        $mirror = new \ReflectionClass(PermissionAdmin::class);
         $property = $mirror->getProperty('tokenStorage');
         $property->setAccessible(true);
         $property->setValue($object, $storage);
@@ -392,7 +391,7 @@ class PermissionAdminTest extends TestCase
         $provider->expects($this->atLeastOnce())->method('findAcl')->willThrowException(new AclNotFoundException());
         $provider->expects($this->atLeastOnce())->method('createAcl')->willReturn($acl);
 
-        $mirror = new ReflectionClass(PermissionAdmin::class);
+        $mirror = new \ReflectionClass(PermissionAdmin::class);
         $property = $mirror->getProperty('aclProvider');
         $property->setAccessible(true);
         $property->setValue($object, $provider);
