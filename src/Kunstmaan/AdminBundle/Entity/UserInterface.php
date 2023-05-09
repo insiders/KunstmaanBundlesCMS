@@ -4,7 +4,7 @@ namespace Kunstmaan\AdminBundle\Entity;
 
 use Symfony\Component\Security\Core\User\UserInterface as SymfonyUserInterface;
 
-interface UserInterface extends SymfonyUserInterface, \Serializable
+interface UserInterface extends SymfonyUserInterface
 {
     public const ROLE_DEFAULT = 'ROLE_USER';
     public const ROLE_SUPER_ADMIN = 'ROLE_SUPER_ADMIN';
