@@ -11,7 +11,7 @@ final class ValidExternalUrlValidator extends ConstraintValidator
 {
     public function validate($value, Constraint $constraint)
     {
-        if (strpos($value, '#') === 0) {
+        if (strpos($value ?? '', '#') === 0) {
             return;
         }
 
