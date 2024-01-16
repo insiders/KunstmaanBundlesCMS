@@ -5,7 +5,6 @@ namespace Kunstmaan\NodeBundle\Helper;
 use Doctrine\ORM\EntityManagerInterface;
 use Kunstmaan\AdminBundle\Entity\User;
 use Kunstmaan\AdminBundle\Helper\CloneHelper;
-use Kunstmaan\AdminBundle\Helper\EventdispatcherCompatibilityUtil;
 use Kunstmaan\AdminBundle\Helper\FormWidgets\Tabs\TabPane;
 use Kunstmaan\NodeBundle\Entity\HasNodeInterface;
 use Kunstmaan\NodeBundle\Entity\Node;
@@ -48,7 +47,7 @@ class NodeHelper
         $this->nodeAdminPublisher = $nodeAdminPublisher;
         $this->tokenStorage = $tokenStorage;
         $this->cloneHelper = $cloneHelper;
-        $this->eventDispatcher = EventdispatcherCompatibilityUtil::upgradeEventDispatcher($eventDispatcher);
+        $this->eventDispatcher = $eventDispatcher;
     }
 
     /**
@@ -130,8 +129,7 @@ class NodeHelper
     }
 
     /**
-     * @param bool    $isStructureNode
-     * @param TabPane $tabPane
+     * @param bool $isStructureNode
      *
      * @return NodeTranslation
      */
@@ -473,9 +471,6 @@ class NodeHelper
         return null;
     }
 
-    /**
-     * @return mixed
-     */
     protected function getAdminUser()
     {
         $user = $this->getUser();

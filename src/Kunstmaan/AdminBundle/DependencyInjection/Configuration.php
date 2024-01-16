@@ -4,8 +4,6 @@ namespace Kunstmaan\AdminBundle\DependencyInjection;
 
 use Kunstmaan\AdminBundle\Entity\Group;
 use Kunstmaan\AdminBundle\Entity\User;
-use Kunstmaan\AdminBundle\Service\AuthenticationMailer\SwiftmailerService;
-use Symfony\Component\Config\Definition\BaseNode;
 use Symfony\Component\Config\Definition\Builder\TreeBuilder;
 use Symfony\Component\Config\Definition\ConfigurationInterface;
 
@@ -30,14 +28,14 @@ class Configuration implements ConfigurationInterface
                 ->scalarNode('required_locales')->isRequired()->end()
                 ->scalarNode('default_locale')->isRequired()->end()
                 ->scalarNode('admin_password')
-                    ->setDeprecated(...$this->getDeprecationParameters('The "%path%.%node%" configuration key has been deprecated, remove it from your config.', '6.2'))
+                    ->setDeprecated('kunstmaan/admin-bundle', '6.2', 'The "%path%.%node%" configuration key has been deprecated, remove it from your config.')
                 ->end()
                 ->arrayNode('authentication')
                     ->addDefaultsIfNotSet()
                     ->children()
                         ->booleanNode('enable_new_authentication')
                             ->info('When true, the new authentication system will be used. Note: No-Op option since KunstmaanAdminBundle 6.0. Will always be true.')
-                            ->setDeprecated(...$this->getDeprecationParameters('The "%path%.%node%" configuration key has been deprecated, remove it from your config.', '6.1'))
+                            ->setDeprecated('kunstmaan/admin-bundle', '6.1', 'The "%path%.%node%" configuration key has been deprecated, remove it from your config.')
                             ->defaultTrue()
                         ->end()
                         ->scalarNode('user_class')->defaultValue(User::class)->end()
@@ -45,7 +43,7 @@ class Configuration implements ConfigurationInterface
                         ->arrayNode('mailer')
                             ->addDefaultsIfNotSet()
                             ->children()
-                                ->scalarNode('service')->defaultValue(SwiftmailerService::class)->end()
+                                ->scalarNode('service')->defaultNull()->end() // NEXT_MAJOR: switch default value to SymfonyMailerService::class
                                 ->scalarNode('from_address')->defaultValue('kunstmaancms@myproject.dev')->end()
                                 ->scalarNode('from_name')->defaultValue('Kunstmaan CMS')->end()
                                 ->end()
@@ -113,22 +111,5 @@ class Configuration implements ConfigurationInterface
             ->end();
 
         return $treeBuilder;
-    }
-
-    /**
-     * Returns the correct deprecation parameters for setDeprecated.
-     *
-     * @param string $message
-     * @param string $version
-     *
-     * @return string[]
-     */
-    private function getDeprecationParameters($message, $version): array
-    {
-        if (method_exists(BaseNode::class, 'getDeprecation')) {
-            return ['kunstmaan/admin-bundle', $version, $message];
-        }
-
-        return [$message];
     }
 }

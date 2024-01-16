@@ -11,8 +11,6 @@ interface UserInterface extends SymfonyUserInterface
 
     /**
      * Returns the user unique id.
-     *
-     * @return mixed
      */
     public function getId();
 

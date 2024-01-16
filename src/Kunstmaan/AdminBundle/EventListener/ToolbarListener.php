@@ -13,8 +13,8 @@ use Symfony\Component\HttpKernel\HttpKernel;
 use Symfony\Component\HttpKernel\KernelEvents;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
+use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Authorization\AuthorizationChecker;
-use Symfony\Component\Security\Guard\Token\PostAuthenticationGuardToken;
 use Twig\Environment;
 
 class ToolbarListener implements EventSubscriberInterface
@@ -121,7 +121,7 @@ class ToolbarListener implements EventSubscriberInterface
 
     public function onKernelResponse(ResponseEvent $event)
     {
-        if (!$this->isEnabled() || HttpKernel::MASTER_REQUEST !== $event->getRequestType()) {
+        if (!$this->isEnabled() || HttpKernel::MAIN_REQUEST !== $event->getRequestType()) {
             return;
         }
 
@@ -133,9 +133,6 @@ class ToolbarListener implements EventSubscriberInterface
 
         if (null !== $token && method_exists($token, 'getFirewallName')) {
             $key = $token->getFirewallName();
-        } elseif (null !== $token && method_exists($token, 'getProviderKey')) {
-            // NEXT_MAJOR remove check when symfony 4.4 support is removed
-            $key = $token->getProviderKey();
         } else {
             $key = $this->adminFirewallName;
         }
@@ -147,15 +144,14 @@ class ToolbarListener implements EventSubscriberInterface
 
         // Only enable toolbar when we can find an authenticated user in the session from the kunstmaan_admin.admin_firewall_name config value.
         $authenticated = false;
-        /* @var PostAuthenticationGuardToken $token */
         if ($session->isStarted() && $session->has(sprintf('_security_%s', $this->adminFirewallName))) {
+            /** @var TokenInterface $token */
             $token = unserialize($session->get(sprintf('_security_%s', $this->adminFirewallName)));
-            $authenticated = $token->isAuthenticated();
+            $authenticated = null !== $token;
         }
 
         // Do not capture redirects or modify XML HTTP Requests
-        $mainRequest = method_exists($event, 'isMainRequest') ? $event->isMainRequest() : $event->isMasterRequest();
-        if (!$authenticated || !$mainRequest || $request->isXmlHttpRequest() || $this->adminRouteHelper->isAdminRoute($url)) {
+        if (!$authenticated || !$event->isMainRequest() || $request->isXmlHttpRequest() || $this->adminRouteHelper->isAdminRoute($url)) {
             return;
         }
 

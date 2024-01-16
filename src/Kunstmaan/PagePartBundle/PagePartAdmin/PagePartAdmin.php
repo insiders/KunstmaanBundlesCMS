@@ -5,7 +5,6 @@ namespace Kunstmaan\PagePartBundle\PagePartAdmin;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\EntityManagerInterface;
 use Kunstmaan\AdminBundle\Entity\EntityInterface;
-use Kunstmaan\AdminBundle\Helper\EventdispatcherCompatibilityUtil;
 use Kunstmaan\PagePartBundle\Entity\PagePartRef;
 use Kunstmaan\PagePartBundle\Event\Events;
 use Kunstmaan\PagePartBundle\Event\PagePartEvent;
@@ -187,7 +186,7 @@ class PagePartAdmin
 
         // Create the objects for the new pageparts
         $this->newPageParts = [];
-        $newRefIds = $request->request->get($this->context . '_new');
+        $newRefIds = $request->request->all($this->context . '_new');
 
         if (\is_array($newRefIds)) {
             foreach ($newRefIds as $newId) {
@@ -197,8 +196,8 @@ class PagePartAdmin
         }
 
         // Sort pageparts again
-        $sequences = $request->request->get($this->context . '_sequence');
-        if (!\is_null($sequences)) {
+        $sequences = $request->request->all($this->context . '_sequence');
+        if ($sequences !== []) {
             $tempPageparts = $this->pageParts;
             $this->pageParts = [];
             foreach ($sequences as $sequence) {
@@ -242,7 +241,7 @@ class PagePartAdmin
         $ppRefRepo = $this->em->getRepository(PagePartRef::class);
 
         // Add new pageparts on the correct position + Re-order and save pageparts if needed
-        $sequences = $request->request->get($this->context . '_sequence', []);
+        $sequences = $request->request->all($this->context . '_sequence');
         $sequencescount = \count($sequences);
         for ($i = 0; $i < $sequencescount; ++$i) {
             $pagePartRefId = $sequences[$i];
@@ -264,8 +263,7 @@ class PagePartAdmin
             }
 
             if (isset($pagePart)) {
-                $eventDispatcher = EventdispatcherCompatibilityUtil::upgradeEventDispatcher($this->container->get('event_dispatcher'));
-                $eventDispatcher->dispatch(new PagePartEvent($pagePart), Events::POST_PERSIST);
+                $this->container->get('event_dispatcher')->dispatch(new PagePartEvent($pagePart), Events::POST_PERSIST);
             }
         }
     }

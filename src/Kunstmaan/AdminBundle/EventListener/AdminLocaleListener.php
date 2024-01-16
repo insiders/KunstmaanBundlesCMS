@@ -72,9 +72,6 @@ class AdminLocaleListener implements EventSubscriberInterface
         }
     }
 
-    /**
-     * @param TokenInterface $token
-     */
     private function isAdminToken($providerKey, TokenInterface $token = null): bool
     {
         if (null === $token) {
@@ -83,11 +80,6 @@ class AdminLocaleListener implements EventSubscriberInterface
 
         if (\is_callable([$token, 'getFirewallName'])) {
             return $token->getFirewallName() === $providerKey;
-        }
-
-        // NEXT_MAJOR remove check when symfony 4.4 support is removed
-        if (\is_callable([$token, 'getProviderKey'])) {
-            return $token->getProviderKey() === $providerKey;
         }
 
         return false;

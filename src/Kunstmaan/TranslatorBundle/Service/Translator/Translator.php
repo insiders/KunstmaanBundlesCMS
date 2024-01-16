@@ -33,8 +33,6 @@ class Translator extends SymfonyTranslator
     }
 
     /**
-     * {@inheritdoc}
-     *
      * @return string[]
      */
     public function warmUp($cacheDir)
@@ -92,7 +90,7 @@ class Translator extends SymfonyTranslator
     }
 
     /**
-     * {@inheritdoc}
+     * @return void
      */
     protected function loadCatalogue($locale)
     {
@@ -100,7 +98,7 @@ class Translator extends SymfonyTranslator
             $this->options['cache_dir'] = null; // disable caching for debug
         }
 
-        return parent::loadCatalogue($locale);
+        parent::loadCatalogue($locale);
     }
 
     /**

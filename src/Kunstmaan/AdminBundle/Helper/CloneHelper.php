@@ -25,14 +25,9 @@ class CloneHelper
     public function __construct(EntityManager $em, EventDispatcherInterface $eventDispatcher)
     {
         $this->em = $em;
-        $this->eventDispatcher = EventdispatcherCompatibilityUtil::upgradeEventDispatcher($eventDispatcher);
+        $this->eventDispatcher = $eventDispatcher;
     }
 
-    /**
-     * @param mixed $entity
-     *
-     * @return mixed
-     */
     public function deepCloneAndSave($entity)
     {
         $clonedEntity = clone $entity;

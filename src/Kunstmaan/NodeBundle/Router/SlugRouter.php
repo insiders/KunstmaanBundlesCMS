@@ -98,7 +98,7 @@ class SlugRouter implements RouterInterface
     /**
      * Gets the request context.
      *
-     * @return RequestContext The context
+     * @return RequestContext
      *
      * @api
      */
@@ -116,11 +116,7 @@ class SlugRouter implements RouterInterface
     }
 
     /**
-     * Sets the request context.
-     *
-     * @param RequestContext $context The context
-     *
-     * @api
+     * @return void
      */
     public function setContext(RequestContext $context)
     {
@@ -134,7 +130,7 @@ class SlugRouter implements RouterInterface
      * @param array    $parameters    The route parameters
      * @param int|bool $referenceType The type of reference to be generated (one of the UrlGeneratorInterface constants)
      *
-     * @return string|null
+     * @return string
      */
     public function generate($name, $parameters = [], $referenceType = UrlGenerator::ABSOLUTE_PATH)
     {
@@ -176,7 +172,7 @@ class SlugRouter implements RouterInterface
             return null;
         }
 
-        return method_exists($this->requestStack, 'getMainRequest') ? $this->requestStack->getMainRequest() : $this->requestStack->getMasterRequest();
+        return $this->requestStack->getMainRequest();
     }
 
     /**

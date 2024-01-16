@@ -7,12 +7,13 @@ use Doctrine\ORM\Mapping as ORM;
 use Kunstmaan\AdminBundle\Validator\Constraints\PasswordRestrictions;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Security\Core\User\EquatableInterface;
+use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface as BaseUserInterface;
 use Symfony\Component\Validator\Constraints\Email;
 use Symfony\Component\Validator\Constraints\NotBlank;
 use Symfony\Component\Validator\Mapping\ClassMetadata;
 
-abstract class BaseUser implements UserInterface, EquatableInterface
+abstract class BaseUser implements UserInterface, EquatableInterface, PasswordAuthenticatedUserInterface
 {
     /**
      * @ORM\Id
@@ -202,8 +203,6 @@ abstract class BaseUser implements UserInterface, EquatableInterface
     }
 
     /**
-     * {@inheritdoc}
-     *
      * @return static
      */
     public function setEnabled($boolean)
@@ -244,17 +243,11 @@ abstract class BaseUser implements UserInterface, EquatableInterface
         return $this;
     }
 
-    /**
-     * @return mixed
-     */
     public function getGoogleId()
     {
         return $this->googleId;
     }
 
-    /**
-     * @param mixed $googleId
-     */
     public function setGoogleId($googleId)
     {
         $this->googleId = $googleId;
@@ -292,8 +285,6 @@ abstract class BaseUser implements UserInterface, EquatableInterface
     abstract public function getFormTypeClass();
 
     /**
-     * {@inheritdoc}
-     *
      * @return bool
      */
     public function isAccountNonLocked()
@@ -372,8 +363,6 @@ abstract class BaseUser implements UserInterface, EquatableInterface
     }
 
     /**
-     * {@inheritdoc}
-     *
      * @return static
      */
     public function setRoles(array $roles)
@@ -455,8 +444,6 @@ abstract class BaseUser implements UserInterface, EquatableInterface
     }
 
     /**
-     * {@inheritdoc}
-     *
      * @return static
      */
     public function addRole($role)
@@ -474,8 +461,6 @@ abstract class BaseUser implements UserInterface, EquatableInterface
     }
 
     /**
-     * {@inheritdoc}
-     *
      * @return array
      */
     public function getGroupNames()
@@ -489,8 +474,6 @@ abstract class BaseUser implements UserInterface, EquatableInterface
     }
 
     /**
-     * {@inheritdoc}
-     *
      * @return bool
      */
     public function hasGroup($name)
@@ -499,8 +482,6 @@ abstract class BaseUser implements UserInterface, EquatableInterface
     }
 
     /**
-     * {@inheritdoc}
-     *
      * @return static
      */
     public function addGroup(GroupInterface $group)
@@ -513,8 +494,6 @@ abstract class BaseUser implements UserInterface, EquatableInterface
     }
 
     /**
-     * {@inheritdoc}
-     *
      * @return static
      */
     public function removeGroup(GroupInterface $group)
@@ -586,7 +565,7 @@ abstract class BaseUser implements UserInterface, EquatableInterface
     /**
      * @return static
      */
-    public function setLastLogin(?\DateTime $lastLogin = null)
+    public function setLastLogin(\DateTime $lastLogin = null)
     {
         $this->lastLogin = $lastLogin;
 
@@ -608,9 +587,6 @@ abstract class BaseUser implements UserInterface, EquatableInterface
         $this->createdBy = $createdBy;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function isEqualTo(BaseUserInterface $user): bool
     {
         if (!$user instanceof self) {
@@ -640,17 +616,11 @@ abstract class BaseUser implements UserInterface, EquatableInterface
         return true;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function serialize()
     {
         return serialize($this->__serialize());
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function unserialize($serialized)
     {
         $this->__unserialize(unserialize($serialized));

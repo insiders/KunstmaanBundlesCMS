@@ -2,7 +2,7 @@
 
 namespace Kunstmaan\UtilitiesBundle\Helper;
 
-use Doctrine\ORM\Proxy\Proxy;
+use Doctrine\Common\Proxy\Proxy;
 
 /**
  * Helper for looking up the classname, not the ORM proxy
@@ -11,8 +11,6 @@ class ClassLookup
 {
     /**
      * Get full class name of object (ie. class name including full namespace)
-     *
-     * @param mixed $object
      *
      * @return string the name of the class and if the given $object isn't a vaid Object false will be returned
      */

@@ -23,6 +23,9 @@ class NodeMenuTabTranslationAdminType extends AbstractType
         $this->em = $em;
     }
 
+    /**
+     * @return void
+     */
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
         if ($options['slugable']) {
@@ -65,6 +68,9 @@ class NodeMenuTabTranslationAdminType extends AbstractType
         return 'menutranslation';
     }
 
+    /**
+     * @return void
+     */
     public function configureOptions(OptionsResolver $resolver)
     {
         $resolver->setDefaults([

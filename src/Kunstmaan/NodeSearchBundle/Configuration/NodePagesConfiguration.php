@@ -6,7 +6,6 @@ use Doctrine\ORM\EntityManager;
 use Elastica\Index;
 use Elastica\Mapping;
 use Kunstmaan\AdminBundle\Helper\DomainConfigurationInterface;
-use Kunstmaan\AdminBundle\Helper\EventdispatcherCompatibilityUtil;
 use Kunstmaan\AdminBundle\Helper\Security\Acl\Permission\MaskBuilder;
 use Kunstmaan\NodeBundle\Entity\HasNodeInterface;
 use Kunstmaan\NodeBundle\Entity\Node;
@@ -57,10 +56,10 @@ class NodePagesConfiguration implements SearchConfigurationInterface
     protected $container;
 
     /** @var AclProviderInterface */
-    protected $aclProvider = null;
+    protected $aclProvider;
 
     /** @var LoggerInterface */
-    protected $logger = null;
+    protected $logger;
 
     /** @var IndexablePagePartsService */
     protected $indexablePagePartsService;
@@ -78,7 +77,7 @@ class NodePagesConfiguration implements SearchConfigurationInterface
     protected $numberOfReplicas;
 
     /** @var Node */
-    protected $currentTopNode = null;
+    protected $currentTopNode;
 
     /** @var array */
     protected $nodeRefs = [];
@@ -560,8 +559,7 @@ class NodePagesConfiguration implements SearchConfigurationInterface
     protected function addCustomData(HasNodeInterface $page, &$doc)
     {
         $event = new IndexNodeEvent($page, $doc);
-        $eventDispatcher = EventdispatcherCompatibilityUtil::upgradeEventDispatcher($this->container->get('event_dispatcher'));
-        $eventDispatcher->dispatch($event, IndexNodeEvent::EVENT_INDEX_NODE);
+        $this->container->get('event_dispatcher')->dispatch($event, IndexNodeEvent::EVENT_INDEX_NODE);
 
         $doc = $event->doc;
 
@@ -605,8 +603,8 @@ class NodePagesConfiguration implements SearchConfigurationInterface
             foreach ($objectAces as $ace) {
                 $securityIdentity = $ace->getSecurityIdentity();
                 if (
-                    $securityIdentity instanceof RoleSecurityIdentity &&
-                    ($ace->getMask() & MaskBuilder::MASK_VIEW != 0)
+                    $securityIdentity instanceof RoleSecurityIdentity
+                    && ($ace->getMask() & MaskBuilder::MASK_VIEW != 0)
                 ) {
                     $roles[] = $securityIdentity->getRole();
                 }
@@ -619,9 +617,6 @@ class NodePagesConfiguration implements SearchConfigurationInterface
         return $roles;
     }
 
-    /**
-     * @return mixed
-     */
     private function getNodeRefPage(NodeVersion $publicNodeVersion)
     {
         $refEntityName = $publicNodeVersion->getRefEntityName();

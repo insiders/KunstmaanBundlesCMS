@@ -23,12 +23,12 @@ class MenuBuilder
     /**
      * @var TopMenuItem[]
      */
-    private $topMenuItems = null;
+    private $topMenuItems;
 
     /**
      * @var MenuItem|null
      */
-    private $currentCache = null;
+    private $currentCache;
 
     /** @var RequestStack */
     private $requestStack;
@@ -133,8 +133,6 @@ class MenuBuilder
 
     /**
      * Get immediate children of the specified menu item
-     *
-     * @param MenuItem $parent
      *
      * @return MenuItem[]
      */

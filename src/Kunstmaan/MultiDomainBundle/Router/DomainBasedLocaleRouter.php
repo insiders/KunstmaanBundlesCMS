@@ -34,7 +34,7 @@ class DomainBasedLocaleRouter extends SlugRouter
      * @param array    $parameters    The route parameters
      * @param int|bool $referenceType The type of reference to be generated (one of the UrlGeneratorInterface constants)
      *
-     * @return string|null
+     * @return string
      */
     public function generate($name, $parameters = [], $referenceType = UrlGeneratorInterface::ABSOLUTE_PATH)
     {
@@ -84,9 +84,9 @@ class DomainBasedLocaleRouter extends SlugRouter
         $result = $urlMatcher->match($pathinfo);
         if (!empty($result)) {
             // Remap locale for front-end requests
-            if ($this->isMultiDomainHost() &&
-                $this->isMultiLanguage() &&
-                !$result['preview']
+            if ($this->isMultiDomainHost()
+                && $this->isMultiLanguage()
+                && !$result['preview']
             ) {
                 $localeMap = $this->getLocaleMap();
                 $locale = $result['_locale'];

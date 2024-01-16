@@ -23,6 +23,8 @@ class FolderType extends AbstractType
      * @param array                $options The options
      *
      * @see FormTypeExtensionInterface::buildForm()
+     *
+     * @return void
      */
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
@@ -47,7 +49,7 @@ class FolderType extends AbstractType
                 'parent',
                 EntityType::class,
                 [
-                    'class' => 'KunstmaanMediaBundle:Folder',
+                    'class' => Folder::class,
                     'choice_label' => 'optionLabel',
                     'label' => 'media.folder.addsub.form.parent',
                     'required' => true,
@@ -78,6 +80,8 @@ class FolderType extends AbstractType
      * Sets the default options for this type.
      *
      * @param OptionsResolver $resolver the resolver for the options
+     *
+     * @return void
      */
     public function configureOptions(OptionsResolver $resolver)
     {

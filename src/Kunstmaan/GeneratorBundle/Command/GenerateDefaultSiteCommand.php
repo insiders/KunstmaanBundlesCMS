@@ -7,6 +7,7 @@ use Symfony\Bundle\MakerBundle\Doctrine\DoctrineHelper;
 use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\ConsoleOutput;
+use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\HttpKernel\Bundle\BundleInterface;
 
 /**
@@ -45,7 +46,7 @@ class GenerateDefaultSiteCommand extends KunstmaanGenerateCommand
     }
 
     /**
-     * @see Command
+     * @return void
      */
     protected function configure()
     {
@@ -70,17 +71,11 @@ EOT
             ->setName('kuma:generate:default-site');
     }
 
-    /**
-     * {@inheritdoc}
-     */
     protected function getWelcomeText()
     {
         return 'Welcome to the Kunstmaan default site generator';
     }
 
-    /**
-     * {@inheritdoc}
-     */
     protected function doExecute()
     {
         $this->assistant->writeSection('Site generation');
@@ -166,9 +161,6 @@ EOT
         return 0;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     protected function doInteract()
     {
     }
@@ -180,7 +172,7 @@ EOT
      */
     protected function createGenerator()
     {
-        $filesystem = $this->getContainer()->get('filesystem');
+        $filesystem = new Filesystem();
         $registry = $this->getContainer()->get('doctrine');
 
         return new DefaultSiteGenerator($filesystem, $registry, '/defaultsite', $this->assistant, $this->getContainer(), $this->doctrineHelper);

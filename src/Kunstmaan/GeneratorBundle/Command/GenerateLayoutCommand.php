@@ -4,6 +4,7 @@ namespace Kunstmaan\GeneratorBundle\Command;
 
 use Kunstmaan\GeneratorBundle\Generator\LayoutGenerator;
 use Symfony\Component\Console\Input\InputOption;
+use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\HttpKernel\Bundle\BundleInterface;
 
 /**
@@ -19,7 +20,7 @@ class GenerateLayoutCommand extends KunstmaanGenerateCommand
     private $browserSyncUrl;
 
     /**
-     * @see Command
+     * @return void
      */
     protected function configure()
     {
@@ -42,9 +43,6 @@ EOT
             ->setName('kuma:generate:layout');
     }
 
-    /**
-     * {@inheritdoc}
-     */
     protected function getWelcomeText()
     {
         if (!$this->isSubCommand()) {
@@ -54,9 +52,6 @@ EOT
         }
     }
 
-    /**
-     * {@inheritdoc}
-     */
     protected function doExecute()
     {
         if (!$this->isSubCommand()) {
@@ -73,9 +68,6 @@ EOT
         return 0;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     protected function doInteract()
     {
         if (!$this->isSubCommand()) {
@@ -101,7 +93,7 @@ EOT
      */
     protected function createGenerator()
     {
-        $filesystem = $this->getContainer()->get('filesystem');
+        $filesystem = new Filesystem();
         $registry = $this->getContainer()->get('doctrine');
 
         return new LayoutGenerator($filesystem, $registry, '/layout', $this->assistant, $this->getContainer());

@@ -56,24 +56,19 @@ class RemoteAudioHandler extends AbstractMediaHandler
         return RemoteAudioType::class;
     }
 
-    /**
-     * @return mixed
-     */
     public function getSoundcloudApiKey()
     {
         return $this->soundcloudApiKey;
     }
 
     /**
-     * @param mixed $object
-     *
      * @return bool
      */
     public function canHandle($object)
     {
         if (
-            \is_string($object) ||
-            ($object instanceof Media && $object->getContentType() == RemoteAudioHandler::CONTENT_TYPE)
+            \is_string($object)
+            || ($object instanceof Media && $object->getContentType() == RemoteAudioHandler::CONTENT_TYPE)
         ) {
             return true;
         }
@@ -103,7 +98,7 @@ class RemoteAudioHandler extends AbstractMediaHandler
         // update thumbnail
         switch ($audio->getType()) {
             case 'soundcloud':
-                if ($this->getSoundcloudApiKey()) {
+                if (null !== $this->getSoundcloudApiKey()) {
                     $scData = json_decode(
                         file_get_contents(
                             'http://api.soundcloud.com/tracks/' . $code . '.json?client_id=' . $this->getSoundcloudApiKey()
@@ -126,24 +121,15 @@ class RemoteAudioHandler extends AbstractMediaHandler
     {
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function updateMedia(Media $media)
     {
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function createNew($data)
     {
         return null;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getShowTemplate(Media $media)
     {
         return '@KunstmaanMedia/Media/RemoteAudio/show.html.twig';

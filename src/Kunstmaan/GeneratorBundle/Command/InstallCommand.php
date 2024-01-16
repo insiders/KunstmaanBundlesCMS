@@ -32,9 +32,6 @@ final class InstallCommand extends GeneratorCommand
     /** @var bool */
     private $shouldStop = false;
 
-    /**
-     * @param string $rootDir
-     */
     public function __construct(string $projectDir)
     {
         $this->projectDir = $projectDir;
@@ -42,6 +39,9 @@ final class InstallCommand extends GeneratorCommand
         parent::__construct();
     }
 
+    /**
+     * @return void
+     */
     protected function configure()
     {
         $this
@@ -73,6 +73,9 @@ final class InstallCommand extends GeneratorCommand
         $this->assistant->setInput($input);
     }
 
+    /**
+     * @return void
+     */
     protected function interact(InputInterface $input, OutputInterface $output)
     {
         $this->initAssistant($input, $output);
@@ -160,7 +163,9 @@ final class InstallCommand extends GeneratorCommand
         try {
             if ($separateProcess) {
                 $process = new Process(array_merge(['bin/console', $command], array_keys($options)));
-                $process->setTty(true);
+                if (Process::isTtySupported()) {
+                    $process->setTty(true);
+                }
                 $process->run();
 
                 if (!$process->isSuccessful()) {

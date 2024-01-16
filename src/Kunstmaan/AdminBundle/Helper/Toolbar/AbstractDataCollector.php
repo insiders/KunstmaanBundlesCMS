@@ -10,11 +10,6 @@ use Symfony\Component\HttpKernel\DataCollector\DataCollector as BaseDataCollecto
 abstract class AbstractDataCollector extends BaseDataCollector implements DataCollectionInterface
 {
     /**
-     * @var array
-     */
-    protected $data = [];
-
-    /**
      * @var string
      */
     private $template;
@@ -24,9 +19,6 @@ abstract class AbstractDataCollector extends BaseDataCollector implements DataCo
      */
     protected $adminRouteHelper;
 
-    /**
-     * @return mixed
-     */
     public function getTemplate()
     {
         return $this->template;
