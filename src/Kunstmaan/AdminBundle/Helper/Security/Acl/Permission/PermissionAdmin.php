@@ -33,42 +33,42 @@ class PermissionAdmin
     /**
      * @var AbstractEntity
      */
-    protected $resource = null;
+    protected $resource;
 
     /**
      * @var EntityManager
      */
-    protected $em = null;
+    protected $em;
 
     /**
      * @var TokenStorageInterface
      */
-    protected $tokenStorage = null;
+    protected $tokenStorage;
 
     /**
      * @var MutableAclProviderInterface
      */
-    protected $aclProvider = null;
+    protected $aclProvider;
 
     /**
      * @var ObjectIdentityRetrievalStrategyInterface
      */
-    protected $oidRetrievalStrategy = null;
+    protected $oidRetrievalStrategy;
 
     /**
      * @var PermissionMap
      */
-    protected $permissionMap = null;
+    protected $permissionMap;
 
     /**
      * @var array
      */
-    protected $permissions = null;
+    protected $permissions;
 
     /**
      * @var EventDispatcherInterface
      */
-    protected $eventDispatcher = null;
+    protected $eventDispatcher;
 
     /**
      * @var KernelInterface
@@ -222,7 +222,7 @@ class PermissionAdmin
      */
     public function bindRequest(Request $request)
     {
-        $changes = $request->request->get('permission-hidden-fields');
+        $changes = $request->request->all('permission-hidden-fields');
 
         if (empty($changes)) {
             return true;

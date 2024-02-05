@@ -3,6 +3,7 @@ imports:
 
 framework:
     secret: "secret"
+    http_method_override: false
     router:
         resource: "%kernel.project_dir%/config/routing.yml"
         utf8: true
@@ -12,6 +13,9 @@ kunstmaan_admin:
     multi_language: true
     required_locales: 'nl|fr|en'
     default_locale: 'nl'
+    authentication:
+        mailer:
+            service: Kunstmaan\AdminBundle\Service\AuthenticationMailer\SymfonyMailerService
 
 kunstmaan_translator:
     managed_locales: ['nl','en','de']

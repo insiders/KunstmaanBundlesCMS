@@ -5,6 +5,7 @@ namespace Kunstmaan\GeneratorBundle\Command;
 use Kunstmaan\GeneratorBundle\Generator\DefaultPagePartGenerator;
 use Symfony\Bundle\MakerBundle\Doctrine\DoctrineHelper;
 use Symfony\Component\Console\Input\InputOption;
+use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\HttpKernel\Bundle\BundleInterface;
 
 /**
@@ -32,7 +33,7 @@ class GenerateFormPagePartsCommand extends KunstmaanGenerateCommand
     }
 
     /**
-     * @see Command
+     * @return void
      */
     protected function configure()
     {
@@ -49,17 +50,11 @@ EOT
             ->setName('kuma:generate:form-pageparts');
     }
 
-    /**
-     * {@inheritdoc}
-     */
     protected function getWelcomeText()
     {
         return 'Welcome to the Kunstmaan default form pageparts generator';
     }
 
-    /**
-     * {@inheritdoc}
-     */
     protected function doExecute()
     {
         $this->assistant->writeSection('Default Form PageParts generation');
@@ -91,9 +86,6 @@ EOT
         return 0;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     protected function doInteract()
     {
         if (!$this->isBundleAvailable('KunstmaanPagePartBundle')) {
@@ -121,7 +113,7 @@ EOT
      */
     protected function createGenerator()
     {
-        $filesystem = $this->getContainer()->get('filesystem');
+        $filesystem = new Filesystem();
         $registry = $this->getContainer()->get('doctrine');
 
         return new DefaultPagePartGenerator($filesystem, $registry, '/pagepart', $this->assistant, $this->getContainer(), $this->doctrineHelper);

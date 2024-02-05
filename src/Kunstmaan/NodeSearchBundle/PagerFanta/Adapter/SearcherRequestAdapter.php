@@ -42,9 +42,6 @@ class SearcherRequestAdapter implements SearcherRequestAdapterInterface
         $this->aggregations = [];
     }
 
-    /**
-     * @return mixed
-     */
     public function getSuggestions()
     {
         if (!isset($this->suggests)) {
@@ -82,8 +79,6 @@ class SearcherRequestAdapter implements SearcherRequestAdapterInterface
     }
 
     /**
-     * @param ResultSet $result
-     *
      * @return array|ResultSet
      */
     protected function processResponse(ResultSet $result = null)

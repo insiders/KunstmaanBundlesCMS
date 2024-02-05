@@ -6,6 +6,7 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\QueryBuilder;
 use Kunstmaan\AdminBundle\Entity\GroupInterface;
+use Kunstmaan\AdminBundle\Entity\Group;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
@@ -39,6 +40,9 @@ class UserType extends AbstractType implements RoleDependentUserFormInterface
         $this->canEditAllFields = (bool) $canEditAllFields;
     }
 
+    /**
+     * @return void
+     */
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
         $languages = [];
@@ -73,7 +77,7 @@ class UserType extends AbstractType implements RoleDependentUserFormInterface
             $builder->add('enabled', CheckboxType::class, ['required' => false, 'label' => 'settings.user.enabled']);
             $groups = $builder->create('groups', EntityType::class, [
                     'label' => 'settings.user.roles',
-                    'class' => 'KunstmaanAdminBundle:Group',
+                    'class' => Group::class,
                     'query_builder' => function (EntityRepository $er) use ($options) {
                         return $this->getQueryBuilder($er, $options['can_add_super_users']);
                     },
@@ -127,6 +131,9 @@ class UserType extends AbstractType implements RoleDependentUserFormInterface
         return 'user';
     }
 
+    /**
+     * @return void
+     */
     public function configureOptions(OptionsResolver $resolver)
     {
         $resolver->setDefaults(

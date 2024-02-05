@@ -2,12 +2,9 @@
 
 namespace Kunstmaan\GeneratorBundle\Command;
 
-use Kunstmaan\AdminBundle\Form\WysiwygType;
 use Kunstmaan\GeneratorBundle\Helper\CommandAssistant;
 use Kunstmaan\GeneratorBundle\Helper\GeneratorUtils;
 use Kunstmaan\GeneratorBundle\Helper\Sf4AppBundle;
-use Kunstmaan\MediaBundle\Form\Type\MediaType;
-use Kunstmaan\NodeBundle\Form\Type\URLChooserType;
 use Sensio\Bundle\GeneratorBundle\Command\GenerateDoctrineCommand;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Console\Input\InputInterface;
@@ -32,10 +29,7 @@ abstract class KunstmaanGenerateCommand extends GenerateDoctrineCommand
     protected $assistant;
 
     /**
-     * Interacts with the user.
-     *
-     * @param InputInterface  $input  An InputInterface instance
-     * @param OutputInterface $output An OutputInterface instance
+     * @return void
      */
     protected function interact(InputInterface $input, OutputInterface $output)
     {
@@ -201,8 +195,6 @@ abstract class KunstmaanGenerateCommand extends GenerateDoctrineCommand
 
     /**
      * Replaces '\' with '/'.
-     *
-     * @return mixed
      */
     private function fixNamespace($namespace)
     {
@@ -632,7 +624,7 @@ abstract class KunstmaanGenerateCommand extends GenerateDoctrineCommand
                 $fields[$type][] = [
                     'fieldName' => lcfirst(Container::camelize($name)),
                     'type' => 'text',
-                    'formType' => WysiwygType::class,
+                    'formType' => 'Kunstmaan\AdminBundle\Form\WysiwygType',
                     'nullable' => $allNullable,
                 ];
 
@@ -642,7 +634,7 @@ abstract class KunstmaanGenerateCommand extends GenerateDoctrineCommand
                     $fields[$type][$subField] = [
                         'fieldName' => lcfirst(Container::camelize($name . '_' . $subField)),
                         'type' => 'string',
-                        'formType' => $subField == 'url' ? URLChooserType::class : TextType::class,
+                        'formType' => $subField == 'url' ? 'Kunstmaan\NodeBundle\Form\Type\URLChooserType' : TextType::class,
                         'nullable' => $allNullable,
                     ];
                 }
@@ -658,7 +650,7 @@ abstract class KunstmaanGenerateCommand extends GenerateDoctrineCommand
                 $fields[$type]['image'] = [
                     'fieldName' => lcfirst(Container::camelize($name)),
                     'type' => 'image',
-                    'formType' => MediaType::class,
+                    'formType' => 'Kunstmaan\MediaBundle\Form\Type\MediaType',
                     'mediaType' => $extra,
                     'minHeight' => $minHeight,
                     'maxHeight' => $maxHeight,
@@ -684,7 +676,7 @@ abstract class KunstmaanGenerateCommand extends GenerateDoctrineCommand
                 $fields[$type][] = [
                     'fieldName' => lcfirst(Container::camelize($name)),
                     'type' => 'media',
-                    'formType' => MediaType::class,
+                    'formType' => 'Kunstmaan\MediaBundle\Form\Type\MediaType',
                     'mediaType' => $extra,
                     'mimeTypes' => $mimeTypes,
                     'targetEntity' => 'Kunstmaan\MediaBundle\Entity\Media',

@@ -8,13 +8,11 @@ use Symfony\Component\Form\DataTransformerInterface;
 class MediaTokenTransformer implements DataTransformerInterface
 {
     /**
-     * @param mixed $content
-     *
      * @return string
      */
     public function transform($content)
     {
-        if (!trim($content)) {
+        if ($content === null || !$content || !trim($content)) {
             return '';
         }
 
@@ -41,13 +39,11 @@ class MediaTokenTransformer implements DataTransformerInterface
     }
 
     /**
-     * @param mixed $content
-     *
      * @return string
      */
     public function reverseTransform($content)
     {
-        if (!trim($content)) {
+        if ($content === null || !trim($content)) {
             return '';
         }
 

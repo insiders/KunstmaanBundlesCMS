@@ -4,6 +4,7 @@ namespace Kunstmaan\GeneratorBundle\Command;
 
 use Kunstmaan\GeneratorBundle\Generator\PageGenerator;
 use Symfony\Component\Console\Input\InputOption;
+use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\HttpKernel\Bundle\BundleInterface;
 
 /**
@@ -47,7 +48,7 @@ class GeneratePageCommand extends KunstmaanGenerateCommand
     private $parentPages = [];
 
     /**
-     * @see Command
+     * @return void
      */
     protected function configure()
     {
@@ -62,17 +63,11 @@ EOT
             ->setName('kuma:generate:page');
     }
 
-    /**
-     * {@inheritdoc}
-     */
     protected function getWelcomeText()
     {
         return 'Welcome to the Kunstmaan page generator';
     }
 
-    /**
-     * {@inheritdoc}
-     */
     protected function doExecute()
     {
         $this->assistant->writeSection('Page generation');
@@ -102,9 +97,6 @@ EOT
         return 0;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     protected function doInteract()
     {
         if (!$this->isBundleAvailable('KunstmaanPagePartBundle')) {
@@ -236,7 +228,7 @@ EOT
      */
     protected function createGenerator()
     {
-        $filesystem = $this->getContainer()->get('filesystem');
+        $filesystem = new Filesystem();
         $registry = $this->getContainer()->get('doctrine');
 
         return new PageGenerator($filesystem, $registry, '/page', $this->assistant, $this->getContainer());

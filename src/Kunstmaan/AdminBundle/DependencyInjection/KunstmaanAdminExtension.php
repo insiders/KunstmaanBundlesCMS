@@ -2,12 +2,14 @@
 
 namespace Kunstmaan\AdminBundle\DependencyInjection;
 
+use Kunstmaan\AdminBundle\Attribute\AsMenuAdaptor;
 use Kunstmaan\AdminBundle\Helper\Menu\MenuAdaptorInterface;
 use Kunstmaan\AdminBundle\Service\AuthenticationMailer\SwiftmailerService;
 use Kunstmaan\AdminBundle\Service\AuthenticationMailer\SymfonyMailerService;
 use Symfony\Bundle\SwiftmailerBundle\SwiftmailerBundle;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\Config\Loader\LoaderInterface;
+use Symfony\Component\DependencyInjection\ChildDefinition;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Definition;
 use Symfony\Component\DependencyInjection\Exception\LogicException;
@@ -23,6 +25,8 @@ class KunstmaanAdminExtension extends Extension
      *
      * @param array            $configs   An array of configuration values
      * @param ContainerBuilder $container A ContainerBuilder instance
+     *
+     * @return void
      *
      * @throws \InvalidArgumentException When provided tag is not defined in this extension
      */
@@ -73,6 +77,11 @@ class KunstmaanAdminExtension extends Extension
         $container->registerForAutoconfiguration(MenuAdaptorInterface::class)
             ->addTag('kunstmaan_admin.menu.adaptor');
 
+        $container->registerAttributeForAutoconfiguration(AsMenuAdaptor::class, static function (ChildDefinition $definition, AsMenuAdaptor $attribute, \Reflector $reflector) {
+            $tagAttributes = get_object_vars($attribute);
+            $definition->addTag('kunstmaan_admin.menu.adaptor', $tagAttributes);
+        });
+
         if (!empty($config['enable_console_exception_listener']) && $config['enable_console_exception_listener']) {
             $loader->load('console_listener.yml');
         }
@@ -91,8 +100,6 @@ class KunstmaanAdminExtension extends Extension
     }
 
     /**
-     * {@inheritdoc}
-     *
      * @return string
      */
     public function getNamespace()
@@ -101,8 +108,6 @@ class KunstmaanAdminExtension extends Extension
     }
 
     /**
-     * {@inheritdoc}
-     *
      * @return string|false
      */
     public function getXsdValidationBasePath()
@@ -159,6 +164,12 @@ class KunstmaanAdminExtension extends Extension
 
         $loader->load('authentication.yml');
 
+        if (null === $config['authentication']['mailer']['service']) {
+            trigger_deprecation('kunstmaan/admin-bundle', '6.3', 'The default value of "kunstmaan_admin.authentication.mailer.service" will change from "%s" to "%s" in 7.0, set the config to "%s" to avoid issues when upgrading to 7.0.', SwiftmailerService::class, SymfonyMailerService::class, SymfonyMailerService::class);
+        }
+
+        $config['authentication']['mailer']['service'] ??= SwiftmailerService::class;
+
         $container->setAlias('kunstmaan_admin.authentication.mailer', $config['authentication']['mailer']['service']);
 
         // Validate mailer config
@@ -172,6 +183,10 @@ class KunstmaanAdminExtension extends Extension
 
         if ($config['authentication']['mailer']['service'] === SwiftmailerService::class && !class_exists(SwiftmailerBundle::class)) {
             throw new LogicException('Swiftmailer support for the authentication mailer cannot be enabled as the component is not installed. Try running "composer require symfony/swiftmailer-bundle".');
+        }
+
+        if ($config['authentication']['mailer']['service'] === SwiftmailerService::class) {
+            trigger_deprecation('kunstmaan/admin-bundle', '6.3', 'The swiftmailer service for config "kunstmaan_admin.authentication.mailer.service" is deprecated, use "%s" service instead.', SymfonyMailerService::class);
         }
 
         // Cleanup mailer services

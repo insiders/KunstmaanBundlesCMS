@@ -5,6 +5,7 @@ namespace Kunstmaan\MenuBundle\Form;
 use Doctrine\ORM\EntityRepository;
 use Kunstmaan\MenuBundle\Entity\MenuItem;
 use Kunstmaan\NodeBundle\Entity\Node;
+use Kunstmaan\NodeBundle\Entity\NodeTranslation;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
@@ -15,6 +16,9 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class MenuItemAdminType extends AbstractType
 {
+    /**
+     * @return void
+     */
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
         $entityId = $options['entityId'];
@@ -72,7 +76,7 @@ class MenuItemAdminType extends AbstractType
             'nodeTranslation',
             EntityType::class,
             [
-                'class' => 'KunstmaanNodeBundle:NodeTranslation',
+                'class' => NodeTranslation::class,
                 'choice_label' => 'title',
                 'query_builder' => function (EntityRepository $er) use (
                     $locale,
@@ -137,6 +141,8 @@ class MenuItemAdminType extends AbstractType
      * Configures the options for this type.
      *
      * @param OptionsResolver $resolver the resolver for the options
+     *
+     * @return void
      */
     public function configureOptions(OptionsResolver $resolver)
     {

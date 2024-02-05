@@ -6,7 +6,6 @@ use Doctrine\ORM\EntityManager;
 use Kunstmaan\AdminBundle\Entity\BaseUser;
 use Kunstmaan\AdminBundle\FlashMessages\FlashTypes;
 use Kunstmaan\AdminBundle\Helper\CloneHelper;
-use Kunstmaan\AdminBundle\Helper\EventdispatcherCompatibilityUtil;
 use Kunstmaan\AdminBundle\Helper\Security\Acl\Permission\PermissionMap;
 use Kunstmaan\NodeBundle\Entity\HasNodeInterface;
 use Kunstmaan\NodeBundle\Entity\Node;
@@ -71,7 +70,7 @@ class NodeAdminPublisher
         $this->em = $em;
         $this->tokenStorage = $tokenStorage;
         $this->authorizationChecker = $authorizationChecker;
-        $this->eventDispatcher = EventdispatcherCompatibilityUtil::upgradeEventDispatcher($eventDispatcher);
+        $this->eventDispatcher = $eventDispatcher;
         $this->cloneHelper = $cloneHelper;
         $this->translator = $translator;
     }
@@ -81,7 +80,7 @@ class NodeAdminPublisher
      *
      * @param BaseUser|null $user
      *
-     *  @throws AccessDeniedException
+     * @throws AccessDeniedException
      */
     public function publish(NodeTranslation $nodeTranslation, $user = null)
     {
@@ -229,8 +228,6 @@ class NodeAdminPublisher
      * @param NodeTranslation  $nodeTranslation The node translation
      * @param NodeVersion      $nodeVersion     The node version
      * @param BaseUser         $user            The user
-     *
-     * @return mixed
      */
     public function createPublicVersion(
         HasNodeInterface $page,

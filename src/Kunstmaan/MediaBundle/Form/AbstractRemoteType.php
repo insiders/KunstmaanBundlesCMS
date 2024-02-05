@@ -2,6 +2,7 @@
 
 namespace Kunstmaan\MediaBundle\Form;
 
+use Kunstmaan\MediaBundle\Entity\Folder;
 use Kunstmaan\MediaBundle\Repository\FolderRepository;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
@@ -28,6 +29,8 @@ abstract class AbstractRemoteType extends AbstractType
      * @param array                $options The options
      *
      * @see FormTypeExtensionInterface::buildForm()
+     *
+     * @return void
      */
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
@@ -90,7 +93,7 @@ abstract class AbstractRemoteType extends AbstractType
                         'folder',
                         EntityType::class,
                         [
-                            'class' => 'KunstmaanMediaBundle:Folder',
+                            'class' => Folder::class,
                             'choice_label' => 'optionLabel',
                             'query_builder' => function (FolderRepository $er) {
                                 return $er->selectFolderQueryBuilder()

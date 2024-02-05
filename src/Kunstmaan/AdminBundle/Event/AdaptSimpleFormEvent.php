@@ -19,7 +19,7 @@ final class AdaptSimpleFormEvent extends Event
     protected $formType;
 
     /**
-     * @var TabPane
+     * @var TabPane|null
      */
     protected $tabPane;
 
@@ -42,7 +42,7 @@ final class AdaptSimpleFormEvent extends Event
     }
 
     /**
-     * @return TabPane
+     * @return TabPane|null
      */
     public function getTabPane()
     {
@@ -83,9 +83,6 @@ final class AdaptSimpleFormEvent extends Event
         $this->formType = $type;
     }
 
-    /**
-     * @return mixed
-     */
     public function getData()
     {
         return $this->data;

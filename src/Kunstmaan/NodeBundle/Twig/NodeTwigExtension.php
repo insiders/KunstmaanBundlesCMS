@@ -207,14 +207,13 @@ final class NodeTwigExtension extends AbstractExtension
 
     /**
      * @param string $locale
-     * @param Node   $node
      * @param bool   $includeHiddenFromNav
      *
      * @return NodeMenu
      */
     public function getNodeMenu($locale, Node $node = null, $includeHiddenFromNav = false)
     {
-        $request = method_exists($this->requestStack, 'getMainRequest') ? $this->requestStack->getMainRequest() : $this->requestStack->getMasterRequest();
+        $request = $this->requestStack->getMainRequest();
         $isPreview = $request->attributes->has('preview') && $request->attributes->get('preview') === true;
         $this->nodeMenu->setLocale($locale);
         $this->nodeMenu->setCurrentNode($node);
