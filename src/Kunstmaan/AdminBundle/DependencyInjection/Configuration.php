@@ -108,7 +108,8 @@ class Configuration implements ConfigurationInterface
                         ->integerNode('min_length')->defaultNull()->end()
                         ->integerNode('max_length')->defaultNull()->end()
                     ->end()
-            ->end();
+            ->end()
+            ->booleanNode('hide_sidebar')->defaultFalse()->end();
 
         return $treeBuilder;
     }
