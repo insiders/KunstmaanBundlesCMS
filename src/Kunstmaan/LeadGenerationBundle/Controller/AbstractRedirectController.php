@@ -12,7 +12,7 @@ abstract class AbstractRedirectController extends AbstractController
     /** @var EntityManagerInterface|null */
     private $em;
 
-    public function __construct(EntityManagerInterface $em = null)
+    public function __construct(?EntityManagerInterface $em = null)
     {
         if (null === $em) {
             trigger_deprecation('kunstmaan/lead-generation-bundle', '6.1', 'To passing an instance of "%s" to "%s" is deprecated and will be required in 6.0.', EntityManagerInterface::class, __METHOD__);
@@ -21,9 +21,7 @@ abstract class AbstractRedirectController extends AbstractController
         $this->em = $em;
     }
 
-    /**
-     * @Route("/{popup}", name="redirect_index", requirements={"popup": "\d+"})
-     */
+    #[Route(path: '/{popup}', name: 'redirect_index', requirements: ['popup' => '\d+'])]
     public function indexAction($popup)
     {
         // NEXT_MAJOR remove getDoctrine fallback

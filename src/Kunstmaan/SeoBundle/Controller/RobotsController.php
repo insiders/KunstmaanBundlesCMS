@@ -18,9 +18,7 @@ final class RobotsController extends AbstractController
         $this->dispatcher = $dispatcher;
     }
 
-    /**
-     * @Route(path="/robots.txt", name="KunstmaanSeoBundle_robots", defaults={"_format": "txt"})
-     */
+    #[Route(path: '/robots.txt', name: 'KunstmaanSeoBundle_robots', defaults: ['_format' => 'txt'])]
     public function indexAction(Request $request): Response
     {
         $event = new RobotsEvent();
