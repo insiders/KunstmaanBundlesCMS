@@ -115,4 +115,13 @@ class MenuAdminListConfigurator extends AbstractDoctrineORMAdminListConfigurator
             ->andWhere('b.locale = :locale')
             ->setParameter('locale', $this->locale);
     }
+
+    public function getPathByConvention($suffix = null)
+    {
+        if (null === $suffix || $suffix === '') {
+            return 'kunstmaanmenubundle_admin_menu';
+        }
+
+        return sprintf('kunstmaanmenubundle_admin_menu_%s', $suffix);
+    }
 }
