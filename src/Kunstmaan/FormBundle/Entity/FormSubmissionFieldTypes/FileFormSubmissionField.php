@@ -55,10 +55,9 @@ class FileFormSubmissionField extends FormSubmissionField
     /**
      * Non-persistent storage of upload file
      *
-     * @Assert\File(maxSize="6000000")
-     *
      * @var UploadedFile
      */
+    #[Assert\File(maxSize: '6000000')]
     public $file;
 
     /**
@@ -88,7 +87,7 @@ class FileFormSubmissionField extends FormSubmissionField
     /**
      * Move the file to the given uploadDir and save the filename
      */
-    public function upload($uploadDir, $webDir, Filesystem $fileSystem = null)
+    public function upload($uploadDir, $webDir, ?Filesystem $fileSystem = null)
     {
         // the file property can be empty if the field is not required
         if (null === $this->file) {

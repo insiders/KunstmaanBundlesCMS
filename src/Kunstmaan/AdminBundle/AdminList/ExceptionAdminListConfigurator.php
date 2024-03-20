@@ -13,7 +13,7 @@ use Kunstmaan\AdminListBundle\AdminList\ListAction\SimpleListAction;
 
 class ExceptionAdminListConfigurator extends AbstractDoctrineORMAdminListConfigurator
 {
-    public function __construct(EntityManager $em, AclHelper $aclHelper = null)
+    public function __construct(EntityManager $em, ?AclHelper $aclHelper = null)
     {
         parent::__construct($em, $aclHelper);
     }
@@ -105,11 +105,20 @@ class ExceptionAdminListConfigurator extends AbstractDoctrineORMAdminListConfigu
 
     public function getBundleName()
     {
+        trigger_deprecation('kunstmaan/admin-bundle', '6.4', 'The "%s" method is deprecated and will be removed in 7.0. Use the "getEntityClass" method instead.', __METHOD__);
+
         return 'KunstmaanAdminBundle';
     }
 
     public function getEntityName()
     {
+        trigger_deprecation('kunstmaan/admin-bundle', '6.4', 'The "%s" method is deprecated and will be removed in 7.0. Use the "getEntityClass" method instead.', __METHOD__);
+
         return 'Exception';
+    }
+
+    public function getEntityClass(): string
+    {
+        return Exception::class;
     }
 }

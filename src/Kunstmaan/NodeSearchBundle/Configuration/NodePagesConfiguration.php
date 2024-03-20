@@ -28,6 +28,7 @@ use Symfony\Component\Security\Acl\Exception\AclNotFoundException;
 use Symfony\Component\Security\Acl\Model\AclInterface;
 use Symfony\Component\Security\Acl\Model\AclProviderInterface;
 use Symfony\Component\Security\Acl\Model\AuditableEntryInterface;
+use Symfony\Component\Security\Core\Authorization\Voter\AuthenticatedVoter;
 
 class NodePagesConfiguration implements SearchConfigurationInterface
 {
@@ -326,7 +327,7 @@ class NodePagesConfiguration implements SearchConfigurationInterface
         $ngramDiff = 1;
         if (isset($analysers['tokenizer']) && count($analysers['tokenizer']) > 0) {
             foreach ($analysers['tokenizer'] as $tokenizer) {
-                if ($tokenizer['type'] === 'nGram') {
+                if (\strtolower($tokenizer['type']) === 'ngram') {
                     $diff = $tokenizer['max_gram'] - $tokenizer['min_gram'];
 
                     $ngramDiff = $diff > $ngramDiff ? $diff : $ngramDiff;
@@ -444,7 +445,11 @@ class NodePagesConfiguration implements SearchConfigurationInterface
             $roles = $this->getAclPermissions($node);
         } else {
             // Fallback when no ACL available / assume everything is accessible...
+            // NEXT_MAJOR cleanup old security role
             $roles = ['IS_AUTHENTICATED_ANONYMOUSLY'];
+            if (defined(AuthenticatedVoter::PUBLIC_ACCESS)) {
+                $roles[] = AuthenticatedVoter::PUBLIC_ACCESS;
+            }
         }
         $doc['view_roles'] = $roles;
     }
@@ -611,7 +616,11 @@ class NodePagesConfiguration implements SearchConfigurationInterface
             }
         } catch (AclNotFoundException $e) {
             // No ACL found... assume default
+            // NEXT_MAJOR cleanup old security role
             $roles = ['IS_AUTHENTICATED_ANONYMOUSLY'];
+            if (defined(AuthenticatedVoter::PUBLIC_ACCESS)) {
+                $roles[] = AuthenticatedVoter::PUBLIC_ACCESS;
+            }
         }
 
         return $roles;

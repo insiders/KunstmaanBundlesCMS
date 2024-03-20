@@ -2,7 +2,6 @@
 
 namespace Kunstmaan\AdminBundle\Twig;
 
-use Kunstmaan\AdminBundle\Helper\Menu\MenuBuilder;
 use Kunstmaan\NodeBundle\Entity\HideSidebarInNodeEditInterface;
 use Twig\Extension\AbstractExtension;
 use Twig\TwigFunction;

@@ -39,9 +39,7 @@ final class ChooserController extends AbstractController
 
     private const TYPE_ALL = 'all';
 
-    /**
-     * @Route("/chooser", name="KunstmaanMediaBundle_chooser")
-     */
+    #[Route(path: '/chooser', name: 'KunstmaanMediaBundle_chooser')]
     public function chooserIndexAction(Request $request): RedirectResponse
     {
         $session = $request->getSession();
@@ -80,10 +78,9 @@ final class ChooserController extends AbstractController
 
     /**
      * @param int $folderId The folder id
-     *
-     * @Route("/chooser/{folderId}", requirements={"folderId" = "\d+"}, name="KunstmaanMediaBundle_chooser_show_folder")
      */
-    public function chooserShowFolderAction(Request $request, $folderId): Response
+    #[Route(path: '/chooser/{folderId}', requirements: ['folderId' => '\d+'], name: 'KunstmaanMediaBundle_chooser_show_folder')]
+    public function chooserShowFolderAction(Request $request, $folderId, array $customViewVars = []): Response
     {
         $session = $request->getSession();
 
@@ -142,6 +139,7 @@ final class ChooserController extends AbstractController
             'folder' => $folder,
             'adminlist' => $adminList,
             'subform' => $subForm->createView(),
+            ...$customViewVars,
         ];
 
         $forms = [];

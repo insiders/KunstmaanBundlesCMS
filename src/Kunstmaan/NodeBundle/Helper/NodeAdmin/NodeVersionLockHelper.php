@@ -7,22 +7,17 @@ use Kunstmaan\AdminBundle\Entity\BaseUser;
 use Kunstmaan\NodeBundle\Entity\NodeTranslation;
 use Kunstmaan\NodeBundle\Entity\NodeVersionLock;
 use Kunstmaan\NodeBundle\Repository\NodeVersionLockRepository;
-use Symfony\Component\DependencyInjection\ContainerAwareInterface;
-use Symfony\Component\DependencyInjection\ContainerAwareTrait;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
-class NodeVersionLockHelper implements ContainerAwareInterface
+class NodeVersionLockHelper
 {
-    use ContainerAwareTrait;
-
-    /**
-     * @var ObjectManager
-     */
+    /** @var ObjectManager */
     private $objectManager;
+    private ContainerInterface $container;
 
     public function __construct(ContainerInterface $container, ObjectManager $em)
     {
-        $this->setContainer($container);
+        $this->container = $container;
         $this->setObjectManager($em);
     }
 
@@ -57,7 +52,7 @@ class NodeVersionLockHelper implements ContainerAwareInterface
      *
      * @return array
      */
-    public function getUsersWithNodeVersionLock(NodeTranslation $nodeTranslation, $isPublicNodeVersion, BaseUser $userToExclude = null)
+    public function getUsersWithNodeVersionLock(NodeTranslation $nodeTranslation, $isPublicNodeVersion, ?BaseUser $userToExclude = null)
     {
         return array_reduce(
             $this->getNodeVersionLocksByNodeTranslation($nodeTranslation, $isPublicNodeVersion, $userToExclude),
@@ -110,7 +105,7 @@ class NodeVersionLockHelper implements ContainerAwareInterface
      *
      * @return NodeVersionLock[]
      */
-    protected function getNodeVersionLocksByNodeTranslation(NodeTranslation $nodeTranslation, $isPublicVersion, BaseUser $userToExclude = null)
+    protected function getNodeVersionLocksByNodeTranslation(NodeTranslation $nodeTranslation, $isPublicVersion, ?BaseUser $userToExclude = null)
     {
         $threshold = $this->container->getParameter('kunstmaan_node.lock_threshold');
         /** @var NodeVersionLockRepository $objectRepository */
