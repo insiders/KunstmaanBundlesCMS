@@ -76,20 +76,19 @@ class UserType extends AbstractType implements RoleDependentUserFormInterface
         if ($this->canEditAllFields) {
             $builder->add('enabled', CheckboxType::class, ['required' => false, 'label' => 'settings.user.enabled']);
             $groups = $builder->create('groups', EntityType::class, [
-                    'label' => 'settings.user.roles',
-                    'class' => Group::class,
-                    'query_builder' => function (EntityRepository $er) use ($options) {
-                        return $this->getQueryBuilder($er, $options['can_add_super_users']);
-                    },
-                    'multiple' => true,
-                    'expanded' => false,
-                    'required' => false,
-                    'attr' => [
-                        'placeholder' => 'settings.user.roles_placeholder',
-                        'class' => 'js-advanced-select form-control advanced-select',
-                    ],
-                ]
-            );
+                'label' => 'settings.user.roles',
+                'class' => Group::class,
+                'query_builder' => function (EntityRepository $er) use ($options) {
+                    return $this->getQueryBuilder($er, $options['can_add_super_users']);
+                },
+                'multiple' => true,
+                'expanded' => false,
+                'required' => false,
+                'attr' => [
+                    'placeholder' => 'settings.user.roles_placeholder',
+                    'class' => 'js-advanced-select form-control advanced-select',
+                ],
+            ]);
 
             if (!$options['can_add_super_users']) {
                 // When the user is not allowed to modify super users,
