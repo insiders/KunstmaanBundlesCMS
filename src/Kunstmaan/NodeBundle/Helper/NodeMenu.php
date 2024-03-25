@@ -659,10 +659,7 @@ class NodeMenu
         return $this->initialized;
     }
 
-    /**
-     * @return array
-     */
-    private function getTopNodeMenuItems()
+    private function getTopNodeMenuItems(): array
     {
         $topNodeMenuItems = [];
         $topNodes = $this->childNodes[0];

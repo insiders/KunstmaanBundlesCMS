@@ -116,6 +116,11 @@ class MenuAdminListConfigurator extends AbstractDoctrineORMAdminListConfigurator
             ->setParameter('locale', $this->locale);
     }
 
+    /**
+     * @param string|null $suffix
+     *
+     * @return string
+     */
     public function getPathByConvention($suffix = null)
     {
         if (null === $suffix || $suffix === '') {

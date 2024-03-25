@@ -122,7 +122,7 @@ class SeoType extends AbstractType
     public function configureOptions(OptionsResolver $resolver)
     {
         $resolver->setDefaults([
-                'data_class' => 'Kunstmaan\SeoBundle\Entity\Seo',
+            'data_class' => 'Kunstmaan\SeoBundle\Entity\Seo',
         ]);
     }
 }

@@ -19,7 +19,6 @@ use Kunstmaan\AdminListBundle\Event\AdminListEvent;
 use Kunstmaan\AdminListBundle\Event\AdminListEvents;
 use Kunstmaan\AdminListBundle\Service\EntityVersionLockService;
 use Kunstmaan\AdminListBundle\Service\ExportService;
-use Kunstmaan\AdminListBundle\Utils\EntityDetails;
 use Kunstmaan\NodeBundle\Entity\HasNodeInterface;
 use Kunstmaan\NodeBundle\Entity\NodeTranslation;
 use Kunstmaan\UtilitiesBundle\Helper\SlugifierInterface;
@@ -554,10 +553,8 @@ abstract class AbstractAdminListController extends AbstractController
 
     /**
      * @param object $event
-     *
-     * @return object
      */
-    private function dispatch($event, string $eventName)
+    private function dispatch($event, string $eventName): object
     {
         return $this->container->get('event_dispatcher')->dispatch($event, $eventName);
     }
