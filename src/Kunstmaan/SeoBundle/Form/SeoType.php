@@ -48,7 +48,7 @@ class SeoType extends AbstractType
                 ],
                 'constraints' => [
                     new Length([
-                       'max' => 300,
+                        'max' => 300,
                     ]),
                 ],
             ])
