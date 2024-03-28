@@ -138,16 +138,6 @@ class AbstractDoctrineDBALAdminListConfiguratorTest extends TestCase
             {
                 return \App\Entity\User::class;
             }
-
-            public function getBundleName(): string
-            {
-                return 'App';
-            }
-
-            public function getEntityName(): string
-            {
-                return 'User';
-            }
         };
     }
 }

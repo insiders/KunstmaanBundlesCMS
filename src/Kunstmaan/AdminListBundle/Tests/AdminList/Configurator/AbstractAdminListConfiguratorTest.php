@@ -15,14 +15,11 @@ use Kunstmaan\AdminListBundle\AdminList\ListAction\ListActionInterface;
 use Pagerfanta\Adapter\ArrayAdapter;
 use Pagerfanta\Pagerfanta;
 use PHPUnit\Framework\TestCase;
-use Symfony\Bridge\PhpUnit\ExpectDeprecationTrait;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Session\Session;
 
 class AbstractAdminListConfiguratorTest extends TestCase
 {
-    use ExpectDeprecationTrait;
-
     /** @var AbstractAdminListConfigurator */
     private $adminListConfigurator;
 
@@ -68,16 +65,6 @@ class AbstractAdminListConfiguratorTest extends TestCase
             public function getEntityClass(): string
             {
                 return \App\Entity\News::class;
-            }
-
-            public function getBundleName(): string
-            {
-                return 'App';
-            }
-
-            public function getEntityName(): string
-            {
-                return 'News';
             }
         };
     }
@@ -521,16 +508,6 @@ class AbstractAdminListConfiguratorTest extends TestCase
     public function testGetPathByConvention()
     {
         $this->assertEquals('app_admin_news_test', $this->adminListConfigurator->getPathByconvention('test'));
-    }
-
-    /**
-     * @group legacy
-     */
-    public function testGetControllerPath()
-    {
-        $this->expectDeprecation('Since kunstmaan/adminlist-bundle 6.4: Method deprecated and will be removed in 7.0. There is no replacement for this method.');
-
-        $this->assertEquals('App:News', $this->adminListConfigurator->getControllerPath());
     }
 
     public function testGetExtraParameters()

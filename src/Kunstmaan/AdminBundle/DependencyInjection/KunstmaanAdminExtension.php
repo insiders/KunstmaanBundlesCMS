@@ -4,9 +4,7 @@ namespace Kunstmaan\AdminBundle\DependencyInjection;
 
 use Kunstmaan\AdminBundle\Attribute\AsMenuAdaptor;
 use Kunstmaan\AdminBundle\Helper\Menu\MenuAdaptorInterface;
-use Kunstmaan\AdminBundle\Service\AuthenticationMailer\SwiftmailerService;
 use Kunstmaan\AdminBundle\Service\AuthenticationMailer\SymfonyMailerService;
-use Symfony\Bundle\SwiftmailerBundle\SwiftmailerBundle;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\Config\Loader\LoaderInterface;
 use Symfony\Component\DependencyInjection\ChildDefinition;
@@ -20,17 +18,7 @@ use Symfony\Component\Mailer\Mailer;
 
 class KunstmaanAdminExtension extends Extension
 {
-    /**
-     * Loads a specific configuration.
-     *
-     * @param array            $configs   An array of configuration values
-     * @param ContainerBuilder $container A ContainerBuilder instance
-     *
-     * @return void
-     *
-     * @throws \InvalidArgumentException When provided tag is not defined in this extension
-     */
-    public function load(array $configs, ContainerBuilder $container)
+    public function load(array $configs, ContainerBuilder $container): void
     {
         $loader = new Loader\YamlFileLoader($container, new FileLocator(__DIR__ . '/../Resources/config'));
         $loader->load('services.yml');
@@ -101,23 +89,17 @@ class KunstmaanAdminExtension extends Extension
         $container->setParameter('kunstmaan_admin.hide_sidebar', $config['hide_sidebar']);
     }
 
-    /**
-     * @return string
-     */
-    public function getNamespace()
+    public function getNamespace(): string
     {
         return 'https://kunstmaancms.be/schema/dic/admin';
     }
 
-    /**
-     * @return string|false
-     */
-    public function getXsdValidationBasePath()
+    public function getXsdValidationBasePath(): string
     {
         return __DIR__ . '/../Resources/config/schema';
     }
 
-    private function addSimpleMenuAdaptor(ContainerBuilder $container, array $menuItems)
+    private function addSimpleMenuAdaptor(ContainerBuilder $container, array $menuItems): void
     {
         $definition = new Definition('Kunstmaan\AdminBundle\Helper\Menu\SimpleMenuAdaptor', [
             new Reference('security.authorization_checker'),
@@ -128,12 +110,7 @@ class KunstmaanAdminExtension extends Extension
         $container->setDefinition('kunstmaan_admin.menu.adaptor.simple', $definition);
     }
 
-    /**
-     * @param string $urlSlice
-     *
-     * @return string
-     */
-    protected function normalizeUrlSlice($urlSlice)
+    protected function normalizeUrlSlice(string $urlSlice): string
     {
         /* Get rid of exotic characters that would break the url */
         $urlSlice = filter_var($urlSlice, FILTER_SANITIZE_URL);
@@ -147,7 +124,7 @@ class KunstmaanAdminExtension extends Extension
         return $urlSlice;
     }
 
-    private function registerExceptionLoggingConfiguration(array $config, ContainerBuilder $container)
+    private function registerExceptionLoggingConfiguration(array $config, ContainerBuilder $container): void
     {
         if ($this->isConfigEnabled($container, $config)) {
             return;
@@ -160,52 +137,26 @@ class KunstmaanAdminExtension extends Extension
         $definition->setArgument(2, false);
     }
 
-    private function configureAuthentication(array $config, ContainerBuilder $container, LoaderInterface $loader)
+    private function configureAuthentication(array $config, ContainerBuilder $container, LoaderInterface $loader): void
     {
         $container->setParameter('kunstmaan_admin.enable_new_cms_authentication', true);
 
         $loader->load('authentication.yml');
 
-        if (null === $config['authentication']['mailer']['service']) {
-            trigger_deprecation('kunstmaan/admin-bundle', '6.3', 'The default value of "kunstmaan_admin.authentication.mailer.service" will change from "%s" to "%s" in 7.0, set the config to "%s" to avoid issues when upgrading to 7.0.', SwiftmailerService::class, SymfonyMailerService::class, SymfonyMailerService::class);
-        }
-
-        $config['authentication']['mailer']['service'] ??= SwiftmailerService::class;
-
         $container->setAlias('kunstmaan_admin.authentication.mailer', $config['authentication']['mailer']['service']);
 
         // Validate mailer config
-        if (!class_exists(SwiftmailerBundle::class) && !class_exists(Mailer::class)) {
-            throw new LogicException('No mail integration found to enable the authentication mailer. Try running "composer require symfony/mailer" or "composer require symfony/swiftmailer-bundle".');
+        if (!class_exists(Mailer::class)) {
+            throw new LogicException('No mail integration found to enable the authentication mailer. Try running "composer require symfony/mailer".');
         }
 
         if ($config['authentication']['mailer']['service'] === SymfonyMailerService::class && !class_exists(Mailer::class)) {
             throw new LogicException('Symfony mailer support for the authentication mailer cannot be enabled as the component is not installed. Try running "composer require symfony/mailer".');
         }
 
-        if ($config['authentication']['mailer']['service'] === SwiftmailerService::class && !class_exists(SwiftmailerBundle::class)) {
-            throw new LogicException('Swiftmailer support for the authentication mailer cannot be enabled as the component is not installed. Try running "composer require symfony/swiftmailer-bundle".');
-        }
-
-        if ($config['authentication']['mailer']['service'] === SwiftmailerService::class) {
-            trigger_deprecation('kunstmaan/admin-bundle', '6.3', 'The swiftmailer service for config "kunstmaan_admin.authentication.mailer.service" is deprecated, use "%s" service instead.', SymfonyMailerService::class);
-        }
-
         // Cleanup mailer services
-        if (!class_exists(SwiftmailerBundle::class)) {
-            $container->removeDefinition(SwiftmailerService::class);
-        }
-
         if (!class_exists(Mailer::class)) {
             $container->removeDefinition(SymfonyMailerService::class);
-        }
-
-        if ($container->hasDefinition(SwiftmailerService::class)) {
-            $definition = $container->getDefinition(SwiftmailerService::class);
-            $definition
-                ->setArgument(4, $config['authentication']['mailer']['from_address'])
-                ->setArgument(5, $config['authentication']['mailer']['from_name'])
-            ;
         }
 
         $mailerAddress = $container->getDefinition('kunstmaan_admin.mailer.default_sender');

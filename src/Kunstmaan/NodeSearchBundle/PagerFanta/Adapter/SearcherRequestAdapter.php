@@ -54,10 +54,8 @@ class SearcherRequestAdapter implements SearcherRequestAdapterInterface
 
     /**
      * Returns the number of results.
-     *
-     * @return int the number of results
      */
-    public function getNbResults()
+    public function getNbResults(): int
     {
         return $this->getResponse()->getTotalHits();
     }
@@ -70,7 +68,7 @@ class SearcherRequestAdapter implements SearcherRequestAdapterInterface
      *
      * @return array|\Traversable the slice
      */
-    public function getSlice($offset, $length)
+    public function getSlice($offset, $length): iterable
     {
         $this->response = $this->searcher->search($offset, $length);
         $this->processResponse($this->response);
