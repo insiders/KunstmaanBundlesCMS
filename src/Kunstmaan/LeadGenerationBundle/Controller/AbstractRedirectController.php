@@ -9,25 +9,19 @@ use Symfony\Component\Routing\Annotation\Route;
 
 abstract class AbstractRedirectController extends AbstractController
 {
-    /** @var EntityManagerInterface|null */
+    /** @var EntityManagerInterface */
     private $em;
 
-    public function __construct(?EntityManagerInterface $em = null)
+    public function __construct(?EntityManagerInterface $em)
     {
-        if (null === $em) {
-            trigger_deprecation('kunstmaan/lead-generation-bundle', '6.1', 'To passing an instance of "%s" to "%s" is deprecated and will be required in 6.0.', EntityManagerInterface::class, __METHOD__);
-        }
-
         $this->em = $em;
     }
 
     #[Route(path: '/{popup}', name: 'redirect_index', requirements: ['popup' => '\d+'])]
     public function indexAction($popup)
     {
-        // NEXT_MAJOR remove getDoctrine fallback
-        $em = $this->em ?? $this->getDoctrine();
         /** @var AbstractPopup $thePopup */
-        $thePopup = $em->getRepository(AbstractPopup::class)->find($popup);
+        $thePopup = $this->em->getRepository(AbstractPopup::class)->find($popup);
 
         return $this->render($this->getIndexTemplate(), [
             'popup' => $thePopup,

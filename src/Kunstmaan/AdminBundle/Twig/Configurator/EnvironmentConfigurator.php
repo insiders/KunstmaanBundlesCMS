@@ -9,8 +9,6 @@ use Symfony\Bundle\TwigBundle\DependencyInjection\Configurator\EnvironmentConfig
 use Twig\Environment;
 
 /**
- * NEXT_MAJOR Remove compiler pass when groundcontrol setup is removed and webpack encore is the default
- *
  * @internal
  */
 final class EnvironmentConfigurator extends SymfonyEnvironmentConfigurator

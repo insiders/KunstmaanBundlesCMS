@@ -29,7 +29,6 @@ services:
 
     Kunstmaan\RedirectBundle\AdminList\RedirectAdminListConfigurator:
         arguments:
-            $em: '@doctrine.orm.entity_manager'
-            $domainConfiguration: '@kunstmaan_admin.domain_configuration'
-        autowire: true
-        autoconfigure: true
+            - '@doctrine.orm.entity_manager'
+            - '@kunstmaan_admin.acl.helper'
+            - '@kunstmaan_admin.domain_configuration'

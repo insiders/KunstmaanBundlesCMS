@@ -337,10 +337,7 @@ abstract class BaseUser implements UserInterface, EquatableInterface, PasswordAu
         return $this;
     }
 
-    /**
-     * @return array
-     */
-    public function getRoles()
+    public function getRoles(): array
     {
         $roles = $this->roles;
 

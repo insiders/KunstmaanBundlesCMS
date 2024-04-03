@@ -72,11 +72,9 @@ class SlugRouter implements RouterInterface
      *
      * @param string $pathinfo
      *
-     * @return array
-     *
      * @throws ResourceNotFoundException
      */
-    public function match($pathinfo)
+    public function match($pathinfo): array
     {
         $urlMatcher = new UrlMatcher(
             $this->getRouteCollection(),
@@ -95,14 +93,7 @@ class SlugRouter implements RouterInterface
         return $result;
     }
 
-    /**
-     * Gets the request context.
-     *
-     * @return RequestContext
-     *
-     * @api
-     */
-    public function getContext()
+    public function getContext(): RequestContext
     {
         if (!isset($this->context)) {
             /** @var Request $request */
@@ -115,10 +106,7 @@ class SlugRouter implements RouterInterface
         return $this->context;
     }
 
-    /**
-     * @return void
-     */
-    public function setContext(RequestContext $context)
+    public function setContext(RequestContext $context): void
     {
         $this->context = $context;
     }
@@ -129,10 +117,8 @@ class SlugRouter implements RouterInterface
      * @param string   $name          The path
      * @param array    $parameters    The route parameters
      * @param int|bool $referenceType The type of reference to be generated (one of the UrlGeneratorInterface constants)
-     *
-     * @return string
      */
-    public function generate($name, $parameters = [], $referenceType = UrlGenerator::ABSOLUTE_PATH)
+    public function generate($name, $parameters = [], $referenceType = UrlGenerator::ABSOLUTE_PATH): string
     {
         $this->urlGenerator = new UrlGenerator(
             $this->getRouteCollection(),
@@ -146,12 +132,7 @@ class SlugRouter implements RouterInterface
         return $this->urlGenerator->generate($name, $parameters, $referenceType);
     }
 
-    /**
-     * Getter for routeCollection
-     *
-     * @return \Symfony\Component\Routing\RouteCollection
-     */
-    public function getRouteCollection()
+    public function getRouteCollection(): RouteCollection
     {
         if (\is_null($this->routeCollection)) {
             $this->routeCollection = new RouteCollection();

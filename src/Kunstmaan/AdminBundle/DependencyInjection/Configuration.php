@@ -4,17 +4,13 @@ namespace Kunstmaan\AdminBundle\DependencyInjection;
 
 use Kunstmaan\AdminBundle\Entity\Group;
 use Kunstmaan\AdminBundle\Entity\User;
+use Kunstmaan\AdminBundle\Service\AuthenticationMailer\SymfonyMailerService;
 use Symfony\Component\Config\Definition\Builder\TreeBuilder;
 use Symfony\Component\Config\Definition\ConfigurationInterface;
 
 class Configuration implements ConfigurationInterface
 {
-    /**
-     * Generates the configuration tree builder.
-     *
-     * @return TreeBuilder The tree builder
-     */
-    public function getConfigTreeBuilder()
+    public function getConfigTreeBuilder(): TreeBuilder
     {
         $treeBuilder = new TreeBuilder('kunstmaan_admin');
         $rootNode = $treeBuilder->getRootNode();
@@ -27,23 +23,15 @@ class Configuration implements ConfigurationInterface
                 ->booleanNode('multi_language')->isRequired()->defaultFalse()->end()
                 ->scalarNode('required_locales')->isRequired()->end()
                 ->scalarNode('default_locale')->isRequired()->end()
-                ->scalarNode('admin_password')
-                    ->setDeprecated('kunstmaan/admin-bundle', '6.2', 'The "%path%.%node%" configuration key has been deprecated, remove it from your config.')
-                ->end()
                 ->arrayNode('authentication')
                     ->addDefaultsIfNotSet()
                     ->children()
-                        ->booleanNode('enable_new_authentication')
-                            ->info('When true, the new authentication system will be used. Note: No-Op option since KunstmaanAdminBundle 6.0. Will always be true.')
-                            ->setDeprecated('kunstmaan/admin-bundle', '6.1', 'The "%path%.%node%" configuration key has been deprecated, remove it from your config.')
-                            ->defaultTrue()
-                        ->end()
                         ->scalarNode('user_class')->defaultValue(User::class)->end()
                         ->scalarNode('group_class')->defaultValue(Group::class)->end()
                         ->arrayNode('mailer')
                             ->addDefaultsIfNotSet()
                             ->children()
-                                ->scalarNode('service')->defaultNull()->end() // NEXT_MAJOR: switch default value to SymfonyMailerService::class
+                                ->scalarNode('service')->defaultValue(SymfonyMailerService::class)->end()
                                 ->scalarNode('from_address')->defaultValue('kunstmaancms@myproject.dev')->end()
                                 ->scalarNode('from_name')->defaultValue('Kunstmaan CMS')->end()
                             ->end()

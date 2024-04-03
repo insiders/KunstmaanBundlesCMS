@@ -9,8 +9,6 @@ use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 
 /**
- * NEXT_MAJOR Remove compiler pass when groundcontrol setup is removed and webpack encore is the default
- *
  * @internal
  */
 final class ReplaceSymfonyEnvironmentConfiguratorCompilerPass implements CompilerPassInterface

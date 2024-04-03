@@ -33,10 +33,8 @@ class DomainBasedLocaleRouter extends SlugRouter
      * @param string   $name          The path
      * @param array    $parameters    The route parameters
      * @param int|bool $referenceType The type of reference to be generated (one of the UrlGeneratorInterface constants)
-     *
-     * @return string
      */
-    public function generate($name, $parameters = [], $referenceType = UrlGeneratorInterface::ABSOLUTE_PATH)
+    public function generate($name, $parameters = [], $referenceType = UrlGeneratorInterface::ABSOLUTE_PATH): string
     {
         if ('_slug' === $name && $this->isMultiLanguage() && $this->isMultiDomainHost()) {
             $locale = isset($parameters['_locale']) ? $parameters['_locale'] : $this->getRequestLocale();
@@ -71,10 +69,8 @@ class DomainBasedLocaleRouter extends SlugRouter
 
     /**
      * @param string $pathinfo
-     *
-     * @return array
      */
-    public function match($pathinfo)
+    public function match($pathinfo): array
     {
         $urlMatcher = new UrlMatcher(
             $this->getRouteCollection(),
@@ -177,10 +173,8 @@ class DomainBasedLocaleRouter extends SlugRouter
      * Getter for routeCollection
      *
      * Override slug router
-     *
-     * @return \Symfony\Component\Routing\RouteCollection
      */
-    public function getRouteCollection()
+    public function getRouteCollection(): RouteCollection
     {
         if (($this->otherSite && $this->isMultiLanguage($this->otherSite['host'])) || (!$this->otherSite && $this->isMultiLanguage())) {
             if (!$this->routeCollectionMultiLanguage) {

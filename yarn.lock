@@ -1206,7 +1206,7 @@
   "resolved" "https://registry.npmjs.org/ajv-keywords/-/ajv-keywords-3.5.2.tgz"
   "version" "3.5.2"
 
-"ajv@^6.10.0", "ajv@^6.10.2":
+"ajv@^6.10.0", "ajv@^6.10.2", "ajv@^6.12.4", "ajv@^6.12.5", "ajv@^6.9.1":
   "integrity" "sha512-j3fVLgvTo527anyYyJOGTYJbG+vnnQYvE0m5mmkc1TK+nxAppkCLMIL0aZ4dblVCNoGShhm+kzE4ZUykBoMg4g=="
   "resolved" "https://registry.npmjs.org/ajv/-/ajv-6.12.6.tgz"
   "version" "6.12.6"
@@ -1216,30 +1216,10 @@
     "json-schema-traverse" "^0.4.1"
     "uri-js" "^4.2.2"
 
-"ajv@^6.12.4":
-  "integrity" "sha512-j3fVLgvTo527anyYyJOGTYJbG+vnnQYvE0m5mmkc1TK+nxAppkCLMIL0aZ4dblVCNoGShhm+kzE4ZUykBoMg4g=="
-  "resolved" "https://registry.npmjs.org/ajv/-/ajv-6.12.6.tgz"
-  "version" "6.12.6"
-  dependencies:
-    "fast-deep-equal" "^3.1.1"
-    "fast-json-stable-stringify" "^2.0.0"
-    "json-schema-traverse" "^0.4.1"
-    "uri-js" "^4.2.2"
-
-"ajv@^6.12.5":
-  "integrity" "sha512-j3fVLgvTo527anyYyJOGTYJbG+vnnQYvE0m5mmkc1TK+nxAppkCLMIL0aZ4dblVCNoGShhm+kzE4ZUykBoMg4g=="
-  "resolved" "https://registry.npmjs.org/ajv/-/ajv-6.12.6.tgz"
-  "version" "6.12.6"
-  dependencies:
-    "fast-deep-equal" "^3.1.1"
-    "fast-json-stable-stringify" "^2.0.0"
-    "json-schema-traverse" "^0.4.1"
-    "uri-js" "^4.2.2"
-
-"ajv@^6.9.1", "ajv@^7.0.2":
-  "integrity" "sha512-svS9uILze/cXbH0z2myCK2Brqprx/+JJYK5pHicT/GQiBfzzhUVAIT6MwqJg8y4xV/zoGsUeuPuwtoiKSGE15g=="
-  "resolved" "https://registry.npmjs.org/ajv/-/ajv-7.1.0.tgz"
-  "version" "7.1.0"
+"ajv@^7.0.2":
+  "integrity" "sha512-nBeQgg/ZZA3u3SYxyaDvpvDtgZ/EZPF547ARgZBrG9Bhu1vKDwAIjtIf+sDtJUKa2zOcEbmRLBRSyMraS/Oy1A=="
+  "resolved" "https://registry.npmjs.org/ajv/-/ajv-7.2.4.tgz"
+  "version" "7.2.4"
   dependencies:
     "fast-deep-equal" "^3.1.1"
     "json-schema-traverse" "^1.0.0"
@@ -1776,13 +1756,6 @@
   "resolved" "https://registry.npmjs.org/boolbase/-/boolbase-1.0.0.tgz"
   "version" "1.0.0"
 
-"bootstrap-colorpicker@^2.5.3":
-  "integrity" "sha512-xdllX8LSMvKULs3b8JrgRXTvyvjkSMHHHVuHjjN5FNMqr6kRe5NPiMHFmeAFjlgDF73MspikudLuEwR28LbzLw=="
-  "resolved" "https://registry.npmjs.org/bootstrap-colorpicker/-/bootstrap-colorpicker-2.5.3.tgz"
-  "version" "2.5.3"
-  dependencies:
-    "jquery" ">=1.10"
-
 "bootstrap-sass@^3.4.1":
   "integrity" "sha512-p5rxsK/IyEDQm2CwiHxxUi0MZZtvVFbhWmyMOt4lLkA4bujDA1TGoKT0i1FKIWiugAdP+kK8T5KMDFIKQCLYIA=="
   "resolved" "https://registry.npmjs.org/bootstrap-sass/-/bootstrap-sass-3.4.1.tgz"
@@ -2025,6 +1998,7 @@
   "version" "1.0.30001187"
 
 "cargobay@Kunstmaan/cargobay#0.8.6-support":
+  "integrity" "sha512-Z+H4goeP6Pr+IMe4a9ySaa2fLimPsMV//Hgjxw5azBv62kJ7UWAlGcv/HYn7ntdeOvBDBDrxnM7IAv+rhhirFg=="
   "resolved" "git+ssh://git@github.com/Kunstmaan/cargobay.git#d4ab90f51b1d4e395ebee02924ebeefb5068fa60"
   "version" "0.8.6"
 
@@ -5113,7 +5087,7 @@
   "resolved" "https://registry.npmjs.org/jquery.typewatch/-/jquery.typewatch-3.0.0.tgz"
   "version" "3.0.0"
 
-"jquery@^3.5.1", "jquery@>=1.10", "jquery@>=1.9.1":
+"jquery@^3.5.1", "jquery@>=1.9.1":
   "integrity" "sha512-XwIBPqcMn57FxfT+Go5pzySnm4KWkT1Tv7gjrpT1srtf8Weynl6R273VJ5GjkRb51IzMp5nbaPjJXMWeju2MKg=="
   "resolved" "https://registry.npmjs.org/jquery/-/jquery-3.5.1.tgz"
   "version" "3.5.1"

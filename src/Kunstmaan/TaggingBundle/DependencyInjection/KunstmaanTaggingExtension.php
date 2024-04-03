@@ -9,10 +9,7 @@ use Symfony\Component\HttpKernel\DependencyInjection\Extension;
 
 class KunstmaanTaggingExtension extends Extension
 {
-    /**
-     * @return void
-     */
-    public function load(array $configs, ContainerBuilder $container)
+    public function load(array $configs, ContainerBuilder $container): void
     {
         $configuration = new Configuration();
         $this->processConfiguration($configuration, $configs);
@@ -21,10 +18,7 @@ class KunstmaanTaggingExtension extends Extension
         $loader->load('services.yml');
     }
 
-    /**
-     * @return string
-     */
-    public function getAlias()
+    public function getAlias(): string
     {
         return 'kunstmaan_tagging';
     }

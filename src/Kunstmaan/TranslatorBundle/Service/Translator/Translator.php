@@ -32,10 +32,7 @@ class Translator extends SymfonyTranslator
         }
     }
 
-    /**
-     * @return string[]
-     */
-    public function warmUp($cacheDir)
+    public function warmUp($cacheDir): array
     {
         return [];
     }
@@ -89,10 +86,7 @@ class Translator extends SymfonyTranslator
         }
     }
 
-    /**
-     * @return void
-     */
-    protected function loadCatalogue($locale)
+    protected function loadCatalogue($locale): void
     {
         if ($this->options['debug'] === true) {
             $this->options['cache_dir'] = null; // disable caching for debug
@@ -101,10 +95,7 @@ class Translator extends SymfonyTranslator
         parent::loadCatalogue($locale);
     }
 
-    /**
-     * @return string
-     */
-    public function trans($id, array $parameters = [], $domain = 'messages', $locale = null)
+    public function trans($id, array $parameters = [], $domain = 'messages', $locale = null): string
     {
         if (!$this->request = $this->container->get('request_stack')->getCurrentRequest()) {
             return parent::trans($id, $parameters, $domain, $locale);
