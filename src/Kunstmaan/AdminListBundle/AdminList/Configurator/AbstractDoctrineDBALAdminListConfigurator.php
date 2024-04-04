@@ -133,7 +133,7 @@ abstract class AbstractDoctrineDBALAdminListConfigurator extends AbstractAdminLi
      */
     public function getIterator()
     {
-        return $this->getQueryBuilder()->execute()->iterateAssociative();
+        return $this->getQueryBuilder()->executeQuery()->iterateAssociative();
     }
 
     /**

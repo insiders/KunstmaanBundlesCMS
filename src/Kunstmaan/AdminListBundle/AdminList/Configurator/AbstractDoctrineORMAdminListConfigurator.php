@@ -129,7 +129,7 @@ abstract class AbstractDoctrineORMAdminListConfigurator extends AbstractAdminLis
      */
     public function getIterator()
     {
-        return $this->getQuery()->iterate();
+        return $this->getQuery()->toIterable();
     }
 
     /**
