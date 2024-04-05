@@ -7,7 +7,7 @@ use Kunstmaan\TranslatorBundle\Model\Import\ImportCommand;
 use Kunstmaan\TranslatorBundle\Service\Command\Importer\ImportCommandHandler;
 use Kunstmaan\TranslatorBundle\Service\Translator\ResourceCacher;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
 final class TranslatorCommandController extends AbstractController

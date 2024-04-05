@@ -96,7 +96,7 @@ use Your\Bundle\Form\DocumentType;
 use Your\Bundle\AdminList\DocumentAdminListConfigurator;
 use Kunstmaan\AdminListBundle\Controller\AbstractAdminListController;
 use Symfony\Component\HttpFoundation\RedirectResponse;
-use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Routing\Attribute\Route;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Template;
 
 class DocumentAdminController extends AbstractAdminListController
@@ -295,7 +295,7 @@ Add the following lines to your routing.yml.
 ```YAML
 YourBundle_documents:
     resource: "@YourBundle/Controller/DocumentAdminController.php"
-    type: annotation
+    type: attribute
     prefix: /{_locale}/%kunstmaan_admin.admin_prefix%/documents
     requirements:
         _locale: "%requiredlocales%"

@@ -3,7 +3,7 @@
 namespace Kunstmaan\DashboardBundle\Widget;
 
 use Doctrine\Common\Annotations\AnnotationReader;
-use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Routing\Attribute\Route;
 
 class DashboardWidget
 {

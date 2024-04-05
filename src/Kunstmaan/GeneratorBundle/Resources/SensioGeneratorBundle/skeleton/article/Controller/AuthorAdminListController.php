@@ -7,7 +7,7 @@ use Kunstmaan\AdminListBundle\AdminList\Configurator\AdminListConfiguratorInterf
 use Kunstmaan\ArticleBundle\Controller\AbstractArticleAuthorAdminListController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Routing\Attribute\Route;
 
 {% if canUseAttributes %}
 #[Route('/{_locale}/%kunstmaan_admin.admin_prefix%/{{ entity_class|lower}}-author', requirements: ['_locale' => '%requiredlocales%'])]

@@ -9,7 +9,7 @@ use Kunstmaan\TaggingBundle\AdminList\TagAdminListConfigurator;
 use Kunstmaan\TaggingBundle\Entity\Tag;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Routing\Attribute\Route;
 
 final class TagAdminListController extends AbstractAdminListController
 {

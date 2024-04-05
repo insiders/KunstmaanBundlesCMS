@@ -8,7 +8,7 @@ use Kunstmaan\AdminBundle\Entity\Exception;
 use Kunstmaan\AdminListBundle\Controller\AbstractAdminListController;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Routing\Attribute\Route;
 
 final class ExceptionController extends AbstractAdminListController
 {

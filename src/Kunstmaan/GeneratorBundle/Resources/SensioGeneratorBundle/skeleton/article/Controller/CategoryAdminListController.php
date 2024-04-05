@@ -6,7 +6,7 @@ use {{ namespace }}\AdminList\{{ entity_class }}CategoryAdminListConfigurator;
 use Kunstmaan\ArticleBundle\Controller\AbstractArticleCategoryAdminListController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Routing\Attribute\Route;
 
 {% if canUseAttributes %}
 #[Route('/{_locale}/%kunstmaan_admin.admin_prefix%/{{ entity_class|lower}}-category', requirements: ['_locale' => '%requiredlocales%'])]

@@ -6,7 +6,7 @@ use Kunstmaan\AdminBundle\Helper\VersionCheck\VersionChecker;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Routing\Attribute\Route;
 
 final class SettingsController extends AbstractController
 {

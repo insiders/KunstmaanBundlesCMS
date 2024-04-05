@@ -4,7 +4,7 @@
 
 ### Manually
 
-Below you will find a how-to how to create an admin list based on existing page type. 
+Below you will find a how-to how to create an admin list based on existing page type.
 You will need to create 2 classes. A pageAdminListConfigurator and a pageAdminstListController. Let's assume you allready created a page type named 'project'.
 
 #### Classes
@@ -48,7 +48,7 @@ class ProjectPageAdminListConfigurator extends AbstractPageAdminListConfigurator
 
 ##### Controller
 
-The controller will allow you to list yourpage. 
+The controller will allow you to list yourpage.
 
 Create your ProjectPageAdminListController in your Controller folder and let it extend from a the AdminListController. Only the indexAction is used here.
 
@@ -60,7 +60,7 @@ namespace YourProject\WebsiteBundle\Controller;
 use YourProject\WebsiteBundle\AdminList\ProjectPageAdminListConfigurator;
 use Kunstmaan\AdminListBundle\AdminList\Configurator\AdminListConfiguratorInterface;
 use Kunstmaan\AdminListBundle\Controller\AbstractAdminListController;
-use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\HttpFoundation\Request;
 
 /**
@@ -107,11 +107,11 @@ Add the following lines to your routing.yml.
 ```YAML
 YourBundle_documents:
     resource: '@YourBundle/Controller/ProjectPageAdminListController.php'
-    type:     annotation
+    type:     attribute
     prefix:   /{_locale}/admin/projectpage/
     requirements:
          _locale: "%requiredlocales%"
-         
+
 ```
 
 ### Hiding the sidebar
@@ -133,9 +133,9 @@ use Kunstmaan\PagePartBundle\Helper\HasPageTemplateInterface;
  * @ORM\Entity
  */
 class ProjectPage extends \Kunstmaan\NodeBundle\Entity\AbstractPage
-    implements HasPageTemplateInterface ,HideSidebarInNodeEditInterface 
+    implements HasPageTemplateInterface ,HideSidebarInNodeEditInterface
 {
-    
+
 
 ```
 

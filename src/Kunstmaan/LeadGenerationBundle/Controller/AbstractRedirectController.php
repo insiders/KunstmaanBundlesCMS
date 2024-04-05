@@ -5,7 +5,7 @@ namespace Kunstmaan\LeadGenerationBundle\Controller;
 use Doctrine\ORM\EntityManagerInterface;
 use Kunstmaan\LeadGenerationBundle\Entity\Popup\AbstractPopup;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Routing\Attribute\Route;
 
 abstract class AbstractRedirectController extends AbstractController
 {
