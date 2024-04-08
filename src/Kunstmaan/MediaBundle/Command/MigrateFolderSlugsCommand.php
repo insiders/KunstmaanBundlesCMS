@@ -19,10 +19,7 @@ class MigrateFolderSlugsCommand extends Command
         $this->entityManager = $entityManager;
     }
 
-    /**
-     * @return int
-     */
-    public function execute(InputInterface $input, OutputInterface $output)
+    public function execute(InputInterface $input, OutputInterface $output): int
     {
         // Force slug (re)gen by appending a space to the name which will force the slug generation.
         // Then reset the name
@@ -56,7 +53,7 @@ class MigrateFolderSlugsCommand extends Command
         return 0;
     }
 
-    protected function configure()
+    protected function configure(): void
     {
         parent::configure();
 
