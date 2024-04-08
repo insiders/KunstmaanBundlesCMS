@@ -53,7 +53,6 @@ class NodeMenuTabTranslationAdminType extends AbstractType
                 $minWeight = $this->em->getRepository(NodeTranslation::class)->getMinChildrenWeight($nt->getNode()->getParent());
                 $options = $event->getForm()->get('weight')->getConfig()->getOptions();
                 $options['choices'] = array_combine(range($minWeight - 1, $maxWeight + 1), range($minWeight - 1, $maxWeight + 1));
-                $options['legacy_error_messages'] = false;
 
                 $event->getForm()->add('weight', ChoiceType::class, $options);
             }
