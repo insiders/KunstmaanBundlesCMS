@@ -2,6 +2,7 @@
 
 namespace Kunstmaan\PagePartBundle\Event;
 
+use Kunstmaan\PagePartBundle\Helper\HasPagePartsInterface;
 use Kunstmaan\PagePartBundle\Helper\PagePartInterface;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Contracts\EventDispatcher\Event;
@@ -18,9 +19,12 @@ final class PagePartEvent extends Event
      */
     private $response;
 
-    public function __construct(PagePartInterface $pagePart)
+    private ?HasPagePartsInterface $page;
+
+    public function __construct(PagePartInterface $pagePart, ?HasPagePartsInterface $page = null)
     {
         $this->pagePart = $pagePart;
+        $this->page = $page;
     }
 
     public function getPagePart(): PagePartInterface
@@ -41,5 +45,15 @@ final class PagePartEvent extends Event
     public function setResponse(Response $response)
     {
         $this->response = $response;
+    }
+
+    public function getPage(): ?HasPagePartsInterface
+    {
+        return $this->page;
+    }
+
+    public function setPage(?HasPagePartsInterface $page): void
+    {
+        $this->page = $page;
     }
 }
