@@ -51,9 +51,4 @@ final class PagePartEvent extends Event
     {
         return $this->page;
     }
-
-    public function setPage(?HasPagePartsInterface $page): void
-    {
-        $this->page = $page;
-    }
 }
