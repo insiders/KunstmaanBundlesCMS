@@ -5,6 +5,7 @@ namespace Kunstmaan\MediaBundle\Entity;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
 use Gedmo\Mapping\Annotation as Gedmo;
+use Gedmo\Sluggable\Handler\TreeSlugHandler;
 use Gedmo\Tree\Node as GedmoNode;
 use Kunstmaan\AdminBundle\Entity\AbstractEntity;
 use Kunstmaan\MediaBundle\Repository\FolderRepository;
@@ -61,6 +62,12 @@ class Folder extends AbstractEntity implements GedmoNode
      * @ORM\Column(type="string")
      */
     #[ORM\Column(name: 'slug', type: 'string')]
+    #[Gedmo\Translatable]
+    #[Gedmo\Slug(fields: ['name'])]
+    #[Gedmo\SlugHandler(class: TreeSlugHandler::class, options: [
+        'parentRelationField' => 'parent',
+        'separator' => '/',
+    ])]
     protected $slug;
 
     /**
