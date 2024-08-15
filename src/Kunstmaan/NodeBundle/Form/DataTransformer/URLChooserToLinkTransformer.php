@@ -10,32 +10,44 @@ class URLChooserToLinkTransformer implements DataTransformerInterface
 {
     use URLValidator;
 
-    /**
-     * @return array
-     */
-    public function transform($value)
+    public function transform($value): array
     {
+        if ($value === null) {
+            return [
+                'link_type' => URLChooserType::INTERNAL,
+                'link_url' => $value,
+            ];
+        }
+
+        $data = [];
         if ($this->isEmailAddress($value)) {
+            $data['choice_email'] = $value;
             $linkType = URLChooserType::EMAIL;
         } elseif ($this->isInternalLink($value) || $this->isInternalMediaLink($value)) {
+            $data['choice_interal']['input'] = $value;
             $linkType = URLChooserType::INTERNAL;
         } else {
+            $data['choice_external'] = $value;
             $linkType = URLChooserType::EXTERNAL;
         }
 
-        return [
+        return array_merge($data, [
             'link_type' => $linkType,
             'link_url' => $value,
-        ];
+        ]);
     }
 
-    /**
-     * @return string|null
-     */
-    public function reverseTransform($value)
+    public function reverseTransform($value): ?string
     {
-        if (empty($value)) {
-            return null;
+        if (!empty($value['link_type'])) {
+            switch ($value['link_type']) {
+                case URLChooserType::INTERNAL:
+                    return $value['link_url'];
+                case URLChooserType::EXTERNAL:
+                    return $value['choice_external'];
+                case URLChooserType::EMAIL:
+                    return $value['choice_email'];
+            }
         }
 
         return $value['link_url'];
