@@ -2,7 +2,7 @@ var kunstmaanbundles = kunstmaanbundles || {};
 
 kunstmaanbundles.urlChooser = (function (window, undefined) {
 
-    var init, urlChooser, saveUrlChooserModal, saveMediaChooserModal, getUrlParam, adaptUrlChooser, endsWith;
+    var init, urlChooser, saveUrlChooserModal, saveMediaChooserModal, getUrlParam, adaptUrlChooser, endsWith, adaptUrl;
 
     var itemUrl, itemId, itemTitle, itemThumbPath, replacedUrl, $body = $('body');
 
@@ -269,8 +269,8 @@ kunstmaanbundles.urlChooser = (function (window, undefined) {
         const urlChooser = element.closest('.urlchooser-wrapper');
         const urlChooserText = urlChooser.querySelector('.urlchooser__link-type .text');
         const newValue = element.closest('[data-value]').dataset.value;
-        const oldActive = urlChooser.querySelector('[data-show-on]:not(.hidden)');
-        const newActive = urlChooser.querySelector('[data-show-on="' + newValue + '"]');
+        const oldActive = urlChooser.querySelector('[data-toggle-on]:not(.hidden)');
+        const newActive = urlChooser.querySelector('[data-toggle-on="' + newValue + '"]');
         const typeInput = urlChooser.querySelector('input[type="hidden"][data-button-id="'+urlChooser.getAttribute('data-link-type-id')+'"]');
         typeInput.value = newValue;
         urlChooserText.innerHTML = element.innerHTML;

@@ -5,17 +5,20 @@ declare(strict_types=1);
 namespace Kunstmaan\NodeBundle\Form\Type;
 
 use Kunstmaan\NodeBundle\Form\DataTransformer\URLChooserToLinkTransformer;
+use Kunstmaan\NodeBundle\Form\EventListener\URLChooserFormSubscriber;
+use Kunstmaan\NodeBundle\Form\EventListener\URLChooserLinkTypeSubscriber;
 use Kunstmaan\NodeBundle\Validator\Constraint\ValidExternalUrl;
 use Symfony\Component\Form\AbstractType;
+use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\EmailType;
 use Symfony\Component\Form\Extension\Core\Type\HiddenType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\Form\FormInterface;
+use Symfony\Component\Form\FormView;
 use Symfony\Component\OptionsResolver\OptionsResolver;
-use Symfony\Component\Validator\Constraints\Callback;
 use Symfony\Component\Validator\Constraints\Email;
-use Symfony\Component\Validator\Context\ExecutionContextInterface;
+use Symfony\Component\Validator\Constraints\When;
 
 /**
  * URLChooserType
@@ -61,16 +64,32 @@ class URLChooserType extends AbstractType
             }
         }
 
+        $builder->addViewTransformer(new URLChooserToLinkTransformer($this->improvedUrlChooser));
+        if (!$this->improvedUrlChooser) {
+            $builder->add(
+                'link_type',
+                ChoiceType::class,
+                [
+                    'required' => true,
+                    'mapped' => false,
+                    'attr' => [
+                        'class' => 'js-change-link-type',
+                    ],
+                    'choices' => $choices,
+                ]
+            );
+            $builder->get('link_type')->addEventSubscriber(new URLChooserLinkTypeSubscriber());
+            $builder->addEventSubscriber(new URLChooserFormSubscriber());
+
+            return;
+        }
+
         $builder->add('link_url', HiddenType::class, [
             'required' => false,
-            'constraints' => [
-                new Callback([$this, 'validateLink']),
-            ],
         ]);
         $builder->add('link_type', URLTypeType::class, [
             'required' => true,
             'choices' => array_flip($choices),
-            'enable_improved_urlchooser' => $this->improvedUrlChooser,
             'attr' => [
                 'class' => 'urlchooser-type',
             ],
@@ -78,11 +97,22 @@ class URLChooserType extends AbstractType
 
         $builder->add('choice_external', TextType::class, [
             'attr' => ['placeholder' => 'https://'],
+            'constraints' => [
+                new When($this->getLinkTypeExpression(self::EXTERNAL), [
+                    new ValidExternalUrl(),
+                ]),
+            ],
+            'error_bubbling' => true,
         ]);
-        $builder->add('choice_email', EmailType::class);
+        $builder->add('choice_email', EmailType::class, [
+            'constraints' => [
+                new When($this->getLinkTypeExpression(self::EMAIL), [
+                    new Email(),
+                ]),
+            ],
+            'error_bubbling' => true,
+        ]);
         $builder->add('choice_internal', InternalURLSelectorType::class);
-
-        $builder->addViewTransformer(new URLChooserToLinkTransformer());
     }
 
     /**
@@ -103,35 +133,21 @@ class URLChooserType extends AbstractType
         );
     }
 
+    public function buildView(FormView $view, FormInterface $form, array $options)
+    {
+        $view->vars['improved_url_chooser'] = $this->improvedUrlChooser;
+    }
+
+    private function getLinkTypeExpression(string $type): string
+    {
+        return 'this.getParent().get("link_type").getData() === "'.$type.'"';
+    }
+
     /**
      * @return string
      */
     public function getBlockPrefix()
     {
         return 'urlchooser';
-    }
-
-    public function validateLink($value, ExecutionContextInterface $context): void
-    {
-        $urlChooserTypeForm = $context->getObject()?->getParent();
-        if (!$urlChooserTypeForm) {
-            return;
-        }
-
-        $type = $urlChooserTypeForm->get('link_type')->getData();
-        if ($type === self::EXTERNAL) {
-            $context->getValidator()->inContext($context)->validate($this->getFormDataValue($urlChooserTypeForm, 'choice_external'), [new ValidExternalUrl()]);
-
-            return;
-        }
-
-        if ($type === self::EMAIL) {
-            $context->getValidator()->inContext($context)->validate($this->getFormDataValue($urlChooserTypeForm, 'choice_email'), [new Email()]);
-        }
-    }
-
-    private function getFormDataValue(FormInterface $form, string $fieldName): ?string
-    {
-        return $form->has($fieldName) ? $form->get($fieldName)->getData() : null;
     }
 }
