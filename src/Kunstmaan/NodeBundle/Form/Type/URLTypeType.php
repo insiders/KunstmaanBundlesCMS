@@ -17,15 +17,11 @@ class URLTypeType extends AbstractType
         $resolver->setRequired('choices');
         $resolver->setDefault('choices', []);
         $resolver->setAllowedTypes('choices', 'array');
-        $resolver->setRequired('enable_improved_urlchooser');
-        $resolver->setDefault('enable_improved_urlchooser', false);
-        $resolver->setAllowedTypes('enable_improved_urlchooser', 'bool');
     }
 
     public function buildView(FormView $view, FormInterface $form, array $options)
     {
         $view->vars['choices'] = $options['choices'];
-        $view->vars['xhr'] = !$options['enable_improved_urlchooser'];
     }
 
     public function getParent(): string
