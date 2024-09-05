@@ -140,7 +140,7 @@ class URLChooserType extends AbstractType
 
     private function getLinkTypeExpression(string $type): string
     {
-        return 'this.getParent().get("link_type").getData() === "'.$type.'"';
+        return 'this.getParent().get("link_type").getData() === "' . $type . '"';
     }
 
     /**

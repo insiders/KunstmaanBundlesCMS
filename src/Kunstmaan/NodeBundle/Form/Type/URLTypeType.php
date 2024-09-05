@@ -19,7 +19,7 @@ class URLTypeType extends AbstractType
         $resolver->setAllowedTypes('choices', 'array');
     }
 
-    public function buildView(FormView $view, FormInterface $form, array $options)
+    public function buildView(FormView $view, FormInterface $form, array $options): void
     {
         $view->vars['choices'] = $options['choices'];
     }

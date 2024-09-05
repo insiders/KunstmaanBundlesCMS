@@ -11,7 +11,7 @@ use Symfony\Component\Form\FormBuilderInterface;
 
 class InternalURLSelectorType extends AbstractType
 {
-    public function buildForm(FormBuilderInterface $builder, array $options)
+    public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder->add('input', HiddenType::class, [
             'label' => false,
@@ -23,7 +23,7 @@ class InternalURLSelectorType extends AbstractType
         ]);
     }
 
-    public function getBlockPrefix()
+    public function getBlockPrefix(): string
     {
         return 'internal_url_selector';
     }

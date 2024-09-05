@@ -25,12 +25,13 @@ class URLChooserToLinkTransformer implements DataTransformerInterface
 
         if ($value === null) {
             return [
-                'link_type' => URLChooserType::EXTERNAL,
+                'link_type' => URLChooserType::INTERNAL,
                 'link_url' => null,
             ];
         }
 
         $linkType = $this->getLinkType($value);
+
         return array_merge($this->getChoiceOption($linkType, $value), [
             'link_type' => $linkType,
             'link_url' => $value,
@@ -72,7 +73,7 @@ class URLChooserToLinkTransformer implements DataTransformerInterface
 
     private function getChoiceOption(string $linkType, string $value): array
     {
-        return match($linkType) {
+        return match ($linkType) {
             URLChooserType::INTERNAL => ['choice_internal' => ['input' => $value]],
             URLChooserType::EXTERNAL => ['choice_external' => $value],
             URLChooserType::EMAIL => ['choice_email' => $value],
