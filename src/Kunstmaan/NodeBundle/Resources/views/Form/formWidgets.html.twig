@@ -60,17 +60,16 @@
                                 <input type="hidden" name="{{ linkUrl.full_name }}" value="{{ linkUrl.value ? linkUrl.value : '' }}" id="{{ linkUrl.id }}" class="form-control {% if linkUrl.attr is defined and linkUrl.attr.class is defined %}{{ linkUrl.attr.class }}{% endif %}">
                                 <input type="text" disabled="disabled" class="form-control js-urlchooser-value" value="{{ linkUrl.value ? linkUrl.value|replace_url : '' }}">
                                 <span class="input-group-btn">
-                        <button type="button" class="btn btn-default btn--raise-on-hover" data-toggle="modal" data-target="#{{ linkUrl.id }}-urlChooserModal" data-link="{{ path('KunstmaanNodeBundle_selecturl') }}">
-                            {{ 'kuma_node.widget.choose' | trans }}
-                        </button>
-                    </span>
+                                    <button type="button" class="btn btn-default btn--raise-on-hover" data-toggle="modal" data-target="#{{ linkUrl.id }}-urlChooserModal" data-link="{{ path('KunstmaanNodeBundle_selecturl') }}">
+                                        {{ 'kuma_node.widget.choose' | trans }}
+                                    </button>
+                                </span>
                             {% else %}
                                 <input type="text" name="{{ linkUrl.full_name }}" value="{{ linkUrl.value ? linkUrl.value : '' }}" id="{{ linkUrl.id }}" class="form-control {% if linkUrl.attr is defined and linkUrl.attr.class is defined %}{{ linkUrl.attr.class }}{% endif %}"{% if linkUrl.attr is defined and linkUrl.attr.placeholder is defined %} placeholder="{{ linkUrl.attr.placeholder }}"{% endif %}>
                             {% endif %}
                         </div>
                     </div>
                 </div>
-
             </div>
         {% else %}
             {% set linkUrl = form.link_url.vars %}

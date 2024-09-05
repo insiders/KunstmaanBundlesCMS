@@ -25,7 +25,7 @@ class URLChooserToLinkTransformer implements DataTransformerInterface
 
         if ($value === null) {
             return [
-                'link_type' => URLChooserType::EXTERNAL,
+                'link_type' => URLChooserType::INTERNAL,
                 'link_url' => null,
             ];
         }
