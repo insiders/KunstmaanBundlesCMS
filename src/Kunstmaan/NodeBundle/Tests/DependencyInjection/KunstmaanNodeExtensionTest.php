@@ -19,7 +19,7 @@ class KunstmaanNodeExtensionTest extends AbstractExtensionTestCase
     public function testCorrectParametersHaveBeenSet()
     {
         $this->container->setParameter('twig.form.resources', []);
-        $this->load();
+        $this->load(['enable_improved_urlchooser' => true]);
 
         $this->assertContainerBuilderHasParameter('twig.form.resources');
         $this->assertContainerBuilderHasParameter('kunstmaan_node.show_add_homepage', true);
@@ -29,6 +29,16 @@ class KunstmaanNodeExtensionTest extends AbstractExtensionTestCase
         $this->assertContainerBuilderHasParameter('kunstmaan_node.lock_enabled', false);
         $this->assertContainerBuilderHasParameter('kunstmaan_node.version_timeout', 3600);
         $this->assertContainerBuilderHasParameter('kunstmaan_node.url_chooser.lazy_increment', 2);
-        $this->assertContainerBuilderHasParameter('kunstmaan_node.enable_improved_urlchooser', false);
+        $this->assertContainerBuilderHasParameter('kunstmaan_node.enable_improved_urlchooser', true);
+    }
+
+    /**
+     * @group legacy
+     */
+    public function testImprovedUrlChooserConfigDeprecation()
+    {
+        $this->expectDeprecation('Since kunstmaan/node-bundle 7.2: Not setting the "kunstmaan_node.enable_improved_urlchooser" config to true is deprecated, it will always be true in 8.0.');
+        $this->container->setParameter('twig.form.resources', []);
+        $this->load();
     }
 }
