@@ -190,7 +190,7 @@ class FolderRepository extends NestedTreeRepository
         $direct = false,
         $sortByField = null,
         $direction = 'ASC',
-        $includeNode = false
+        $includeNode = false,
     ) {
         /** @var QueryBuilder $qb */
         $qb = parent::childrenQueryBuilder($node, $direct, $sortByField, $direction, $includeNode);
@@ -242,7 +242,7 @@ class FolderRepository extends NestedTreeRepository
         $node = null,
         $direct = false,
         array $options = [],
-        $includeNode = false
+        $includeNode = false,
     ) {
         /** @var QueryBuilder $qb */
         $qb = parent::getNodesHierarchyQueryBuilder($node, $direct, $options, $includeNode);
