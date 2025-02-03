@@ -31,14 +31,4 @@ class KunstmaanNodeExtensionTest extends AbstractExtensionTestCase
         $this->assertContainerBuilderHasParameter('kunstmaan_node.url_chooser.lazy_increment', 2);
         $this->assertContainerBuilderHasParameter('kunstmaan_node.enable_improved_urlchooser', true);
     }
-
-    /**
-     * @group legacy
-     */
-    public function testImprovedUrlChooserConfigDeprecation()
-    {
-        $this->expectDeprecation('Since kunstmaan/node-bundle 7.2: Not setting the "kunstmaan_node.enable_improved_urlchooser" config to true is deprecated, it will always be true in 8.0.');
-        $this->container->setParameter('twig.form.resources', []);
-        $this->load();
-    }
 }
