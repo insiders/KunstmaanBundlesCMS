@@ -4,10 +4,13 @@ namespace Kunstmaan\NodeBundle\Tests\DependencyInjection;
 
 use Kunstmaan\NodeBundle\DependencyInjection\KunstmaanNodeExtension;
 use Matthias\SymfonyDependencyInjectionTest\PhpUnit\AbstractExtensionTestCase;
+use Symfony\Bridge\PhpUnit\ExpectDeprecationTrait;
 use Symfony\Component\DependencyInjection\Extension\ExtensionInterface;
 
 class KunstmaanNodeExtensionTest extends AbstractExtensionTestCase
 {
+    use ExpectDeprecationTrait;
+
     /**
      * @return ExtensionInterface[]
      */

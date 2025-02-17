@@ -3,14 +3,13 @@
 namespace Kunstmaan\GeneratorBundle\Helper;
 
 use Doctrine\ORM\Mapping\ClassMetadata;
-use Sensio\Bundle\GeneratorBundle\Command\Helper\QuestionHelper;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpKernel\Kernel;
 
 /**
- * GeneratorUtils
+ * @internal
  */
 class GeneratorUtils
 {

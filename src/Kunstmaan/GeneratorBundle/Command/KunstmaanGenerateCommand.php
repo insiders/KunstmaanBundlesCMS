@@ -5,7 +5,6 @@ namespace Kunstmaan\GeneratorBundle\Command;
 use Kunstmaan\GeneratorBundle\Helper\CommandAssistant;
 use Kunstmaan\GeneratorBundle\Helper\GeneratorUtils;
 use Kunstmaan\GeneratorBundle\Helper\Sf4AppBundle;
-use Sensio\Bundle\GeneratorBundle\Command\GenerateDoctrineCommand;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -21,7 +20,10 @@ use Symfony\Component\HttpKernel\Bundle\BundleInterface;
 use Symfony\Component\Yaml\Exception\ParseException;
 use Symfony\Component\Yaml\Yaml;
 
-abstract class KunstmaanGenerateCommand extends GenerateDoctrineCommand
+/**
+ * @internal
+ */
+abstract class KunstmaanGenerateCommand extends AbstractGeneratorCommand
 {
     /**
      * @var CommandAssistant
@@ -43,10 +45,7 @@ abstract class KunstmaanGenerateCommand extends GenerateDoctrineCommand
         $this->doInteract();
     }
 
-    /**
-     * @return int|null
-     */
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $this->setInputAndOutput($input, $output);
 
@@ -184,10 +183,6 @@ abstract class KunstmaanGenerateCommand extends GenerateDoctrineCommand
      */
     private function convertNamespaceToSnakeCase($namespace): string
     {
-        if (is_null($namespace)) {
-            return null;
-        }
-
         return str_replace('/', '_', strtolower($this->fixNamespace($namespace)));
     }
 

@@ -17,8 +17,6 @@ use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\HttpKernel\Bundle\BundleInterface;
 use Symfony\Component\HttpKernel\Kernel;
-use Symfony\Component\Security\Core\User\ChainUserChecker;
-use Symfony\Component\Security\Http\Authenticator\Passport\Passport;
 
 /**
  * App Test Kernel for functional tests.
@@ -81,19 +79,15 @@ class AppKernel extends Kernel
     {
         $loader->load($this->rootConfig);
         $loader->load(function (ContainerBuilder $containerBuilder) {
-            // Only add "enable_authenticator_manager" on supporting symfony 5 versions but not on 6.2 because the option is deprecated.
-            if (class_exists(Passport::class) && !class_exists(ChainUserChecker::class)) {
-                $containerBuilder->prependExtensionConfig('security', ['enable_authenticator_manager' => true]);
+            $config = [];
+            if (class_exists(\Symfony\Bundle\FrameworkBundle\Command\TranslationExtractCommand::class)) {
+                $config['property_info'] = ['with_constructor_extractor' => false];
             }
-
-            // Only set these config options on 6.2+
-            if (class_exists(ChainUserChecker::class)) {
-                $containerBuilder->prependExtensionConfig('framework', [
-                    'handle_all_throwables' => true,
-                    'php_errors' => ['log' => true],
-                    'annotations' => ['enabled' => false],
-                ]);
-            }
+            $containerBuilder->prependExtensionConfig('framework', array_merge($config, [
+                'handle_all_throwables' => true,
+                'php_errors' => ['log' => true],
+                'annotations' => ['enabled' => false],
+            ]));
         });
     }
 
