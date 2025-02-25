@@ -25,6 +25,10 @@ final class PagePartEvent extends Event
     {
         $this->pagePart = $pagePart;
         $this->page = $page;
+
+        if ($page === null) {
+            trigger_deprecation('kunstmaan/pagepart-bundle', '7.2', 'Not passing a HasPagePartsInterface as second parameter is deprecated and will be required in 8.0.');
+        }
     }
 
     public function getPagePart(): PagePartInterface

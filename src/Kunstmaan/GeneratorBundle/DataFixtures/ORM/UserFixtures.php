@@ -5,33 +5,25 @@ namespace Kunstmaan\GeneratorBundle\DataFixtures\ORM;
 use Doctrine\Common\DataFixtures\AbstractFixture;
 use Doctrine\Common\DataFixtures\OrderedFixtureInterface;
 use Doctrine\Persistence\ObjectManager;
+use Kunstmaan\AdminBundle\Entity\Group;
 use Kunstmaan\AdminBundle\Entity\User;
+use Kunstmaan\AdminBundle\Service\UserManager;
 use Symfony\Component\Console\Output\ConsoleOutput;
-use Symfony\Component\DependencyInjection\ContainerAwareInterface;
-use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Fixture for creating the admin and guest user
  */
-class UserFixtures extends AbstractFixture implements OrderedFixtureInterface, ContainerAwareInterface
+class UserFixtures extends AbstractFixture implements OrderedFixtureInterface
 {
     const REFERENCE_ADMIN_USER = 'adminuser';
 
-    /** @var ContainerInterface */
-    private $container;
+    private UserManager $userManager;
+    private string $defaultAdminLocale;
 
-    /**
-     * Sets the Container.
-     *
-     * @param ContainerInterface|null $container A ContainerInterface instance or null
-     *
-     * @return void
-     *
-     * @api
-     */
-    public function setContainer(?ContainerInterface $container = null)
+    public function __construct(UserManager $userManager, string $defaultAdminLocale)
     {
-        $this->container = $container;
+        $this->userManager = $userManager;
+        $this->defaultAdminLocale = $defaultAdminLocale;
     }
 
     /**
@@ -46,9 +38,9 @@ class UserFixtures extends AbstractFixture implements OrderedFixtureInterface, C
             'admin',
             $password,
             'admin@domain.com',
-            $this->container->getParameter('kunstmaan_admin.default_admin_locale'),
+            $this->defaultAdminLocale,
             ['ROLE_SUPER_ADMIN'],
-            [$manager->merge($this->getReference(GroupFixtures::REFERENCE_SUPERADMINS_GROUP))],
+            [$this->getReference(GroupFixtures::REFERENCE_SUPERADMINS_GROUP, Group::class)],
             true,
             false
         );
@@ -89,7 +81,7 @@ class UserFixtures extends AbstractFixture implements OrderedFixtureInterface, C
         $enabled = false,
         $changed = false,
     ) {
-        $user = $this->container->get('kunstmaan_admin.user_manager')->createUser();
+        $user = $this->userManager->createUser();
         $user->setUsername($username);
         $user->setPlainPassword($password);
         $user->setRoles($roles);
@@ -101,7 +93,7 @@ class UserFixtures extends AbstractFixture implements OrderedFixtureInterface, C
             $user->addGroup($group);
         }
 
-        $this->container->get('kunstmaan_admin.user_manager')->updateUser($user);
+        $this->userManager->updateUser($user);
 
         $user->setPasswordChanged($changed);
 

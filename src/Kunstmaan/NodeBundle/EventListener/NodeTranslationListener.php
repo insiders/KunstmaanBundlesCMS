@@ -3,8 +3,9 @@
 namespace Kunstmaan\NodeBundle\EventListener;
 
 use Doctrine\ORM\EntityManagerInterface;
-use Doctrine\ORM\Event\LifecycleEventArgs;
 use Doctrine\ORM\Event\OnFlushEventArgs;
+use Doctrine\ORM\Event\PrePersistEventArgs;
+use Doctrine\ORM\Event\PreUpdateEventArgs;
 use Doctrine\ORM\Mapping\ClassMetadata;
 use Doctrine\Persistence\Mapping\MappingException;
 use Kunstmaan\AdminBundle\FlashMessages\FlashTypes;
@@ -52,22 +53,22 @@ class NodeTranslationListener
         $this->pagesConfiguration = $pagesConfiguration;
     }
 
-    public function prePersist(LifecycleEventArgs $args)
+    public function prePersist(PrePersistEventArgs $args)
     {
-        $entity = $args->getEntity();
+        $entity = $args->getObject();
 
         if ($entity instanceof NodeTranslation) {
-            $this->setSlugWhenEmpty($entity, $args->getEntityManager());
+            $this->setSlugWhenEmpty($entity, $args->getObjectManager());
             $this->ensureSlugIsSlugified($entity);
         }
     }
 
-    public function preUpdate(LifecycleEventArgs $args)
+    public function preUpdate(PreUpdateEventArgs $args)
     {
-        $entity = $args->getEntity();
+        $entity = $args->getObject();
 
         if ($entity instanceof NodeTranslation) {
-            $this->setSlugWhenEmpty($entity, $args->getEntityManager());
+            $this->setSlugWhenEmpty($entity, $args->getObjectManager());
             $this->ensureSlugIsSlugified($entity);
         }
     }
@@ -104,7 +105,7 @@ class NodeTranslationListener
     public function onFlush(OnFlushEventArgs $args)
     {
         try {
-            $em = $args->getEntityManager();
+            $em = $args->getObjectManager();
 
             $class = $em->getClassMetadata(NodeTranslation::class);
 

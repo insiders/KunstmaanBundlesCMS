@@ -123,7 +123,6 @@ final class SlugController extends AbstractController
         }
 
         $template = new Template($view);
-
         $request->attributes->set('_template', $template);
 
         return $renderContext->getArrayCopy();

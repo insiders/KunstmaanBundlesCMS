@@ -5,48 +5,43 @@ namespace {{ namespace }}\DataFixtures\ORM\DefaultSiteGenerator;
 use Doctrine\Bundle\FixturesBundle\ORMFixtureInterface;
 use Doctrine\Common\DataFixtures\AbstractFixture;
 use Doctrine\Common\DataFixtures\OrderedFixtureInterface;
+use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\Persistence\ObjectManager;
 use Kunstmaan\NodeBundle\Entity\Node;
+use Kunstmaan\NodeBundle\Helper\Services\PageCreatorService;
 use Kunstmaan\SitemapBundle\Entity\SitemapPage;
-use Symfony\Component\DependencyInjection\ContainerAwareInterface;
-use Symfony\Component\DependencyInjection\ContainerInterface;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 
-/**
- * SitemapFixtures
- */
-class SitemapFixtures extends AbstractFixture implements OrderedFixtureInterface, ContainerAwareInterface, ORMFixtureInterface
+class SitemapFixtures extends AbstractFixture implements OrderedFixtureInterface, ORMFixtureInterface
 {
-    /**
-     * @var ContainerInterface
-     */
-    private $container = null;
+    private EntityManagerInterface $em;
+    private PageCreatorService $pageCreatorService;
+    private string $requiredLocales;
 
-    /**
-     * Load data fixtures with the passed EntityManager.
-     *
-     * @param ObjectManager $manager
-     */
-    public function load(ObjectManager $manager)
+    public function __construct(EntityManagerInterface $em, PageCreatorService $pageCreatorService, #[Autowire('%requiredlocales%')] string $requiredLocales)
     {
-        $em = $this->container->get('doctrine.orm.entity_manager');
+        $this->em = $em;
+        $this->pageCreatorService = $pageCreatorService;
+        $this->requiredLocales = $requiredLocales;
+    }
 
-        $pageCreator = $this->container->get('kunstmaan_node.page_creator_service');
-
-        $nodeRepo = $em->getRepository(Node::class);
+    public function load(ObjectManager $manager): void
+    {
+        $nodeRepo = $this->em->getRepository(Node::class);
         $homePage = $nodeRepo->findOneBy(array('internalName' => 'homepage'));
 
         $sitemapPage = new SitemapPage();
         $sitemapPage->setTitle('Sitemap');
 
-	$locales = explode('|', $this->container->getParameter('requiredlocales'));
+	    $locales = explode('|', $this->requiredLocales);
         $translations = array();
-	foreach ($locales as $locale) {
-	    $translations[] = array('language' => $locale, 'callback' => function($page, $translation, $seo) {
-		$translation->setTitle('Sitemap');
-		$translation->setSlug('sitemap');
-		$translation->setWeight(100);
-	    });
-	}
+        foreach ($locales as $locale) {
+            $translations[] = array('language' => $locale, 'callback' => function($page, $translation, $seo) {
+            $translation->setTitle('Sitemap');
+            $translation->setSlug('sitemap');
+            $translation->setWeight(100);
+            });
+        }
 
         $options = array(
             'parent' => $homePage,
@@ -56,16 +51,11 @@ class SitemapFixtures extends AbstractFixture implements OrderedFixtureInterface
             'creator' => 'admin'
         );
 
-        $pageCreator->createPage($sitemapPage, $translations, $options);
+        $this->pageCreatorService->createPage($sitemapPage, $translations, $options);
     }
 
     public function getOrder(): int
     {
         return 90;
-    }
-
-    public function setContainer(ContainerInterface $container = null): void
-    {
-        $this->container = $container;
     }
 }

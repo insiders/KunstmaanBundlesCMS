@@ -11,9 +11,9 @@ use Symfony\Component\DependencyInjection\ChildDefinition;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Definition;
 use Symfony\Component\DependencyInjection\Exception\LogicException;
+use Symfony\Component\DependencyInjection\Extension\Extension;
 use Symfony\Component\DependencyInjection\Loader;
 use Symfony\Component\DependencyInjection\Reference;
-use Symfony\Component\HttpKernel\DependencyInjection\Extension;
 use Symfony\Component\Mailer\Mailer;
 
 class KunstmaanAdminExtension extends Extension
@@ -79,6 +79,7 @@ class KunstmaanAdminExtension extends Extension
         }
 
         $this->registerExceptionLoggingConfiguration($config['exception_logging'], $container);
+        $this->removeSessionSecurityListener($config, $container);
 
         $container->setParameter('kunstmaan_admin.default_locale', $config['default_locale']);
         $container->setParameter('kunstmaan_admin.website_title', $config['website_title']);
@@ -135,6 +136,15 @@ class KunstmaanAdminExtension extends Extension
 
         $definition = $container->getDefinition('kunstmaan_admin.menu.adaptor.settings');
         $definition->setArgument(2, false);
+    }
+
+    private function removeSessionSecurityListener(array $config, ContainerBuilder $container): void
+    {
+        if ($config['session_security']['ip_check'] || $config['session_security']['user_agent_check']) {
+            return;
+        }
+
+        $container->removeDefinition('kunstmaan_admin.session_security');
     }
 
     private function configureAuthentication(array $config, ContainerBuilder $container, LoaderInterface $loader): void

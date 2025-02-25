@@ -6,7 +6,7 @@ use Kunstmaan\GeneratorBundle\Helper\GeneratorUtils;
 use Symfony\Component\HttpKernel\Bundle\BundleInterface;
 
 /**
- * Generates all classes/files for a new formpage
+ * @internal
  */
 class FormPageGenerator extends KunstmaanGenerator
 {
@@ -102,7 +102,7 @@ class FormPageGenerator extends KunstmaanGenerator
      */
     private function generatePageEntity()
     {
-        list($entityCode, $entityPath) = $this->generateEntity(
+        [$entityCode, $entityPath] = $this->generateEntity(
             $this->bundle,
             $this->entity,
             $this->fields,
