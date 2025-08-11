@@ -35,8 +35,16 @@ class AclVoter extends BaseAclVoter
         $this->permissionsEnabled = $permissionsEnabled;
     }
 
-    public function vote(TokenInterface $token, $object, array $attributes): int
+    public function vote(TokenInterface $token, $object, array $attributes/*, ?Vote $vote = null*/): int
     {
+        // NEXT_MAJOR: Remove this when Symfony <7.3 support is removed.
+        $vote = null;
+        if (3 < \func_num_args()) {
+            $vote = func_get_arg(3);
+        } else if (class_exists(Vote::class)) {
+            $vote = new Vote();
+        }
+
         $attributeIsSupported = false;
         foreach ($attributes as $attribute) {
             if ($this->supportsAttribute($attribute)) {
@@ -54,6 +62,6 @@ class AclVoter extends BaseAclVoter
             return self::ACCESS_ABSTAIN;
         }
 
-        return parent::vote($token, $object, $attributes);
+        return parent::vote($token, $object, $attributes, $vote);
     }
 }
