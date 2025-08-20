@@ -155,6 +155,8 @@ class Redirect extends AbstractEntity
 
     public function setOriginPrefix(?string $originPrefix = null): self
     {
+        $this->originPrefix = $originPrefix;
+
         return $this;
     }
 

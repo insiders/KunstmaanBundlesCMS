@@ -2,8 +2,6 @@
 
 namespace Kunstmaan\RedirectBundle\Repository;
 
-use Doctrine\DBAL\Connection;
-use Doctrine\DBAL\Query\QueryBuilder;
 use Doctrine\ORM\EntityRepository;
 use Kunstmaan\RedirectBundle\Entity\Redirect;
 
@@ -18,8 +16,8 @@ class RedirectRepository extends EntityRepository
             ->from('kuma_redirects')
             ->where(
                 $qb->expr()->and(
-                    $qb->expr()->like('origin_pattern', ':path'),
-                    $qb->expr()->eq('origin_prefix', 'LEFT(:path, CHAR_LENGTH(origin_prefix))'),
+                    $qb->expr()->like( ':path', 'origin_pattern'),
+                    "origin_prefix = LEFT(:path, CHAR_LENGTH(origin_prefix))",
                 )
             )
             ->andWhere(
