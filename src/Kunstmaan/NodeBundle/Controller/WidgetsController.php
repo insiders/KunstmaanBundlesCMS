@@ -119,6 +119,7 @@ final class WidgetsController extends AbstractController
             if (!empty($cKEditorFuncNum)) {
                 $params['CKEditorFuncNum'] = $cKEditorFuncNum;
             }
+            $params['type'] = $request->query->get('type', 'all');
             $mediaChooserLink = $this->generateUrl('KunstmaanMediaBundle_chooser', $params);
         }
 
