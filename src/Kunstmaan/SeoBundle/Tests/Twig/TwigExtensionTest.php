@@ -87,6 +87,23 @@ class TwigExtensionTest extends TestCase
         $this->assertSame(['width' => 151, 'height' => 151], $dimensions);
     }
 
+    public function testGetImageDimensionsWithCachedFailedLookup()
+    {
+        $cacheMock = $this->createMock(CacheItemPoolInterface::class);
+        $cacheItemMock = $this->createMock(CacheItemInterface::class);
+        $cacheItemMock->expects($this->once())->method('isHit')->willReturn(true);
+        $cacheItemMock->expects($this->once())->method('get')->willReturn(false);
+
+        $cacheMock->expects($this->once())->method('getItem')->withAnyParameters()->willReturn($cacheItemMock);
+
+        $extension = $this->getTwigExtension();
+        $extension->setRequestCache($cacheMock);
+
+        $dimensions = $extension->getImageDimensions(__DIR__ . '/../files/unkown.png');
+
+        $this->assertSame(['width' => null, 'height' => null], $dimensions);
+    }
+
     public function testGetImageDimensionsWithCacheServiceAndNonCachedCall()
     {
         $cacheMock = $this->createMock(CacheItemPoolInterface::class);

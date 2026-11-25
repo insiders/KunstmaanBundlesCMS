@@ -207,7 +207,12 @@ final class SeoTwigExtension extends AbstractExtension
 
     public function getImageDimensions($src): array
     {
-        list($width, $height) = $this->getImageSize($src);
+        $size = $this->getImageSize($src);
+        if (!\is_array($size)) {
+            return ['width' => null, 'height' => null];
+        }
+
+        [$width, $height] = $size;
 
         return ['width' => $width, 'height' => $height];
     }
